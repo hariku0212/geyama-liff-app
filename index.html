@@ -2,7 +2,7 @@
 <html lang="ja">
   <head>
     <meta charset="utf-8" />
-    <title>ゲヤマクラブ 参加登録</title>
+    <title>ゲヤマクラブ 参加ページ</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
       :root {
@@ -50,6 +50,7 @@
       }
       input[type='text'],
       input[type='number'],
+      input[type='date'],
       select {
         width: 100%;
         box-sizing: border-box;
@@ -70,6 +71,11 @@
       button.secondary {
         background: #e0e0e0;
         color: #222;
+        margin-left: 8px;
+      }
+      button.danger {
+        background: #e53935;
+        color: #fff;
         margin-left: 8px;
       }
       button:disabled {
@@ -133,6 +139,32 @@
       .me-row {
         background: #e8f5e9;
       }
+
+      /* タブ */
+      .tabs {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 12px;
+        border-bottom: 1px solid #ddd;
+      }
+      .tab {
+        flex: 1 1 auto;
+        text-align: center;
+        padding: 8px 4px;
+        border-radius: 10px 10px 0 0;
+        border: 1px solid transparent;
+        border-bottom: none;
+        background: #f0f0f0;
+        font-size: 0.9rem;
+        cursor: pointer;
+      }
+      .tab.active {
+        background: #ffffff;
+        border-color: #ddd;
+        border-bottom-color: #ffffff;
+        font-weight: 600;
+      }
+
       /* initial loading overlay */
       #loading {
         position: fixed;
@@ -216,7 +248,7 @@
         <!-- ユーザー情報 -->
         <section class="card">
           <div class="card-header">
-            <h1 style="font-size: 1.3rem">ゲヤマクラブ 参加ページ</h1>
+            <h1 style="font-size: 1.3rem">ゲヤマクラブ</h1>
             <div class="small" id="meInfo"></div>
           </div>
           <div class="muted" style="font-size: 0.85rem">
@@ -225,8 +257,18 @@
           </div>
         </section>
 
-        <!-- 明日の練習 & 参加登録 -->
-        <section class="card" id="eventCard">
+        <!-- タブ -->
+        <div class="tabs" id="tabBar">
+          <button class="tab active" data-tab="attendance">参加</button>
+          <button class="tab" data-tab="participants">参加者</button>
+          <button class="tab" data-tab="history">履歴</button>
+          <button class="tab" data-tab="admin" id="adminTabButton">
+            管理
+          </button>
+        </div>
+
+        <!-- 参加タブ -->
+        <section class="card" id="attendanceCard">
           <div class="card-header">
             <h2 style="font-size: 1.15rem">明日の練習</h2>
             <div class="small" id="eventSummary"></div>
@@ -234,21 +276,29 @@
           <div id="eventBody"></div>
         </section>
 
-        <!-- 参加者一覧 & 支払状況 -->
+        <!-- 参加者タブ -->
         <section class="card" id="participantsCard" style="display: none">
           <div class="card-header">
-            <h2 style="font-size: 1.05rem">参加者一覧・支払状況</h2>
+            <h2 style="font-size: 1.05rem">参加者一覧</h2>
             <div class="small" id="participantsSummary"></div>
           </div>
           <div id="participantsBody"></div>
         </section>
 
-        <!-- 参加履歴 & ランキング -->
+        <!-- 履歴タブ -->
         <section class="card" id="historyCard" style="display: none">
           <div class="card-header">
             <h2 style="font-size: 1.05rem">参加履歴・ランキング</h2>
           </div>
           <div id="historyBody"></div>
+        </section>
+
+        <!-- 管理タブ -->
+        <section class="card" id="adminCard" style="display: none">
+          <div class="card-header">
+            <h2 style="font-size: 1.05rem">管理メニュー</h2>
+          </div>
+          <div id="adminBody"></div>
         </section>
       </div>
     </div>
@@ -268,6 +318,10 @@
         myHistory: [],
         ranking30: [],
         ranking365: [],
+        accountingSummary: null,
+        accountingEntries: [],
+        editingTxId: null,
+        currentTab: 'attendance',
       };
 
       // ===== 共通 API ヘルパー =====
@@ -365,6 +419,13 @@
         }
       }
 
+      function isManager() {
+        return (
+          state.me &&
+          (state.me.role === 'admin' || state.me.role === 'sub_admin')
+        );
+      }
+
       // ===== 初期化 =====
       async function initApp() {
         try {
@@ -393,8 +454,103 @@
           }
           state.me = meRes.member;
 
-          // 明日のイベント取得
-          setLoading('明日の練習を確認中です…');
+          renderMe();
+          setupTabs();
+          showApp();
+
+          // デフォルトで「参加」タブを読み込み
+          switchTab('attendance');
+        } catch (err) {
+          console.error(err);
+          setLoading('エラーが発生しました: ' + err.message);
+        }
+      }
+
+      function renderMe() {
+        const el = document.getElementById('meInfo');
+        if (!el) return;
+        if (!state.me) {
+          el.textContent = 'ログイン情報の取得に失敗しました';
+          return;
+        }
+        const catLabel = formatCategoryLabel(state.me.category);
+        el.textContent = `${state.me.display_name || ''}${
+          catLabel ? '（' + catLabel + '）' : ''
+        }`;
+      }
+
+      // ===== タブ =====
+      function setupTabs() {
+        const tabBar = document.getElementById('tabBar');
+        if (!tabBar) return;
+
+        const adminBtn = document.getElementById('adminTabButton');
+        if (adminBtn) {
+          if (!isManager()) {
+            adminBtn.style.display = 'none';
+          } else {
+            adminBtn.style.display = '';
+          }
+        }
+
+        tabBar.querySelectorAll('.tab').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const tabId = btn.dataset.tab;
+            if (!tabId) return;
+            switchTab(tabId);
+          });
+        });
+      }
+
+      function updateTabActive(tabId) {
+        const tabBar = document.getElementById('tabBar');
+        if (!tabBar) return;
+        tabBar.querySelectorAll('.tab').forEach((btn) => {
+          if (btn.dataset.tab === tabId) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+      }
+
+      function switchTab(tabId) {
+        state.currentTab = tabId;
+        updateTabActive(tabId);
+
+        const attendanceCard = document.getElementById('attendanceCard');
+        const participantsCard = document.getElementById('participantsCard');
+        const historyCard = document.getElementById('historyCard');
+        const adminCard = document.getElementById('adminCard');
+
+        if (attendanceCard)
+          attendanceCard.style.display =
+            tabId === 'attendance' ? 'block' : 'none';
+        if (participantsCard)
+          participantsCard.style.display =
+            tabId === 'participants' ? 'block' : 'none';
+        if (historyCard)
+          historyCard.style.display = tabId === 'history' ? 'block' : 'none';
+        if (adminCard)
+          adminCard.style.display = tabId === 'admin' ? 'block' : 'none';
+
+        // タブごとにデータ読み込み
+        if (tabId === 'attendance') {
+          loadAttendanceTab();
+        } else if (tabId === 'participants') {
+          loadParticipantsTab();
+        } else if (tabId === 'history') {
+          loadHistoryTab();
+        } else if (tabId === 'admin') {
+          loadAdminTab();
+        }
+      }
+
+      // ===== 参加タブ =====
+      async function loadAttendanceTab() {
+        try {
+          setBusy(true, '明日の練習を読み込み中です…');
+
           const eventsRes = await callApi('get_upcoming_events');
           const events = eventsRes.events || [];
 
@@ -422,81 +578,30 @@
           state.upcomingEvent = upcoming;
 
           if (upcoming && state.me) {
-            // 自分の参加状況
-            setLoading('参加状況を読み込み中です…');
             const regRes = await callApi('get_my_registration', {
               event_id: upcoming.event_id,
               member_id: state.me.member_id,
             });
             state.myRegistration = regRes.exists ? regRes.registration : null;
-
-            // 参加者一覧
-            setLoading('参加者一覧を読み込み中です…');
-            const partRes = await callApi('get_event_participants', {
-              event_id: upcoming.event_id,
-            });
-            if (partRes.ok) {
-              state.participants = partRes.participants || [];
-              state.partStats = partRes.stats || null;
-            }
+          } else {
+            state.myRegistration = null;
           }
 
-          if (state.me) {
-            // 参加履歴 & ランキング
-            setLoading('参加履歴を読み込み中です…');
-            const histRes = await callApi('get_my_history', {
-              member_id: state.me.member_id,
-              limit: 20,
-            });
-            if (histRes.ok) {
-              state.myHistory = histRes.history || [];
-            }
-
-            const rank30 = await callApi('get_participation_ranking', {
-              period_days: 30,
-            });
-            if (rank30.ok) {
-              state.ranking30 = rank30.ranking || [];
-            }
-
-            const rank365 = await callApi('get_participation_ranking', {
-              period_days: 365,
-            });
-            if (rank365.ok) {
-              state.ranking365 = rank365.ranking || [];
-            }
-          }
-
-          renderAll();
-          showApp();
+          renderAttendance();
         } catch (err) {
           console.error(err);
-          setLoading('エラーが発生しました: ' + err.message);
+          const bodyEl = document.getElementById('eventBody');
+          const summaryEl = document.getElementById('eventSummary');
+          if (summaryEl) summaryEl.textContent = '読み込みエラー';
+          if (bodyEl)
+            bodyEl.innerHTML =
+              '<p class="status-text status-error">明日の練習情報の取得に失敗しました。</p>';
+        } finally {
+          setBusy(false);
         }
       }
 
-      // ===== 描画 =====
-      function renderAll() {
-        renderMe();
-        renderEvent();
-        renderParticipants();
-        renderHistory();
-      }
-
-      function renderMe() {
-        const el = document.getElementById('meInfo');
-        if (!el) return;
-        if (!state.me) {
-          el.textContent = 'ログイン情報の取得に失敗しました';
-          return;
-        }
-        const catLabel = formatCategoryLabel(state.me.category);
-        el.textContent = `${state.me.display_name || ''}${
-          catLabel ? '（' + catLabel + '）' : ''
-        }`;
-      }
-
-      function renderEvent() {
+      function renderAttendance() {
         const summaryEl = document.getElementById('eventSummary');
         const bodyEl = document.getElementById('eventBody');
         if (!summaryEl || !bodyEl) return;
@@ -646,28 +751,7 @@
                 guest_names_requested: guestNames,
               };
 
-              const partRes = await callApi('get_event_participants', {
-                event_id: ev.event_id,
-              });
-              if (partRes.ok) {
-                state.participants = partRes.participants || [];
-                state.partStats = partRes.stats || null;
-              }
-
-              // 履歴＆ランキングもついでに最新化（軽めの同期）
-              if (state.me) {
-                const histRes = await callApi('get_my_history', {
-                  member_id: state.me.member_id,
-                  limit: 20,
-                });
-                if (histRes.ok) {
-                  state.myHistory = histRes.history || [];
-                }
-              }
-
-              renderEvent();
-              renderParticipants();
-              renderHistory();
+              renderAttendance();
             } catch (err) {
               console.error(err);
               alert('参加登録に失敗しました: ' + err.message);
@@ -715,28 +799,7 @@
               }
 
               state.myRegistration = null;
-
-              const partRes = await callApi('get_event_participants', {
-                event_id: ev.event_id,
-              });
-              if (partRes.ok) {
-                state.participants = partRes.participants || [];
-                state.partStats = partRes.stats || null;
-              }
-
-              if (state.me) {
-                const histRes = await callApi('get_my_history', {
-                  member_id: state.me.member_id,
-                  limit: 20,
-                });
-                if (histRes.ok) {
-                  state.myHistory = histRes.history || [];
-                }
-              }
-
-              renderEvent();
-              renderParticipants();
-              renderHistory();
+              renderAttendance();
             } catch (err) {
               console.error(err);
               alert('キャンセルに失敗しました: ' + err.message);
@@ -751,6 +814,76 @@
         }
       }
 
+      // ===== 参加者タブ =====
+      async function loadParticipantsTab() {
+        try {
+          setBusy(true, '参加者一覧を読み込み中です…');
+
+          // イベント情報がまだなければ取得
+          if (!state.upcomingEvent) {
+            const eventsRes = await callApi('get_upcoming_events');
+            const events = eventsRes.events || [];
+
+            const today = new Date();
+            const tomorrow = new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate() + 1
+            );
+            const yyyy = tomorrow.getFullYear();
+            const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+            const dd = String(tomorrow.getDate()).padStart(2, '0');
+            const tomorrowStr = `${yyyy}-${mm}-${dd}`;
+
+            let upcoming = null;
+            for (const ev of events) {
+              if (ev.date === tomorrowStr) {
+                upcoming = ev;
+                break;
+              }
+            }
+            if (!upcoming && events.length > 0) {
+              upcoming = events[0];
+            }
+            state.upcomingEvent = upcoming;
+          }
+
+          const summaryEl = document.getElementById('participantsSummary');
+          const bodyEl = document.getElementById('participantsBody');
+
+          if (!state.upcomingEvent) {
+            if (summaryEl) summaryEl.textContent = '明日の練習はありません。';
+            if (bodyEl)
+              bodyEl.innerHTML =
+                '<p class="muted">開催予定がないか、まだスケジュールが登録されていません。</p>';
+            return;
+          }
+
+          const partRes = await callApi('get_event_participants', {
+            event_id: state.upcomingEvent.event_id,
+          });
+          if (partRes.ok) {
+            state.participants = partRes.participants || [];
+            state.partStats = partRes.stats || null;
+          } else {
+            state.participants = [];
+            state.partStats = null;
+          }
+
+          renderParticipants();
+        } catch (err) {
+          console.error(err);
+          const summaryEl = document.getElementById('participantsSummary');
+          const bodyEl = document.getElementById('participantsBody');
+          if (summaryEl) summaryEl.textContent = '読み込みエラー';
+          if (bodyEl)
+            bodyEl.innerHTML =
+              '<p class="status-text status-error">参加者一覧の取得に失敗しました。</p>';
+        } finally {
+          setBusy(false);
+        }
+      }
+
       function renderParticipants() {
         const card = document.getElementById('participantsCard');
         const bodyEl = document.getElementById('participantsBody');
@@ -760,17 +893,19 @@
         if (!card || !bodyEl || !summaryEl) return;
 
         if (!ev) {
-          card.style.display = 'none';
+          summaryEl.textContent = '明日の練習はありません。';
+          bodyEl.innerHTML =
+            '<p class="muted">開催予定がないか、まだスケジュールが登録されていません。</p>';
           return;
         }
-
-        card.style.display = 'block';
 
         const parts = state.participants || [];
         const stats = state.partStats || {};
         const reservedCount = stats.reservedCount ?? parts.length;
         const capacityTotal = stats.capacityTotal ?? null;
         const paidCount = stats.paidCount ?? 0;
+
+        const manager = isManager();
 
         if (!parts.length) {
           summaryEl.textContent = 'まだ参加登録がありません。';
@@ -783,30 +918,67 @@
         if (capacityTotal !== null) {
           text += ` / 定員 ${capacityTotal}人`;
         }
-        text += `（支払い済 ${paidCount}人）`;
+        if (manager) {
+          text += `（支払い済 ${paidCount}人）`;
+        }
         summaryEl.textContent = text;
 
-        const isManager =
-          state.me &&
-          (state.me.role === 'admin' || state.me.role === 'sub_admin');
-
-        const rowsHtml = parts
+        const sorted = parts
           .slice()
           .sort((a, b) =>
             (a.display_name || '').localeCompare(b.display_name || 'ja')
-          )
-          .map((p) => {
-            const catLabel = formatCategoryLabel(p.category);
-            const guestLabel = p.guest_count_requested
-              ? `${p.guest_count_requested}人 ${
-                  p.guest_names_requested
-                    ? '（' + p.guest_names_requested + '）'
-                    : ''
-                }`
-              : '-';
-            const checked = p.payment_status === 'paid';
+          );
 
-            return `
+        if (!manager) {
+          // 一般メンバー向け：支払状況は表示しない
+          const rowsHtml = sorted
+            .map((p) => {
+              const catLabel = formatCategoryLabel(p.category);
+              const guestLabel = p.guest_count_requested
+                ? `${p.guest_count_requested}人 ${
+                    p.guest_names_requested
+                      ? '（' + p.guest_names_requested + '）'
+                      : ''
+                  }`
+                : '-';
+              return `
+              <tr>
+                <td>${p.display_name || ''}</td>
+                <td>${catLabel ? `<span class="tag">${catLabel}</span>` : ''}</td>
+                <td>${guestLabel}</td>
+              </tr>
+            `;
+            })
+            .join('');
+
+          bodyEl.innerHTML = `
+            <table>
+              <thead>
+                <tr>
+                  <th>名前</th>
+                  <th>区分</th>
+                  <th>友達</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHtml}
+              </tbody>
+            </table>
+          `;
+        } else {
+          // 管理メンバー向け：支払状況も表示
+          const rowsHtml = sorted
+            .map((p) => {
+              const catLabel = formatCategoryLabel(p.category);
+              const guestLabel = p.guest_count_requested
+                ? `${p.guest_count_requested}人 ${
+                    p.guest_names_requested
+                      ? '（' + p.guest_names_requested + '）'
+                      : ''
+                  }`
+                : '-';
+              const checked = p.payment_status === 'paid';
+              return `
               <tr>
                 <td>${p.display_name || ''}</td>
                 <td>${catLabel ? `<span class="tag">${catLabel}</span>` : ''}</td>
@@ -816,38 +988,34 @@
                     <input type="checkbox"
                            class="pay-toggle"
                            data-member-id="${p.member_id}"
-                           ${checked ? 'checked' : ''}
-                           ${isManager ? '' : 'disabled'} />
+                           ${checked ? 'checked' : ''} />
                     支払い済
                   </label>
                 </td>
               </tr>
             `;
-          })
-          .join('');
+            })
+            .join('');
 
-        bodyEl.innerHTML = `
-          <table>
-            <thead>
-              <tr>
-                <th>名前</th>
-                <th>区分</th>
-                <th>友達</th>
-                <th>支払い</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rowsHtml}
-            </tbody>
-          </table>
-          ${
-            !isManager
-              ? '<p class="muted" style="margin-top:8px;font-size:0.8rem;">※支払い状況の更新は管理メンバーのみが行えます。</p>'
-              : ''
-          }
-        `;
+          bodyEl.innerHTML = `
+            <table>
+              <thead>
+                <tr>
+                  <th>名前</th>
+                  <th>区分</th>
+                  <th>友達</th>
+                  <th>支払い</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHtml}
+              </tbody>
+            </table>
+            <p class="muted" style="margin-top:8px;font-size:0.8rem;">
+              ※チェックを入れると「支払い済」として記録されます（現金／PayPayの区別は別途帳簿で管理）。
+            </p>
+          `;
 
-        if (isManager) {
           setupPaymentHandlers();
         }
       }
@@ -895,6 +1063,52 @@
         });
       }
 
+      // ===== 履歴タブ =====
+      async function loadHistoryTab() {
+        if (!state.me) return;
+        try {
+          setBusy(true, '参加履歴を読み込み中です…');
+
+          const histRes = await callApi('get_my_history', {
+            member_id: state.me.member_id,
+            limit: 20,
+          });
+          if (histRes.ok) {
+            state.myHistory = histRes.history || [];
+          } else {
+            state.myHistory = [];
+          }
+
+          const rank30 = await callApi('get_participation_ranking', {
+            period_days: 30,
+          });
+          if (rank30.ok) {
+            state.ranking30 = rank30.ranking || [];
+          } else {
+            state.ranking30 = [];
+          }
+
+          const rank365 = await callApi('get_participation_ranking', {
+            period_days: 365,
+          });
+          if (rank365.ok) {
+            state.ranking365 = rank365.ranking || [];
+          } else {
+            state.ranking365 = [];
+          }
+
+          renderHistory();
+        } catch (err) {
+          console.error(err);
+          const bodyEl = document.getElementById('historyBody');
+          if (bodyEl)
+            bodyEl.innerHTML =
+              '<p class="status-text status-error">参加履歴の取得に失敗しました。</p>';
+        } finally {
+          setBusy(false);
+        }
+      }
+
       function renderHistory() {
         const card = document.getElementById('historyCard');
         const bodyEl = document.getElementById('historyBody');
@@ -906,11 +1120,10 @@
           (state.ranking365 && state.ranking365.length > 0);
 
         if (!hasHistory && !hasRanking) {
-          card.style.display = 'none';
+          bodyEl.innerHTML =
+            '<p class="muted">まだ参加履歴やランキングのデータがありません。</p>';
           return;
         }
-
-        card.style.display = 'block';
 
         let html = '';
 
@@ -988,6 +1201,351 @@
         html += `<p class="muted" style="margin-top:4px;font-size:0.8rem;">※自分の行は背景が薄い緑色で表示されます。</p>`;
 
         bodyEl.innerHTML = html;
+      }
+
+      // ===== 管理タブ =====
+      async function loadAdminTab() {
+        const bodyEl = document.getElementById('adminBody');
+        if (!bodyEl) return;
+
+        if (!isManager()) {
+          bodyEl.innerHTML =
+            '<p class="muted">このタブは管理メンバー専用です。</p>';
+          return;
+        }
+
+        try {
+          setBusy(true, '帳簿データを読み込み中です…');
+
+          const sumRes = await callApi('get_accounting_summary');
+          if (sumRes.ok) {
+            state.accountingSummary = sumRes.summary || null;
+          } else {
+            state.accountingSummary = null;
+          }
+
+          const listRes = await callApi('list_accounting', { limit: 50 });
+          if (listRes.ok) {
+            state.accountingEntries = listRes.entries || [];
+          } else {
+            state.accountingEntries = [];
+          }
+
+          renderAdmin();
+        } catch (err) {
+          console.error(err);
+          bodyEl.innerHTML =
+            '<p class="status-text status-error">帳簿データの取得に失敗しました。</p>';
+        } finally {
+          setBusy(false);
+        }
+      }
+
+      function renderAdmin() {
+        const bodyEl = document.getElementById('adminBody');
+        if (!bodyEl) return;
+
+        if (!isManager()) {
+          bodyEl.innerHTML =
+            '<p class="muted">このタブは管理メンバー専用です。</p>';
+          return;
+        }
+
+        const summary = state.accountingSummary;
+        const entries = state.accountingEntries || [];
+
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const todayStr = `${yyyy}-${mm}-${dd}`;
+
+        const balances = summary && summary.balances ? summary.balances : {};
+        const totalIncome = summary ? summary.total_income || 0 : 0;
+        const totalExpense = summary ? summary.total_expense || 0 : 0;
+        const net = summary ? summary.net || 0 : 0;
+
+        const editing = state.editingTxId
+          ? entries.find((e) => e.tx_id === state.editingTxId)
+          : null;
+
+        const formDate = editing ? editing.date || todayStr : todayStr;
+        const formType = editing ? editing.type || 'income' : 'income';
+        const formAccount = editing ? editing.account || '' : '';
+        const formFrom = editing ? editing.from_account || '' : '';
+        const formTo = editing ? editing.to_account || '' : '';
+        const formCategory = editing ? editing.category || '' : '';
+        const formEventId = editing ? editing.event_id || '' : '';
+        const formAmount = editing ? editing.amount || '' : '';
+        const formMemo = editing ? editing.memo || '' : '';
+
+        let entriesHtml = '';
+        if (!entries.length) {
+          entriesHtml = '<p class="muted">帳簿の記録はまだありません。</p>';
+        } else {
+          const rows = entries
+            .map((e) => {
+              const dir =
+                e.type === 'transfer'
+                  ? `${e.from_account || '-'} → ${e.to_account || '-'}`
+                  : e.account || '-';
+              return `
+              <tr>
+                <td>${e.date || ''}</td>
+                <td>${e.type || ''}</td>
+                <td>${dir}</td>
+                <td>${e.category || ''}</td>
+                <td>${e.event_id || ''}</td>
+                <td style="text-align:right;">${e.amount || 0}</td>
+                <td>${e.memo || ''}</td>
+                <td>
+                  <button class="secondary acc-edit" data-tx-id="${e.tx_id}">
+                    編集
+                  </button>
+                </td>
+              </tr>
+            `;
+            })
+            .join('');
+
+          entriesHtml = `
+            <table>
+              <thead>
+                <tr>
+                  <th>日付</th>
+                  <th>種別</th>
+                  <th>口座/振替</th>
+                  <th>カテゴリ</th>
+                  <th>イベント</th>
+                  <th>金額</th>
+                  <th>メモ</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows}
+              </tbody>
+            </table>
+          `;
+        }
+
+        bodyEl.innerHTML = `
+          <div style="margin-bottom:12px;">
+            <h3 style="font-size:1rem;margin:0 0 4px;">口座別 残高（理論値）</h3>
+            <ul class="muted" style="margin:0 0 4px;padding-left:18px;font-size:0.9rem;">
+              <li>現金（cash）：${balances.cash || 0} 円</li>
+              <li>PayPay（paypay）：${balances.paypay || 0} 円</li>
+              <li>銀行（bank）：${balances.bank || 0} 円</li>
+            </ul>
+            <p class="muted" style="margin:0;font-size:0.85rem;">
+              収入合計：${totalIncome} 円 / 支出合計：${totalExpense} 円 / 差額（純増）：${net} 円
+            </p>
+          </div>
+
+          <hr style="margin:12px 0;" />
+
+          <div style="margin-bottom:12px;">
+            <h3 style="font-size:1rem;margin:0 0 4px;">
+              帳簿入力 ${state.editingTxId ? '（編集モード）' : ''}
+            </h3>
+            <div class="row">
+              <div>
+                <label>日付</label>
+                <input type="date" id="accDate" value="${formDate}" />
+              </div>
+              <div>
+                <label>種別</label>
+                <select id="accType">
+                  <option value="income" ${
+                    formType === 'income' ? 'selected' : ''
+                  }>収入 (income)</option>
+                  <option value="expense" ${
+                    formType === 'expense' ? 'selected' : ''
+                  }>支出 (expense)</option>
+                  <option value="transfer" ${
+                    formType === 'transfer' ? 'selected' : ''
+                  }>振替 (transfer)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row" style="margin-top:4px;">
+              <div>
+                <label>口座（income/expense 用）</label>
+                <select id="accAccount">
+                  <option value="" ${
+                    !formAccount ? 'selected' : ''
+                  }>（なし）</option>
+                  <option value="cash" ${
+                    formAccount === 'cash' ? 'selected' : ''
+                  }>現金 (cash)</option>
+                  <option value="paypay" ${
+                    formAccount === 'paypay' ? 'selected' : ''
+                  }>PayPay (paypay)</option>
+                  <option value="bank" ${
+                    formAccount === 'bank' ? 'selected' : ''
+                  }>銀行 (bank)</option>
+                </select>
+              </div>
+              <div>
+                <label>振替元口座（transfer 用）</label>
+                <select id="accFromAccount">
+                  <option value="" ${
+                    !formFrom ? 'selected' : ''
+                  }>（なし）</option>
+                  <option value="cash" ${
+                    formFrom === 'cash' ? 'selected' : ''
+                  }>現金 (cash)</option>
+                  <option value="paypay" ${
+                    formFrom === 'paypay' ? 'selected' : ''
+                  }>PayPay (paypay)</option>
+                  <option value="bank" ${
+                    formFrom === 'bank' ? 'selected' : ''
+                  }>銀行 (bank)</option>
+                </select>
+              </div>
+              <div>
+                <label>振替先口座（transfer 用）</label>
+                <select id="accToAccount">
+                  <option value="" ${
+                    !formTo ? 'selected' : ''
+                  }>（なし）</option>
+                  <option value="cash" ${
+                    formTo === 'cash' ? 'selected' : ''
+                  }>現金 (cash)</option>
+                  <option value="paypay" ${
+                    formTo === 'paypay' ? 'selected' : ''
+                  }>PayPay (paypay)</option>
+                  <option value="bank" ${
+                    formTo === 'bank' ? 'selected' : ''
+                  }>銀行 (bank)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row" style="margin-top:4px;">
+              <div>
+                <label>カテゴリ</label>
+                <input type="text" id="accCategory" placeholder="例：参加費, シャトル, 体育館" value="${formCategory}" />
+              </div>
+              <div>
+                <label>関連イベントID（任意）</label>
+                <input type="text" id="accEventId" placeholder="例：E20250101" value="${formEventId}" />
+              </div>
+              <div>
+                <label>金額</label>
+                <input type="number" id="accAmount" step="1" value="${formAmount}" />
+              </div>
+            </div>
+
+            <label style="margin-top:4px;">メモ</label>
+            <input type="text" id="accMemo" placeholder="備考など" value="${formMemo}" />
+
+            <div style="margin-top:8px;">
+              <button id="accSaveButton">
+                ${state.editingTxId ? '帳簿を更新する' : '帳簿に追加する'}
+              </button>
+              ${
+                state.editingTxId
+                  ? '<button id="accCancelEdit" class="secondary">編集キャンセル</button>'
+                  : ''
+              }
+            </div>
+
+            <p class="muted" style="margin-top:6px;font-size:0.8rem;">
+              ※種別が income/expense のときは「口座」を、transfer のときは「振替元／振替先口座」を主に使います。<br/>
+              ※イベントごとの参加費合計は、参加人数を見ながら手計算して記録してください。（自動連携は今後の拡張で対応予定）
+            </p>
+          </div>
+
+          <hr style="margin:12px 0;" />
+
+          <div>
+            <h3 style="font-size:1rem;margin:0 0 4px;">帳簿一覧（直近）</h3>
+            ${entriesHtml}
+          </div>
+        `;
+
+        setupAdminHandlers();
+      }
+
+      function setupAdminHandlers() {
+        const saveBtn = document.getElementById('accSaveButton');
+        const cancelEditBtn = document.getElementById('accCancelEdit');
+
+        if (saveBtn) {
+          saveBtn.onclick = async () => {
+            const date = document.getElementById('accDate').value;
+            const type = document.getElementById('accType').value;
+            const account = document.getElementById('accAccount').value;
+            const fromAccount =
+              document.getElementById('accFromAccount').value;
+            const toAccount = document.getElementById('accToAccount').value;
+            const category = document.getElementById('accCategory').value;
+            const eventId = document.getElementById('accEventId').value;
+            const amount = document.getElementById('accAmount').value;
+            const memo = document.getElementById('accMemo').value;
+
+            setBusy(true, '帳簿を保存中です…');
+            try {
+              const params = {
+                date,
+                type,
+                account,
+                from_account: fromAccount,
+                to_account: toAccount,
+                category,
+                event_id: eventId,
+                amount,
+                memo,
+              };
+              if (state.editingTxId) {
+                params.tx_id = state.editingTxId;
+              }
+
+              const res = await callApi(
+                'upsert_accounting',
+                params,
+                { method: 'POST' }
+              );
+              if (!res.ok) {
+                alert(
+                  '帳簿の保存に失敗しました: ' +
+                    (res.error || 'unknown error')
+                );
+                return;
+              }
+
+              // 編集モード解除
+              state.editingTxId = null;
+
+              // 再読み込み
+              await loadAdminTab();
+            } catch (err) {
+              console.error(err);
+              alert('帳簿の保存に失敗しました: ' + err.message);
+            } finally {
+              setBusy(false);
+            }
+          };
+        }
+
+        if (cancelEditBtn) {
+          cancelEditBtn.onclick = () => {
+            state.editingTxId = null;
+            renderAdmin();
+          };
+        }
+
+        const editButtons = document.querySelectorAll('.acc-edit');
+        editButtons.forEach((btn) => {
+          btn.onclick = () => {
+            const txId = btn.dataset.txId;
+            if (!txId) return;
+            state.editingTxId = txId;
+            renderAdmin();
+          };
+        });
       }
 
       // ===== 起動 =====
