@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>ゲヤマクラブ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #f5f5f5;
+      }
+      header {
+        background: #1e88e5;
+        color: #fff;
+        padding: 12px 16px;
+      }
+      h1 {
+        font-size: 18px;
+        margin: 0;
+      }
+      #status {
+        font-size: 12px;
+        margin-top: 4px;
+        opacity: 0.9;
+      }
+      #me {
+        font-size: 12px;
+        margin-top: 2px;
+        opacity: 0.9;
+      }
+      #debug-log {
+        font-size: 10px;
+        white-space: pre-wrap;
+        background: #222;
+        color: #eee;
+        padding: 6px 8px;
+        margin: 0;
+        max-height: 150px;
+        overflow-y: auto;
+      }
+      .tabs {
+        display: flex;
+        border-bottom: 1px solid #ddd;
+        background: #fff;
+      }
+      .tab {
+        flex: 1;
+        text-align: center;
+        padding: 8px 0;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      .tab.active {
+        border-bottom: 2px solid #1e88e5;
+        font-weight: bold;
+      }
+      .container {
+        padding: 12px 16px 24px;
+      }
+      .section-title {
+        font-size: 16px;
+        margin: 8px 0 12px;
+        font-weight: bold;
+      }
+      label {
+        display: block;
+        font-size: 14px;
+        margin-top: 8px;
+      }
+      input[type="text"],
+      select,
+      textarea,
+      input[type="number"] {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 6px;
+        font-size: 14px;
+        margin-top: 4px;
+      }
+      button {
+        margin-top: 12px;
+        padding: 8px 12px;
+        font-size: 14px;
+      }
+      .hint {
+        font-size: 12px;
+        color: #555;
+        margin-top: 4px;
+      }
+      .info-box {
+        background: #fff;
+        border-radius: 4px;
+        padding: 8px 10px;
+        margin-bottom: 12px;
+        border: 1px solid #eee;
+        font-size: 13px;
+      }
+      .message {
+        font-size: 13px;
+        margin-top: 8px;
+        white-space: pre-wrap;
+      }
+      .message.ok {
+        color: #2e7d32;
+      }
+      .message.error {
+        color: #c62828;
+      }
+      .event-title {
+        font-size: 15px;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>ゲヤマクラブ Webアプリ</h1>
+      <div id="status">初期化中...</div>
+      <div id="me"></div>
+    </header>
+    <pre id="debug-log"></pre>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="profile">プロフィール</div>
+      <div class="tab" data-tab="attendance">参加登録</div>
+    </div>
+
+    <div class="container">
+      <!-- プロフィールタブ -->
+      <div id="tab-profile">
+        <div class="section-title">プロフィール設定</div>
+        <div class="info-box">
+          初回は、表示名と区分（社会人 / 大学生 / 高校生以下）を確認してください。<br />
+          後から変更も可能です。
+        </div>
+
+        <label>表示名</label>
+        <input type="text" id="profile-display-name" />
+
+        <label>区分</label>
+        <select id="profile-category">
+          <option value="adult">社会人</option>
+          <option value="college">大学生</option>
+          <option value="student">高校生以下</option>
+        </select>
+
+        <label>PayPayの表示名（任意）</label>
+        <input
+          type="text"
+          id="profile-paypay-name"
+          placeholder="PayPayアプリに表示される名前（使う人だけでOK）"
+        />
+        <div class="hint">
+          PayPay送金があったときに誰からの入金か確認しやすくするための項目です。
+        </div>
+
+        <button id="btn-save-profile">プロフィールを保存</button>
+        <div id="profile-message" class="message"></div>
+      </div>
+
+      <!-- 参加登録タブ -->
+      <div id="tab-attendance" style="display: none">
+        <div class="section-title">明日の練習への参加登録</div>
+        <div id="attendance-content"></div>
+        <div id="attendance-message" class="message"></div>
+      </div>
+    </div>
+
+    <script>
+      // ★ 自分の LIFF ID をセットする
+      const LIFF_ID = "2008652596-Gew4K44V";
+
+      // ★ GASのWebアプリURL（/exec のみ・クエリなし）
+      const GAS_BASE_URL =
+        "https://script.google.com/macros/s/AKfycbx3QQMnnjQl-3bb77-HO9SVztNzaBpl8sXTHNBm7ydsLZMK50dlNqau-qHXU16HufrEBQ/exec";
+
+      let gLineUserId = null;
+      let gMember = null;
+      let gMemberId = null;
+      let gTomorrowEvent = null;
+
+      function logDebug(msg, obj) {
+        const el = document.getElementById("debug-log");
+        const line =
+          "[DEBUG] " +
+          msg +
+          (obj !== undefined ? " " + JSON.stringify(obj) : "");
+        el.textContent += line + "\n";
+      }
+
+      function setStatus(msg) {
+        document.getElementById("status").textContent = msg;
+        logDebug("STATUS: " + msg);
+      }
+
+      function setMeText(msg) {
+        document.getElementById("me").textContent = msg;
+        logDebug("ME: " + msg);
+      }
+
+      function ensureUserId() {
+        if (gLineUserId) return gLineUserId;
+        try {
+          const key = "geyama_temp_user_id";
+          let temp = localStorage.getItem(key);
+          if (!temp) {
+            temp =
+              "TEMP-" +
+              Date.now() +
+              "-" +
+              Math.random().toString(16).slice(2);
+            localStorage.setItem(key, temp);
+          }
+          gLineUserId = temp;
+          logDebug("ensureUserId -> TEMP", gLineUserId);
+          return gLineUserId;
+        } catch (e) {
+          gLineUserId = "TEMP-" + Date.now();
+          logDebug("ensureUserId error, fallback", gLineUserId);
+          return gLineUserId;
+        }
+      }
+
+      async function callGet(action, params = {}) {
+        const url = new URL(GAS_BASE_URL);
+        url.searchParams.set("action", action);
+        for (const [k, v] of Object.entries(params)) {
+          url.searchParams.set(k, v);
+        }
+        logDebug("GET " + action, params);
+        const res = await fetch(url.toString());
+        const json = await res.json();
+        logDebug("GET result " + action, json);
+        return json;
+      }
+
+      async function callPost(action, body = {}) {
+        const url = new URL(GAS_BASE_URL);
+        url.searchParams.set("action", action);
+
+        if (!gLineUserId) {
+          ensureUserId();
+        }
+        url.searchParams.set("lineUserId", gLineUserId);
+
+        const form = new URLSearchParams();
+        form.append("line_user_id", gLineUserId);
+        for (const [k, v] of Object.entries(body)) {
+          if (v === undefined || v === null) continue;
+          form.append(k, String(v));
+        }
+
+        logDebug("POST " + action, { query: url.toString(), body: body });
+
+        const res = await fetch(url.toString(), {
+          method: "POST",
+          body: form,
+        });
+        const json = await res.json();
+        logDebug("POST result " + action, json);
+        return json;
+      }
+
+      function setupTabs() {
+        const tabs = document.querySelectorAll(".tab");
+        tabs.forEach((tab) => {
+          tab.addEventListener("click", () => {
+            tabs.forEach((t) => t.classList.remove("active"));
+            tab.classList.add("active");
+            const target = tab.dataset.tab;
+            document.getElementById("tab-profile").style.display =
+              target === "profile" ? "block" : "none";
+            document.getElementById("tab-attendance").style.display =
+              target === "attendance" ? "block" : "none";
+          });
+        });
+      }
+
+      function fillProfileForm(member, profileDisplayNameFallback) {
+        const displayInput = document.getElementById("profile-display-name");
+        const categorySelect = document.getElementById("profile-category");
+        const paypayInput = document.getElementById("profile-paypay-name");
+
+        displayInput.value =
+          (member && member.display_name) || profileDisplayNameFallback || "";
+        categorySelect.value =
+          member && member.category ? member.category : "adult";
+        paypayInput.value =
+          (member && member.paypay_display_name) || "";
+      }
+
+      function setupProfileSave() {
+        const button = document.getElementById("btn-save-profile");
+        const messageEl = document.getElementById("profile-message");
+
+        button.addEventListener("click", async () => {
+          messageEl.textContent = "";
+          messageEl.className = "message";
+
+          const displayName =
+            document.getElementById("profile-display-name").value.trim();
+          const category =
+            document.getElementById("profile-category").value;
+          const paypayName =
+            document.getElementById("profile-paypay-name").value.trim();
+
+          if (!displayName) {
+            messageEl.textContent = "表示名を入力してください。";
+            messageEl.classList.add("error");
+            return;
+          }
+
+          try {
+            setStatus("プロフィールを保存中...");
+
+            const res = await callPost("upsert_member", {
+              display_name: displayName,
+              category,
+              paypay_display_name: paypayName,
+            });
+
+            if (!res.ok) {
+              messageEl.textContent =
+                "エラー: " +
+                res.error +
+                "\n\n" +
+                "debug: " +
+                JSON.stringify(res.debug || {}, null, 2);
+              messageEl.classList.add("error");
+              setStatus("エラーが発生しました");
+              return;
+            }
+
+            const meRes = await callGet("get_me", {
+              lineUserId: gLineUserId,
+            });
+            if (meRes.ok && meRes.exists) {
+              gMember = meRes.member;
+              gMemberId = gMember.member_id;
+              setMeText(`ようこそ、${gMember.display_name} さん！`);
+            } else {
+              setMeText(`ユーザーID: ${gLineUserId}`);
+            }
+
+            messageEl.textContent = "プロフィールを保存しました。";
+            messageEl.classList.add("ok");
+            setStatus("準備完了");
+          } catch (err) {
+            console.error(err);
+            logDebug("PROFILE SAVE ERROR", { message: err.message });
+            messageEl.textContent = "例外エラー: " + err.message;
+            messageEl.classList.add("error");
+            setStatus("エラーが発生しました");
+          }
+        });
+      }
+
+      async function setupAttendance() {
+        const container = document.getElementById("attendance-content");
+        const msgEl = document.getElementById("attendance-message");
+
+        container.textContent = "";
+        msgEl.textContent = "";
+        msgEl.className = "message";
+
+        setStatus("明日のイベント情報を取得中...");
+
+        const eventsRes = await callGet("get_upcoming_events");
+        if (!eventsRes.ok) {
+          container.textContent =
+            "イベント情報の取得に失敗しました: " + eventsRes.error;
+          setStatus("エラー");
+          return;
+        }
+
+        const now = new Date();
+        const tomorrow = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() + 1
+        );
+        const yyyy = tomorrow.getFullYear();
+        const mm = ("0" + (tomorrow.getMonth() + 1)).slice(-2);
+        const dd = ("0" + tomorrow.getDate()).slice(-2);
+        const tomorrowStr = `${yyyy}-${mm}-${dd}`;
+
+        const events = eventsRes.events || [];
+        const targetEvent = events.find((ev) => ev.date === tomorrowStr);
+        if (!targetEvent) {
+          container.innerHTML =
+            "<div class='info-box'>明日の練習は登録されていないか、中止になっています。</div>";
+          setStatus("準備完了");
+          return;
+        }
+
+        gTomorrowEvent = targetEvent;
+
+        const regRes = await callGet("get_my_registration", {
+          event_id: targetEvent.event_id,
+          member_id: gMemberId || "",
+        });
+
+        let currentStatus = "none";
+        let currentGuestCount = 0;
+        let currentGuestNames = "";
+
+        if (regRes.ok && regRes.exists && regRes.registration) {
+          currentStatus = regRes.registration.status || "reserved";
+          currentGuestCount =
+            regRes.registration.guest_count_requested || 0;
+          currentGuestNames =
+            regRes.registration.guest_names_requested || "";
+        }
+
+        container.innerHTML = "";
+
+        const infoBox = document.createElement("div");
+        infoBox.className = "info-box";
+        infoBox.innerHTML =
+          `<div class="event-title">明日の練習</div>` +
+          `<div>${targetEvent.date} ${targetEvent.start_time}〜</div>` +
+          `<div>場所：大津市立中央小学校 体育館</div>`;
+        container.appendChild(infoBox);
+
+        const statusLabel = document.createElement("label");
+        statusLabel.textContent = "参加状況";
+        container.appendChild(statusLabel);
+
+        const radioWrap = document.createElement("div");
+        const idAttend = "attend-yes";
+        const idCancel = "attend-no";
+        radioWrap.innerHTML = `
+          <label><input type="radio" name="attend" id="${idAttend}" value="reserved" /> 参加する</label>
+          <label><input type="radio" name="attend" id="${idCancel}" value="canceled" /> 参加しない / 未定</label>
+        `;
+        container.appendChild(radioWrap);
+
+        const guestLabel = document.createElement("label");
+        guestLabel.textContent = "友達を連れていく（任意）";
+        container.appendChild(guestLabel);
+
+        const guestCountInput = document.createElement("input");
+        guestCountInput.type = "number";
+        guestCountInput.min = "0";
+        guestCountInput.id = "guest-count";
+        guestCountInput.placeholder = "人数（0の場合はいない）";
+        container.appendChild(guestCountInput);
+
+        const guestNamesLabel = document.createElement("label");
+        guestNamesLabel.textContent =
+          "友達の名前（人数分、改行またはカンマ区切り）";
+        container.appendChild(guestNamesLabel);
+
+        const guestNamesArea = document.createElement("textarea");
+        guestNamesArea.id = "guest-names";
+        guestNamesArea.rows = 3;
+        container.appendChild(guestNamesArea);
+
+        const hint = document.createElement("div");
+        hint.className = "hint";
+        hint.innerHTML =
+          "友達の参加は、日曜0時時点の空き枠を見て自動で確定されます。<br>" +
+          "日曜0時以降は空きがあればそのまま参加OKになります。";
+        container.appendChild(hint);
+
+        const btn = document.createElement("button");
+        btn.textContent = "参加状況を送信";
+        container.appendChild(btn);
+
+        if (currentStatus === "reserved") {
+          document.getElementById(idAttend).checked = true;
+        } else if (currentStatus === "canceled") {
+          document.getElementById(idCancel).checked = true;
+        }
+
+        guestCountInput.value = currentGuestCount || "";
+        guestNamesArea.value = currentGuestNames || "";
+
+        btn.addEventListener("click", async () => {
+          msgEl.textContent = "";
+          msgEl.className = "message";
+
+          const selectedRadio = document.querySelector(
+            'input[name="attend"]:checked'
+          );
+          if (!selectedRadio) {
+            msgEl.textContent =
+              "参加する / しない を選択してください。";
+            msgEl.classList.add("error");
+            return;
+          }
+          const status = selectedRadio.value;
+          let guestCount = parseInt(
+            guestCountInput.value || "0",
+            10
+          );
+          if (Number.isNaN(guestCount) || guestCount < 0) {
+            guestCount = 0;
+          }
+          const guestNames = guestNamesArea.value.trim();
+
+          try {
+            setStatus("参加情報を送信中...");
+
+            const res = await callPost("register_participation", {
+              event_id: gTomorrowEvent.event_id,
+              member_id: gMemberId,
+              status,
+              guest_count_requested: guestCount,
+              guest_names_requested: guestNames,
+            });
+
+            if (!res.ok) {
+              msgEl.textContent =
+                "エラー: " +
+                res.error +
+                "\n\n" +
+                "debug: " +
+                JSON.stringify(res.debug || {}, null, 2);
+              msgEl.classList.add("error");
+              setStatus("エラーが発生しました");
+              return;
+            }
+
+            msgEl.textContent = "参加状況を保存しました。";
+            msgEl.classList.add("ok");
+            setStatus("準備完了");
+          } catch (err) {
+            console.error(err);
+            logDebug("ATTENDANCE SAVE ERROR", { message: err.message });
+            msgEl.textContent = "例外エラー: " + err.message;
+            msgEl.classList.add("error");
+            setStatus("エラーが発生しました");
+          }
+        });
+
+        setStatus("準備完了");
+      }
+
+      async function main() {
+        try {
+          setupTabs();
+          setupProfileSave();
+
+          logDebug("window.location", window.location.href);
+          logDebug("typeof liff", typeof liff);
+
+          setStatus("Step1: LIFF初期化中...");
+
+          let profileDisplayNameFallback = "";
+
+          if (typeof liff !== "undefined") {
+            try {
+              logDebug("call liff.init", { liffId: LIFF_ID });
+              await liff.init({ liffId: LIFF_ID });
+              logDebug("liff.init resolved");
+              setStatus("Step2: LIFF初期化完了");
+
+              logDebug("location.href", window.location.href);
+              logDebug("location.search", window.location.search);
+              logDebug("document.referrer", document.referrer);
+
+              const inClient = liff.isInClient();
+              const os = liff.getOS();
+              logDebug("liff env", { inClient, os });
+
+              if (!liff.isLoggedIn()) {
+                setStatus("LINEログインへ遷移します...");
+                logDebug("call liff.login");
+                liff.login();
+                return;
+              }
+
+              const profile = await liff.getProfile();
+              gLineUserId = profile.userId;
+              profileDisplayNameFallback = profile.displayName;
+              setMeText(`LINE userId: ${gLineUserId}`);
+              setStatus("Step3: LIFFプロフィール取得完了");
+              logDebug("profile", profile);
+            } catch (e) {
+              console.error("LIFF ERROR", e);
+              logDebug("LIFF ERROR (from liff.init)", {
+                name: e.name,
+                message: e.message,
+                stack: e.stack,
+              });
+
+              setStatus(
+                "LIFFエラー: " + e.message + " / 仮ユーザーIDで続行します"
+              );
+              ensureUserId();
+              setMeText(`仮ユーザーID: ${gLineUserId}`);
+            }
+          } else {
+            setStatus("LIFF未ロード: 仮ユーザーIDで続行します");
+            logDebug("liff is undefined");
+            ensureUserId();
+            setMeText(`仮ユーザーID: ${gLineUserId}`);
+          }
+
+          if (!gLineUserId) {
+            ensureUserId();
+            setMeText(`仮ユーザーID: ${gLineUserId}`);
+          }
+
+          setStatus("Step4: メンバー情報取得中...");
+          const meRes = await callGet("get_me", {
+            lineUserId: gLineUserId,
+          });
+
+          if (!meRes.ok) {
+            setStatus("get_me エラー: " + meRes.error);
+          } else if (!meRes.exists) {
+            setStatus("Step5: 初回メンバー登録中...");
+            const upsertRes = await callPost("upsert_member", {
+              display_name: profileDisplayNameFallback || "ゲスト",
+              category: "adult",
+              paypay_display_name: "",
+            });
+            if (!upsertRes.ok) {
+              setStatus("初回登録エラー: " + upsertRes.error);
+            } else {
+              const meRes2 = await callGet("get_me", {
+                lineUserId: gLineUserId,
+              });
+              if (meRes2.ok && meRes2.exists) {
+                gMember = meRes2.member;
+                gMemberId = gMember.member_id;
+                setMeText(`ようこそ、${gMember.display_name} さん！（初回）`);
+              } else {
+                setMeText(`ユーザーID: ${gLineUserId}`);
+              }
+            }
+          } else {
+            gMember = meRes.member;
+            gMemberId = gMember.member_id;
+            setMeText(`ようこそ、${gMember.display_name} さん！`);
+          }
+
+          fillProfileForm(gMember, profileDisplayNameFallback);
+
+          setStatus("Step6: 参加登録画面の準備中...");
+          await setupAttendance();
+
+          setStatus("準備完了");
+        } catch (err) {
+          console.error(err);
+          logDebug("UNEXPECTED ERROR", { message: err.message });
+          setStatus("予期せぬエラー: " + err);
+        }
+      }
+
+      main();
+    </script>
+  </body>
+</html>
