@@ -1,660 +1,792 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
   <head>
-    <meta charset="UTF-8" />
-    <title>ゲヤマクラブ</title>
+    <meta charset="utf-8" />
+    <title>ゲヤマクラブ 参加登録</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-      body {
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      :root {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
           sans-serif;
-        margin: 0;
-        padding: 0;
+        color: #222;
         background: #f5f5f5;
       }
-      header {
-        background: #1e88e5;
-        color: #fff;
-        padding: 12px 16px;
-      }
-      h1 {
-        font-size: 18px;
+      body {
         margin: 0;
-      }
-      #status {
-        font-size: 12px;
-        margin-top: 4px;
-        opacity: 0.9;
-      }
-      #me {
-        font-size: 12px;
-        margin-top: 2px;
-        opacity: 0.9;
-      }
-      #debug-log {
-        font-size: 10px;
-        white-space: pre-wrap;
-        background: #222;
-        color: #eee;
-        padding: 6px 8px;
-        margin: 0;
-        max-height: 150px;
-        overflow-y: auto;
-      }
-      .tabs {
-        display: flex;
-        border-bottom: 1px solid #ddd;
-        background: #fff;
-      }
-      .tab {
-        flex: 1;
-        text-align: center;
-        padding: 8px 0;
-        cursor: pointer;
-        font-size: 14px;
-      }
-      .tab.active {
-        border-bottom: 2px solid #1e88e5;
-        font-weight: bold;
+        padding: 0;
       }
       .container {
-        padding: 12px 16px 24px;
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 16px;
       }
-      .section-title {
-        font-size: 16px;
-        margin: 8px 0 12px;
-        font-weight: bold;
+      h1,
+      h2,
+      h3 {
+        margin: 0 0 8px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+      }
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        align-items: baseline;
+        margin-bottom: 8px;
+      }
+      .small {
+        font-size: 0.85rem;
+        color: #666;
       }
       label {
         display: block;
-        font-size: 14px;
-        margin-top: 8px;
+        margin: 6px 0;
+        font-size: 0.9rem;
       }
-      input[type="text"],
-      select,
-      textarea,
-      input[type="number"] {
+      input[type='text'],
+      input[type='number'],
+      select {
         width: 100%;
         box-sizing: border-box;
-        padding: 6px;
-        font-size: 14px;
-        margin-top: 4px;
+        padding: 6px 8px;
+        font-size: 0.95rem;
+        border-radius: 6px;
+        border: 1px solid #ccc;
       }
       button {
-        margin-top: 12px;
-        padding: 8px 12px;
-        font-size: 14px;
+        border: none;
+        border-radius: 999px;
+        padding: 8px 14px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        background: #06c755;
+        color: #fff;
       }
-      .hint {
-        font-size: 12px;
+      button.secondary {
+        background: #e0e0e0;
+        color: #222;
+        margin-left: 8px;
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: default;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      .row > div {
+        flex: 1 1 120px;
+      }
+      .muted {
+        color: #777;
+        font-size: 0.9rem;
+      }
+      .status-text {
+        margin: 6px 0 10px;
+        font-size: 0.9rem;
+      }
+      .status-ok {
+        color: #06c755;
+      }
+      .status-warn {
+        color: #d35400;
+      }
+      .status-error {
+        color: #e53935;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+      }
+      th,
+      td {
+        padding: 6px 4px;
+        border-bottom: 1px solid #eee;
+        text-align: left;
+      }
+      th {
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+      .pay-cell {
+        white-space: nowrap;
+      }
+      .tag {
+        display: inline-block;
+        padding: 2px 6px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        border: 1px solid #ddd;
         color: #555;
-        margin-top: 4px;
       }
-      .info-box {
-        background: #fff;
-        border-radius: 4px;
-        padding: 8px 10px;
-        margin-bottom: 12px;
-        border: 1px solid #eee;
-        font-size: 13px;
+      /* loading overlay */
+      #loading {
+        position: fixed;
+        inset: 0;
+        background: #f5f5f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 999;
       }
-      .message {
-        font-size: 13px;
-        margin-top: 8px;
-        white-space: pre-wrap;
+      #loading-inner {
+        text-align: center;
+        padding: 24px;
       }
-      .message.ok {
-        color: #2e7d32;
+      #loading-spinner {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 3px solid #ccc;
+        border-top-color: #06c755;
+        margin: 0 auto 12px;
+        animation: spin 0.8s linear infinite;
       }
-      .message.error {
-        color: #c62828;
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
       }
-      .event-title {
-        font-size: 15px;
-        font-weight: bold;
+      #app {
+        display: none;
       }
     </style>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   </head>
   <body>
-    <header>
-      <h1>ゲヤマクラブ Webアプリ</h1>
-      <div id="status">初期化中...</div>
-      <div id="me"></div>
-    </header>
-    <pre id="debug-log"></pre>
-
-    <div class="tabs">
-      <div class="tab active" data-tab="profile">プロフィール</div>
-      <div class="tab" data-tab="attendance">参加登録</div>
+    <div id="loading">
+      <div id="loading-inner">
+        <div id="loading-spinner"></div>
+        <div id="loading-message">読み込み中です…</div>
+      </div>
     </div>
 
-    <div class="container">
-      <!-- プロフィールタブ -->
-      <div id="tab-profile">
-        <div class="section-title">プロフィール設定</div>
-        <div class="info-box">
-          初回は、表示名と区分（社会人 / 大学生 / 高校生以下）を確認してください。<br />
-          後から変更も可能です。
-        </div>
+    <div id="app">
+      <div class="container">
+        <!-- ユーザー情報 -->
+        <section class="card">
+          <div class="card-header">
+            <h1 style="font-size: 1.3rem">ゲヤマクラブ 参加ページ</h1>
+            <div class="small" id="meInfo"></div>
+          </div>
+          <div class="muted" style="font-size: 0.85rem">
+            LINE アカウントでログイン済みです。<br />
+            ※UI は仮版です。機能が整ったら少しずつ見た目を整えます。
+          </div>
+        </section>
 
-        <label>表示名</label>
-        <input type="text" id="profile-display-name" />
+        <!-- 明日の練習 & 参加登録 -->
+        <section class="card" id="eventCard">
+          <div class="card-header">
+            <h2 style="font-size: 1.15rem">明日の練習</h2>
+            <div class="small" id="eventSummary"></div>
+          </div>
+          <div id="eventBody"></div>
+        </section>
 
-        <label>区分</label>
-        <select id="profile-category">
-          <option value="adult">社会人</option>
-          <option value="college">大学生</option>
-          <option value="student">高校生以下</option>
-        </select>
-
-        <label>PayPayの表示名（任意）</label>
-        <input
-          type="text"
-          id="profile-paypay-name"
-          placeholder="PayPayアプリに表示される名前（使う人だけでOK）"
-        />
-        <div class="hint">
-          PayPay送金があったときに誰からの入金か確認しやすくするための項目です。
-        </div>
-
-        <button id="btn-save-profile">プロフィールを保存</button>
-        <div id="profile-message" class="message"></div>
-      </div>
-
-      <!-- 参加登録タブ -->
-      <div id="tab-attendance" style="display: none">
-        <div class="section-title">明日の練習への参加登録</div>
-        <div id="attendance-content"></div>
-        <div id="attendance-message" class="message"></div>
+        <!-- 参加者一覧 & 支払状況 -->
+        <section class="card" id="participantsCard" style="display: none">
+          <div class="card-header">
+            <h2 style="font-size: 1.05rem">参加者一覧・支払状況</h2>
+            <div class="small" id="participantsSummary"></div>
+          </div>
+          <div id="participantsBody"></div>
+        </section>
       </div>
     </div>
 
     <script>
-      // ★ 自分の LIFF ID をセットする
-      const LIFF_ID = "2008652596-Gew4K44V";
-
-      // ★ GASのWebアプリURL（/exec のみ・クエリなし）
+      // ===== 設定 =====
+      const LIFF_ID = '2008652596-Gew4K44V';
       const GAS_BASE_URL =
-        "https://script.google.com/macros/s/AKfycbx3QQMnnjQl-3bb77-HO9SVztNzaBpl8sXTHNBm7ydsLZMK50dlNqau-qHXU16HufrEBQ/exec";
+        'https://script.google.com/macros/s/AKfycbx3QQMnnjQl-3bb77-HO9SVztNzaBpl8sXTHNBm7ydsLZMK50dlNqau-qHXU16HufrEBQ/exec';
 
-      let gLineUserId = null;
-      let gMember = null;
-      let gMemberId = null;
-      let gTomorrowEvent = null;
+      const state = {
+        me: null,
+        upcomingEvent: null,
+        myRegistration: null,
+        participants: [],
+        partStats: null,
+      };
 
-      function logDebug(msg, obj) {
-        const el = document.getElementById("debug-log");
-        const line =
-          "[DEBUG] " +
-          msg +
-          (obj !== undefined ? " " + JSON.stringify(obj) : "");
-        el.textContent += line + "\n";
-      }
+      // ===== 共通 API ヘルパー =====
+      async function callApi(action, params = {}, options = {}) {
+        const method = options.method || 'GET';
+        const allowError = !!options.allowError;
 
-      function setStatus(msg) {
-        document.getElementById("status").textContent = msg;
-        logDebug("STATUS: " + msg);
-      }
-
-      function setMeText(msg) {
-        document.getElementById("me").textContent = msg;
-        logDebug("ME: " + msg);
-      }
-
-      function ensureUserId() {
-        if (gLineUserId) return gLineUserId;
-        try {
-          const key = "geyama_temp_user_id";
-          let temp = localStorage.getItem(key);
-          if (!temp) {
-            temp =
-              "TEMP-" +
-              Date.now() +
-              "-" +
-              Math.random().toString(16).slice(2);
-            localStorage.setItem(key, temp);
-          }
-          gLineUserId = temp;
-          logDebug("ensureUserId -> TEMP", gLineUserId);
-          return gLineUserId;
-        } catch (e) {
-          gLineUserId = "TEMP-" + Date.now();
-          logDebug("ensureUserId error, fallback", gLineUserId);
-          return gLineUserId;
-        }
-      }
-
-      async function callGet(action, params = {}) {
         const url = new URL(GAS_BASE_URL);
-        url.searchParams.set("action", action);
-        for (const [k, v] of Object.entries(params)) {
-          url.searchParams.set(k, v);
-        }
-        logDebug("GET " + action, params);
-        const res = await fetch(url.toString());
-        const json = await res.json();
-        logDebug("GET result " + action, json);
-        return json;
-      }
+        url.searchParams.set('action', action);
 
-      async function callPost(action, body = {}) {
-        const url = new URL(GAS_BASE_URL);
-        url.searchParams.set("action", action);
-
-        if (!gLineUserId) {
-          ensureUserId();
-        }
-        url.searchParams.set("lineUserId", gLineUserId);
-
-        const form = new URLSearchParams();
-        form.append("line_user_id", gLineUserId);
-        for (const [k, v] of Object.entries(body)) {
-          if (v === undefined || v === null) continue;
-          form.append(k, String(v));
-        }
-
-        logDebug("POST " + action, { query: url.toString(), body: body });
-
-        const res = await fetch(url.toString(), {
-          method: "POST",
-          body: form,
-        });
-        const json = await res.json();
-        logDebug("POST result " + action, json);
-        return json;
-      }
-
-      function setupTabs() {
-        const tabs = document.querySelectorAll(".tab");
-        tabs.forEach((tab) => {
-          tab.addEventListener("click", () => {
-            tabs.forEach((t) => t.classList.remove("active"));
-            tab.classList.add("active");
-            const target = tab.dataset.tab;
-            document.getElementById("tab-profile").style.display =
-              target === "profile" ? "block" : "none";
-            document.getElementById("tab-attendance").style.display =
-              target === "attendance" ? "block" : "none";
+        const fetchOptions = {};
+        if (method === 'GET') {
+          Object.entries(params).forEach(([k, v]) => {
+            if (v !== undefined && v !== null) {
+              url.searchParams.set(k, v);
+            }
           });
-        });
-      }
-
-      function fillProfileForm(member, profileDisplayNameFallback) {
-        const displayInput = document.getElementById("profile-display-name");
-        const categorySelect = document.getElementById("profile-category");
-        const paypayInput = document.getElementById("profile-paypay-name");
-
-        displayInput.value =
-          (member && member.display_name) || profileDisplayNameFallback || "";
-        categorySelect.value =
-          member && member.category ? member.category : "adult";
-        paypayInput.value =
-          (member && member.paypay_display_name) || "";
-      }
-
-      function setupProfileSave() {
-        const button = document.getElementById("btn-save-profile");
-        const messageEl = document.getElementById("profile-message");
-
-        button.addEventListener("click", async () => {
-          messageEl.textContent = "";
-          messageEl.className = "message";
-
-          const displayName =
-            document.getElementById("profile-display-name").value.trim();
-          const category =
-            document.getElementById("profile-category").value;
-          const paypayName =
-            document.getElementById("profile-paypay-name").value.trim();
-
-          if (!displayName) {
-            messageEl.textContent = "表示名を入力してください。";
-            messageEl.classList.add("error");
-            return;
-          }
-
-          try {
-            setStatus("プロフィールを保存中...");
-
-            const res = await callPost("upsert_member", {
-              display_name: displayName,
-              category,
-              paypay_display_name: paypayName,
-            });
-
-            if (!res.ok) {
-              messageEl.textContent =
-                "エラー: " +
-                res.error +
-                "\n\n" +
-                "debug: " +
-                JSON.stringify(res.debug || {}, null, 2);
-              messageEl.classList.add("error");
-              setStatus("エラーが発生しました");
-              return;
+        } else {
+          const body = new URLSearchParams();
+          Object.entries(params).forEach(([k, v]) => {
+            if (v !== undefined && v !== null) {
+              body.append(k, v);
             }
+          });
+          fetchOptions.method = 'POST';
+          fetchOptions.headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          };
+          fetchOptions.body = body.toString();
+        }
 
-            const meRes = await callGet("get_me", {
-              lineUserId: gLineUserId,
-            });
-            if (meRes.ok && meRes.exists) {
-              gMember = meRes.member;
-              gMemberId = gMember.member_id;
-              setMeText(`ようこそ、${gMember.display_name} さん！`);
-            } else {
-              setMeText(`ユーザーID: ${gLineUserId}`);
-            }
-
-            messageEl.textContent = "プロフィールを保存しました。";
-            messageEl.classList.add("ok");
-            setStatus("準備完了");
-          } catch (err) {
-            console.error(err);
-            logDebug("PROFILE SAVE ERROR", { message: err.message });
-            messageEl.textContent = "例外エラー: " + err.message;
-            messageEl.classList.add("error");
-            setStatus("エラーが発生しました");
-          }
-        });
+        const res = await fetch(url.toString(), fetchOptions);
+        if (!res.ok) {
+          throw new Error('API HTTP error: ' + res.status);
+        }
+        const data = await res.json();
+        if (!allowError && !data.ok) {
+          throw new Error(data.error || 'API responded with error');
+        }
+        return data;
       }
 
-      async function setupAttendance() {
-        const container = document.getElementById("attendance-content");
-        const msgEl = document.getElementById("attendance-message");
-
-        container.textContent = "";
-        msgEl.textContent = "";
-        msgEl.className = "message";
-
-        setStatus("明日のイベント情報を取得中...");
-
-        const eventsRes = await callGet("get_upcoming_events");
-        if (!eventsRes.ok) {
-          container.textContent =
-            "イベント情報の取得に失敗しました: " + eventsRes.error;
-          setStatus("エラー");
-          return;
-        }
-
-        const now = new Date();
-        const tomorrow = new Date(
-          now.getFullYear(),
-          now.getMonth(),
-          now.getDate() + 1
-        );
-        const yyyy = tomorrow.getFullYear();
-        const mm = ("0" + (tomorrow.getMonth() + 1)).slice(-2);
-        const dd = ("0" + tomorrow.getDate()).slice(-2);
-        const tomorrowStr = `${yyyy}-${mm}-${dd}`;
-
-        const events = eventsRes.events || [];
-        const targetEvent = events.find((ev) => ev.date === tomorrowStr);
-        if (!targetEvent) {
-          container.innerHTML =
-            "<div class='info-box'>明日の練習は登録されていないか、中止になっています。</div>";
-          setStatus("準備完了");
-          return;
-        }
-
-        gTomorrowEvent = targetEvent;
-
-        const regRes = await callGet("get_my_registration", {
-          event_id: targetEvent.event_id,
-          member_id: gMemberId || "",
-        });
-
-        let currentStatus = "none";
-        let currentGuestCount = 0;
-        let currentGuestNames = "";
-
-        if (regRes.ok && regRes.exists && regRes.registration) {
-          currentStatus = regRes.registration.status || "reserved";
-          currentGuestCount =
-            regRes.registration.guest_count_requested || 0;
-          currentGuestNames =
-            regRes.registration.guest_names_requested || "";
-        }
-
-        container.innerHTML = "";
-
-        const infoBox = document.createElement("div");
-        infoBox.className = "info-box";
-        infoBox.innerHTML =
-          `<div class="event-title">明日の練習</div>` +
-          `<div>${targetEvent.date} ${targetEvent.start_time}〜</div>` +
-          `<div>場所：大津市立中央小学校 体育館</div>`;
-        container.appendChild(infoBox);
-
-        const statusLabel = document.createElement("label");
-        statusLabel.textContent = "参加状況";
-        container.appendChild(statusLabel);
-
-        const radioWrap = document.createElement("div");
-        const idAttend = "attend-yes";
-        const idCancel = "attend-no";
-        radioWrap.innerHTML = `
-          <label><input type="radio" name="attend" id="${idAttend}" value="reserved" /> 参加する</label>
-          <label><input type="radio" name="attend" id="${idCancel}" value="canceled" /> 参加しない / 未定</label>
-        `;
-        container.appendChild(radioWrap);
-
-        const guestLabel = document.createElement("label");
-        guestLabel.textContent = "友達を連れていく（任意）";
-        container.appendChild(guestLabel);
-
-        const guestCountInput = document.createElement("input");
-        guestCountInput.type = "number";
-        guestCountInput.min = "0";
-        guestCountInput.id = "guest-count";
-        guestCountInput.placeholder = "人数（0の場合はいない）";
-        container.appendChild(guestCountInput);
-
-        const guestNamesLabel = document.createElement("label");
-        guestNamesLabel.textContent =
-          "友達の名前（人数分、改行またはカンマ区切り）";
-        container.appendChild(guestNamesLabel);
-
-        const guestNamesArea = document.createElement("textarea");
-        guestNamesArea.id = "guest-names";
-        guestNamesArea.rows = 3;
-        container.appendChild(guestNamesArea);
-
-        const hint = document.createElement("div");
-        hint.className = "hint";
-        hint.innerHTML =
-          "友達の参加は、日曜0時時点の空き枠を見て自動で確定されます。<br>" +
-          "日曜0時以降は空きがあればそのまま参加OKになります。";
-        container.appendChild(hint);
-
-        const btn = document.createElement("button");
-        btn.textContent = "参加状況を送信";
-        container.appendChild(btn);
-
-        if (currentStatus === "reserved") {
-          document.getElementById(idAttend).checked = true;
-        } else if (currentStatus === "canceled") {
-          document.getElementById(idCancel).checked = true;
-        }
-
-        guestCountInput.value = currentGuestCount || "";
-        guestNamesArea.value = currentGuestNames || "";
-
-        btn.addEventListener("click", async () => {
-          msgEl.textContent = "";
-          msgEl.className = "message";
-
-          const selectedRadio = document.querySelector(
-            'input[name="attend"]:checked'
-          );
-          if (!selectedRadio) {
-            msgEl.textContent =
-              "参加する / しない を選択してください。";
-            msgEl.classList.add("error");
-            return;
-          }
-          const status = selectedRadio.value;
-          let guestCount = parseInt(
-            guestCountInput.value || "0",
-            10
-          );
-          if (Number.isNaN(guestCount) || guestCount < 0) {
-            guestCount = 0;
-          }
-          const guestNames = guestNamesArea.value.trim();
-
-          try {
-            setStatus("参加情報を送信中...");
-
-            const res = await callPost("register_participation", {
-              event_id: gTomorrowEvent.event_id,
-              member_id: gMemberId,
-              status,
-              guest_count_requested: guestCount,
-              guest_names_requested: guestNames,
-            });
-
-            if (!res.ok) {
-              msgEl.textContent =
-                "エラー: " +
-                res.error +
-                "\n\n" +
-                "debug: " +
-                JSON.stringify(res.debug || {}, null, 2);
-              msgEl.classList.add("error");
-              setStatus("エラーが発生しました");
-              return;
-            }
-
-            msgEl.textContent = "参加状況を保存しました。";
-            msgEl.classList.add("ok");
-            setStatus("準備完了");
-          } catch (err) {
-            console.error(err);
-            logDebug("ATTENDANCE SAVE ERROR", { message: err.message });
-            msgEl.textContent = "例外エラー: " + err.message;
-            msgEl.classList.add("error");
-            setStatus("エラーが発生しました");
-          }
-        });
-
-        setStatus("準備完了");
+      function setLoading(message) {
+        const loading = document.getElementById('loading');
+        const msgEl = document.getElementById('loading-message');
+        if (loading) loading.style.display = 'flex';
+        if (msgEl && message) msgEl.textContent = message;
+        const app = document.getElementById('app');
+        if (app) app.style.display = 'none';
       }
 
-      async function main() {
+      function showApp() {
+        const loading = document.getElementById('loading');
+        if (loading) loading.style.display = 'none';
+        const app = document.getElementById('app');
+        if (app) app.style.display = 'block';
+      }
+
+      function formatDateLabel(dateStr) {
+        if (!dateStr) return '';
+        const [y, m, d] = dateStr.split('-').map((v) => parseInt(v, 10));
+        if (!y || !m || !d) return dateStr;
+        const dt = new Date(y, m - 1, d);
+        const w = ['日', '月', '火', '水', '木', '金', '土'][dt.getDay()];
+        return `${y}年${m}月${d}日(${w})`;
+      }
+
+      function formatCategoryLabel(cat) {
+        switch (cat) {
+          case 'adult':
+            return '社会人';
+          case 'univ':
+          case 'college':
+            return '大学生';
+          case 'high':
+            return '高校生';
+          case 'junior':
+            return '中学生';
+          case 'elem':
+            return '小学生';
+          default:
+            return cat || '';
+        }
+      }
+
+      // ===== 初期化 =====
+      async function initApp() {
         try {
-          setupTabs();
-          setupProfileSave();
+          setLoading('LINE と連携中です…');
 
-          logDebug("window.location", window.location.href);
-          logDebug("typeof liff", typeof liff);
+          await liff.init({ liffId: LIFF_ID });
 
-          setStatus("Step1: LIFF初期化中...");
+          const profile = await liff.getProfile();
+          const lineUserId = profile.userId;
 
-          let profileDisplayNameFallback = "";
+          // メンバー情報取得 or 初回登録
+          setLoading('メンバー情報を確認中です…');
+          let meRes = await callApi('get_me', { lineUserId });
+          if (!meRes.exists) {
+            // 初回 → とりあえず displayName と adult で登録
+            await callApi(
+              'upsert_member',
+              {
+                line_user_id: lineUserId,
+                display_name: profile.displayName || '',
+                category: 'adult',
+                paypay_display_name: '',
+              },
+              { method: 'POST' }
+            );
+            meRes = await callApi('get_me', { lineUserId });
+          }
+          state.me = meRes.member;
 
-          if (typeof liff !== "undefined") {
+          // 明日のイベント取得
+          setLoading('明日の練習を確認中です…');
+          const eventsRes = await callApi('get_upcoming_events');
+          const events = eventsRes.events || [];
+
+          // とりあえず「明日」のイベントを探す
+          const today = new Date();
+          const tomorrow = new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            today.getDate() + 1
+          );
+          const yyyy = tomorrow.getFullYear();
+          const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+          const dd = String(tomorrow.getDate()).padStart(2, '0');
+          const tomorrowStr = `${yyyy}-${mm}-${dd}`;
+
+          let upcoming = null;
+          for (const ev of events) {
+            if (ev.date === tomorrowStr) {
+              upcoming = ev;
+              break;
+            }
+          }
+          if (!upcoming && events.length > 0) {
+            upcoming = events[0]; // 予備として一番近い open イベント
+          }
+          state.upcomingEvent = upcoming;
+
+          if (upcoming && state.me) {
+            // 自分の参加状況
+            setLoading('参加状況を読み込み中です…');
+            const regRes = await callApi('get_my_registration', {
+              event_id: upcoming.event_id,
+              member_id: state.me.member_id,
+            });
+            state.myRegistration = regRes.exists ? regRes.registration : null;
+
+            // 参加者一覧
+            setLoading('参加者一覧を読み込み中です…');
+            const partRes = await callApi('get_event_participants', {
+              event_id: upcoming.event_id,
+            });
+            if (partRes.ok) {
+              state.participants = partRes.participants || [];
+              state.partStats = partRes.stats || null;
+            }
+          }
+
+          renderAll();
+          showApp();
+        } catch (err) {
+          console.error(err);
+          setLoading('エラーが発生しました: ' + err.message);
+        }
+      }
+
+      // ===== 描画 =====
+      function renderAll() {
+        renderMe();
+        renderEvent();
+        renderParticipants();
+      }
+
+      function renderMe() {
+        const el = document.getElementById('meInfo');
+        if (!el) return;
+        if (!state.me) {
+          el.textContent = 'ログイン情報の取得に失敗しました';
+          return;
+        }
+        const catLabel = formatCategoryLabel(state.me.category);
+        el.textContent = `${state.me.display_name || ''}${
+          catLabel ? '（' + catLabel + '）' : ''
+        }`;
+      }
+
+      function renderEvent() {
+        const summaryEl = document.getElementById('eventSummary');
+        const bodyEl = document.getElementById('eventBody');
+        if (!summaryEl || !bodyEl) return;
+        const ev = state.upcomingEvent;
+
+        if (!ev) {
+          summaryEl.textContent = '明日の練習はありません。';
+          bodyEl.innerHTML =
+            '<p class="muted">開催予定がないか、まだスケジュールが登録されていません。</p>';
+          return;
+        }
+
+        const dateLabel = formatDateLabel(ev.date);
+        summaryEl.textContent = `${dateLabel} ${ev.start_time}〜${ev.end_time}`;
+
+        const myReg = state.myRegistration;
+        const isReserved = myReg && myReg.status === 'reserved';
+
+        const statusClass = isReserved ? 'status-ok' : 'status-warn';
+        const statusText = isReserved
+          ? '現在：参加予定です'
+          : '現在：未登録です';
+
+        const guestCount = isReserved ? myReg.guest_count_requested || 0 : 0;
+        const guestNames = isReserved ? myReg.guest_names_requested || '' : '';
+
+        bodyEl.innerHTML = `
+          <div class="status-text ${statusClass}">
+            ${statusText}
+          </div>
+          <div class="muted" style="margin-bottom:8px;">
+            場所：大津市立中央小学校 体育館<br/>
+            参加費：社会人 800円 / 大学生 600円 / 高校生以下 500円（予定）
+          </div>
+
+          <div style="margin-bottom:12px;">
+            <label>
+              <input type="checkbox" id="friendToggle" ${
+                guestCount > 0 ? 'checked' : ''
+              } />
+              友達も連れていく
+            </label>
+          </div>
+
+          <div id="friendFields" style="margin-bottom:12px; ${
+            guestCount > 0 ? '' : 'display:none;'
+          }">
+            <div class="row">
+              <div>
+                <label>友達の人数</label>
+                <input type="number" id="guestCount" min="0" step="1" value="${guestCount}" />
+              </div>
+            </div>
+            <label>友達の名前（カンマ区切り）</label>
+            <input type="text" id="guestNames" placeholder="例：山田太郎, 佐藤花子" value="${guestNames}" />
+          </div>
+
+          <div>
+            <button id="btnSubmitAttendance">
+              ${isReserved ? '参加内容を更新する' : '参加登録する'}
+            </button>
+            <button id="btnCancelAttendance" class="secondary" ${
+              isReserved ? '' : 'disabled'
+            }>
+              参加をキャンセル
+            </button>
+          </div>
+
+          <div class="muted" style="margin-top:8px;font-size:0.85rem;">
+            ・事前に PayPay で支払っても、当日現金で支払ってもOKです。<br/>
+            ・事前にキャッシュレス支払いをしてから不参加になった場合は、後日返金対応します。<br/>
+            ・友達の分の支払い方法は、今後運営で相談して決めていきます。
+          </div>
+        `;
+
+        setupAttendanceHandlers();
+      }
+
+      function setupAttendanceHandlers() {
+        const ev = state.upcomingEvent;
+        const me = state.me;
+        if (!ev || !me) return;
+
+        const friendToggle = document.getElementById('friendToggle');
+        const friendFields = document.getElementById('friendFields');
+        const guestCountInput = document.getElementById('guestCount');
+        const guestNamesInput = document.getElementById('guestNames');
+        const btnSubmit = document.getElementById('btnSubmitAttendance');
+        const btnCancel = document.getElementById('btnCancelAttendance');
+
+        if (friendToggle && friendFields) {
+          friendToggle.onchange = () => {
+            friendFields.style.display = friendToggle.checked ? '' : 'none';
+          };
+        }
+
+        if (btnSubmit) {
+          btnSubmit.onclick = async () => {
+            let guestCount = 0;
+            let guestNames = '';
+
+            if (friendToggle && friendToggle.checked) {
+              const raw = guestCountInput.value.trim();
+              const n = parseInt(raw || '0', 10);
+              guestCount = isNaN(n) || n < 0 ? 0 : n;
+              guestNames = guestNamesInput.value.trim();
+            }
+
             try {
-              logDebug("call liff.init", { liffId: LIFF_ID });
-              await liff.init({ liffId: LIFF_ID });
-              logDebug("liff.init resolved");
-              setStatus("Step2: LIFF初期化完了");
+              btnSubmit.disabled = true;
+              btnCancel.disabled = true;
 
-              logDebug("location.href", window.location.href);
-              logDebug("location.search", window.location.search);
-              logDebug("document.referrer", document.referrer);
+              const res = await callApi(
+                'register_participation',
+                {
+                  event_id: ev.event_id,
+                  member_id: me.member_id,
+                  status: 'reserved',
+                  guest_count_requested: guestCount,
+                  guest_names_requested: guestNames,
+                },
+                { method: 'POST', allowError: true }
+              );
 
-              const inClient = liff.isInClient();
-              const os = liff.getOS();
-              logDebug("liff env", { inClient, os });
-
-              if (!liff.isLoggedIn()) {
-                setStatus("LINEログインへ遷移します...");
-                logDebug("call liff.login");
-                liff.login();
+              if (!res.ok) {
+                if (res.error === 'CAPACITY_FULL') {
+                  const dbg = res.debug || {};
+                  alert(
+                    '定員に達しているため参加登録できません。\n\n現在の人数: ' +
+                      (dbg.reservedCount ?? '?') +
+                      ' / 定員: ' +
+                      (dbg.capacityTotal ?? '?')
+                  );
+                } else {
+                  alert(
+                    '参加登録に失敗しました: ' +
+                      (res.message || res.error || '')
+                  );
+                }
                 return;
               }
 
-              const profile = await liff.getProfile();
-              gLineUserId = profile.userId;
-              profileDisplayNameFallback = profile.displayName;
-              setMeText(`LINE userId: ${gLineUserId}`);
-              setStatus("Step3: LIFFプロフィール取得完了");
-              logDebug("profile", profile);
-            } catch (e) {
-              console.error("LIFF ERROR", e);
-              logDebug("LIFF ERROR (from liff.init)", {
-                name: e.name,
-                message: e.message,
-                stack: e.stack,
+              // 自分の登録状態更新
+              state.myRegistration = {
+                status: 'reserved',
+                guest_count_requested: guestCount,
+                guest_names_requested: guestNames,
+              };
+
+              // 参加者一覧を再取得
+              const partRes = await callApi('get_event_participants', {
+                event_id: ev.event_id,
               });
-
-              setStatus(
-                "LIFFエラー: " + e.message + " / 仮ユーザーIDで続行します"
-              );
-              ensureUserId();
-              setMeText(`仮ユーザーID: ${gLineUserId}`);
-            }
-          } else {
-            setStatus("LIFF未ロード: 仮ユーザーIDで続行します");
-            logDebug("liff is undefined");
-            ensureUserId();
-            setMeText(`仮ユーザーID: ${gLineUserId}`);
-          }
-
-          if (!gLineUserId) {
-            ensureUserId();
-            setMeText(`仮ユーザーID: ${gLineUserId}`);
-          }
-
-          setStatus("Step4: メンバー情報取得中...");
-          const meRes = await callGet("get_me", {
-            lineUserId: gLineUserId,
-          });
-
-          if (!meRes.ok) {
-            setStatus("get_me エラー: " + meRes.error);
-          } else if (!meRes.exists) {
-            setStatus("Step5: 初回メンバー登録中...");
-            const upsertRes = await callPost("upsert_member", {
-              display_name: profileDisplayNameFallback || "ゲスト",
-              category: "adult",
-              paypay_display_name: "",
-            });
-            if (!upsertRes.ok) {
-              setStatus("初回登録エラー: " + upsertRes.error);
-            } else {
-              const meRes2 = await callGet("get_me", {
-                lineUserId: gLineUserId,
-              });
-              if (meRes2.ok && meRes2.exists) {
-                gMember = meRes2.member;
-                gMemberId = gMember.member_id;
-                setMeText(`ようこそ、${gMember.display_name} さん！（初回）`);
-              } else {
-                setMeText(`ユーザーID: ${gLineUserId}`);
+              if (partRes.ok) {
+                state.participants = partRes.participants || [];
+                state.partStats = partRes.stats || null;
               }
+
+              renderEvent();
+              renderParticipants();
+            } catch (err) {
+              console.error(err);
+              alert('参加登録に失敗しました: ' + err.message);
+            } finally {
+              btnSubmit.disabled = false;
+              btnCancel.disabled =
+                !state.myRegistration ||
+                state.myRegistration.status !== 'reserved';
             }
-          } else {
-            gMember = meRes.member;
-            gMemberId = gMember.member_id;
-            setMeText(`ようこそ、${gMember.display_name} さん！`);
-          }
+          };
+        }
 
-          fillProfileForm(gMember, profileDisplayNameFallback);
+        if (btnCancel) {
+          btnCancel.onclick = async () => {
+            if (
+              !state.myRegistration ||
+              state.myRegistration.status !== 'reserved'
+            ) {
+              return;
+            }
+            if (!confirm('本当に参加をキャンセルしますか？')) return;
 
-          setStatus("Step6: 参加登録画面の準備中...");
-          await setupAttendance();
+            try {
+              btnSubmit.disabled = true;
+              btnCancel.disabled = true;
 
-          setStatus("準備完了");
-        } catch (err) {
-          console.error(err);
-          logDebug("UNEXPECTED ERROR", { message: err.message });
-          setStatus("予期せぬエラー: " + err);
+              const res = await callApi(
+                'register_participation',
+                {
+                  event_id: ev.event_id,
+                  member_id: me.member_id,
+                  status: 'canceled',
+                },
+                { method: 'POST', allowError: true }
+              );
+
+              if (!res.ok) {
+                alert(
+                  'キャンセルに失敗しました: ' +
+                    (res.message || res.error || '')
+                );
+                return;
+              }
+
+              state.myRegistration = null;
+
+              const partRes = await callApi('get_event_participants', {
+                event_id: ev.event_id,
+              });
+              if (partRes.ok) {
+                state.participants = partRes.participants || [];
+                state.partStats = partRes.stats || null;
+              }
+
+              renderEvent();
+              renderParticipants();
+            } catch (err) {
+              console.error(err);
+              alert('キャンセルに失敗しました: ' + err.message);
+            } finally {
+              btnSubmit.disabled = false;
+              btnCancel.disabled =
+                !state.myRegistration ||
+                state.myRegistration.status !== 'reserved';
+            }
+          };
         }
       }
 
-      main();
+      function renderParticipants() {
+        const card = document.getElementById('participantsCard');
+        const bodyEl = document.getElementById('participantsBody');
+        const summaryEl = document.getElementById('participantsSummary');
+        const ev = state.upcomingEvent;
+
+        if (!card || !bodyEl || !summaryEl) return;
+
+        if (!ev) {
+          card.style.display = 'none';
+          return;
+        }
+
+        card.style.display = 'block';
+
+        const parts = state.participants || [];
+        const stats = state.partStats || {};
+        const reservedCount = stats.reservedCount ?? parts.length;
+        const capacityTotal = stats.capacityTotal ?? null;
+        const paidCount = stats.paidCount ?? 0;
+
+        if (!parts.length) {
+          summaryEl.textContent = 'まだ参加登録がありません。';
+          bodyEl.innerHTML =
+            '<p class="muted">参加登録するとここに一覧が表示されます。</p>';
+          return;
+        }
+
+        let text = `参加者 ${reservedCount}人`;
+        if (capacityTotal !== null) {
+          text += ` / 定員 ${capacityTotal}人`;
+        }
+        text += `（支払い済 ${paidCount}人）`;
+        summaryEl.textContent = text;
+
+        const isManager =
+          state.me &&
+          (state.me.role === 'admin' || state.me.role === 'sub_admin');
+
+        const rowsHtml = parts
+          .slice()
+          .sort((a, b) =>
+            (a.display_name || '').localeCompare(b.display_name || 'ja')
+          )
+          .map((p) => {
+            const catLabel = formatCategoryLabel(p.category);
+            const guestLabel = p.guest_count_requested
+              ? `${p.guest_count_requested}人 ${
+                  p.guest_names_requested
+                    ? '（' + p.guest_names_requested + '）'
+                    : ''
+                }`
+              : '-';
+            const checked = p.payment_status === 'paid';
+
+            return `
+              <tr>
+                <td>${p.display_name || ''}</td>
+                <td>${catLabel ? `<span class="tag">${catLabel}</span>` : ''}</td>
+                <td>${guestLabel}</td>
+                <td class="pay-cell">
+                  <label>
+                    <input type="checkbox"
+                           class="pay-toggle"
+                           data-member-id="${p.member_id}"
+                           ${checked ? 'checked' : ''}
+                           ${isManager ? '' : 'disabled'} />
+                    支払い済
+                  </label>
+                </td>
+              </tr>
+            `;
+          })
+          .join('');
+
+        bodyEl.innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>名前</th>
+                <th>区分</th>
+                <th>友達</th>
+                <th>支払い</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+          ${
+            !isManager
+              ? '<p class="muted" style="margin-top:8px;font-size:0.8rem;">※支払い状況の更新は管理メンバーのみが行えます。</p>'
+              : ''
+          }
+        `;
+
+        if (isManager) {
+          setupPaymentHandlers();
+        }
+      }
+
+      function setupPaymentHandlers() {
+        const ev = state.upcomingEvent;
+        const me = state.me;
+        if (!ev || !me) return;
+
+        const checkboxes = document.querySelectorAll('.pay-toggle');
+        checkboxes.forEach((cb) => {
+          cb.onchange = async (e) => {
+            const memberId = e.target.dataset.memberId;
+            const checked = e.target.checked;
+
+            try {
+              e.target.disabled = true;
+              await callApi(
+                'update_payment_status',
+                {
+                  event_id: ev.event_id,
+                  member_id: memberId,
+                  status: checked ? 'paid' : 'unpaid',
+                },
+                { method: 'POST' }
+              );
+
+              // 成功したら一覧を再取得して同期
+              const partRes = await callApi('get_event_participants', {
+                event_id: ev.event_id,
+              });
+              if (partRes.ok) {
+                state.participants = partRes.participants || [];
+                state.partStats = partRes.stats || null;
+              }
+              renderParticipants();
+            } catch (err) {
+              console.error(err);
+              alert('支払状況の更新に失敗しました: ' + err.message);
+              // 元に戻す
+              e.target.checked = !checked;
+              e.target.disabled = false;
+            }
+          };
+        });
+      }
+
+      // ===== 起動 =====
+      window.addEventListener('load', () => {
+        initApp();
+      });
     </script>
   </body>
 </html>
