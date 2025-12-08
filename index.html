@@ -130,7 +130,10 @@
         border: 1px solid #ddd;
         color: #555;
       }
-      /* loading overlay */
+      .me-row {
+        background: #e8f5e9;
+      }
+      /* initial loading overlay */
       #loading {
         position: fixed;
         inset: 0;
@@ -153,6 +156,33 @@
         margin: 0 auto 12px;
         animation: spin 0.8s linear infinite;
       }
+      /* busy overlay for user actions */
+      #busyOverlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.6);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 998;
+      }
+      #busy-inner {
+        background: #fff;
+        border-radius: 12px;
+        padding: 16px 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        text-align: center;
+        font-size: 0.9rem;
+      }
+      #busy-spinner {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: 3px solid #ccc;
+        border-top-color: #06c755;
+        margin: 0 auto 8px;
+        animation: spin 0.8s linear infinite;
+      }
       @keyframes spin {
         to {
           transform: rotate(360deg);
@@ -165,10 +195,19 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   </head>
   <body>
+    <!-- 初期ロード用 -->
     <div id="loading">
       <div id="loading-inner">
         <div id="loading-spinner"></div>
         <div id="loading-message">読み込み中です…</div>
+      </div>
+    </div>
+
+    <!-- 操作中オーバーレイ -->
+    <div id="busyOverlay">
+      <div id="busy-inner">
+        <div id="busy-spinner"></div>
+        <div id="busy-message">処理中です…</div>
       </div>
     </div>
 
@@ -203,6 +242,14 @@
           </div>
           <div id="participantsBody"></div>
         </section>
+
+        <!-- 参加履歴 & ランキング -->
+        <section class="card" id="historyCard" style="display: none">
+          <div class="card-header">
+            <h2 style="font-size: 1.05rem">参加履歴・ランキング</h2>
+          </div>
+          <div id="historyBody"></div>
+        </section>
       </div>
     </div>
 
@@ -218,6 +265,9 @@
         myRegistration: null,
         participants: [],
         partStats: null,
+        myHistory: [],
+        ranking30: [],
+        ranking365: [],
       };
 
       // ===== 共通 API ヘルパー =====
@@ -276,6 +326,18 @@
         if (app) app.style.display = 'block';
       }
 
+      function setBusy(active, message) {
+        const overlay = document.getElementById('busyOverlay');
+        const msgEl = document.getElementById('busy-message');
+        if (!overlay) return;
+        if (active) {
+          overlay.style.display = 'flex';
+          if (msgEl && message) msgEl.textContent = message;
+        } else {
+          overlay.style.display = 'none';
+        }
+      }
+
       function formatDateLabel(dateStr) {
         if (!dateStr) return '';
         const [y, m, d] = dateStr.split('-').map((v) => parseInt(v, 10));
@@ -317,7 +379,6 @@
           setLoading('メンバー情報を確認中です…');
           let meRes = await callApi('get_me', { lineUserId });
           if (!meRes.exists) {
-            // 初回 → とりあえず displayName と adult で登録
             await callApi(
               'upsert_member',
               {
@@ -337,7 +398,6 @@
           const eventsRes = await callApi('get_upcoming_events');
           const events = eventsRes.events || [];
 
-          // とりあえず「明日」のイベントを探す
           const today = new Date();
           const tomorrow = new Date(
             today.getFullYear(),
@@ -357,7 +417,7 @@
             }
           }
           if (!upcoming && events.length > 0) {
-            upcoming = events[0]; // 予備として一番近い open イベント
+            upcoming = events[0];
           }
           state.upcomingEvent = upcoming;
 
@@ -381,6 +441,32 @@
             }
           }
 
+          if (state.me) {
+            // 参加履歴 & ランキング
+            setLoading('参加履歴を読み込み中です…');
+            const histRes = await callApi('get_my_history', {
+              member_id: state.me.member_id,
+              limit: 20,
+            });
+            if (histRes.ok) {
+              state.myHistory = histRes.history || [];
+            }
+
+            const rank30 = await callApi('get_participation_ranking', {
+              period_days: 30,
+            });
+            if (rank30.ok) {
+              state.ranking30 = rank30.ranking || [];
+            }
+
+            const rank365 = await callApi('get_participation_ranking', {
+              period_days: 365,
+            });
+            if (rank365.ok) {
+              state.ranking365 = rank365.ranking || [];
+            }
+          }
+
           renderAll();
           showApp();
         } catch (err) {
@@ -394,6 +480,7 @@
         renderMe();
         renderEvent();
         renderParticipants();
+        renderHistory();
       }
 
       function renderMe() {
@@ -518,6 +605,7 @@
               guestNames = guestNamesInput.value.trim();
             }
 
+            setBusy(true, '参加内容を送信中です…');
             try {
               btnSubmit.disabled = true;
               btnCancel.disabled = true;
@@ -552,14 +640,12 @@
                 return;
               }
 
-              // 自分の登録状態更新
               state.myRegistration = {
                 status: 'reserved',
                 guest_count_requested: guestCount,
                 guest_names_requested: guestNames,
               };
 
-              // 参加者一覧を再取得
               const partRes = await callApi('get_event_participants', {
                 event_id: ev.event_id,
               });
@@ -568,8 +654,20 @@
                 state.partStats = partRes.stats || null;
               }
 
+              // 履歴＆ランキングもついでに最新化（軽めの同期）
+              if (state.me) {
+                const histRes = await callApi('get_my_history', {
+                  member_id: state.me.member_id,
+                  limit: 20,
+                });
+                if (histRes.ok) {
+                  state.myHistory = histRes.history || [];
+                }
+              }
+
               renderEvent();
               renderParticipants();
+              renderHistory();
             } catch (err) {
               console.error(err);
               alert('参加登録に失敗しました: ' + err.message);
@@ -578,6 +676,7 @@
               btnCancel.disabled =
                 !state.myRegistration ||
                 state.myRegistration.status !== 'reserved';
+              setBusy(false);
             }
           };
         }
@@ -592,6 +691,7 @@
             }
             if (!confirm('本当に参加をキャンセルしますか？')) return;
 
+            setBusy(true, 'キャンセル処理中です…');
             try {
               btnSubmit.disabled = true;
               btnCancel.disabled = true;
@@ -624,8 +724,19 @@
                 state.partStats = partRes.stats || null;
               }
 
+              if (state.me) {
+                const histRes = await callApi('get_my_history', {
+                  member_id: state.me.member_id,
+                  limit: 20,
+                });
+                if (histRes.ok) {
+                  state.myHistory = histRes.history || [];
+                }
+              }
+
               renderEvent();
               renderParticipants();
+              renderHistory();
             } catch (err) {
               console.error(err);
               alert('キャンセルに失敗しました: ' + err.message);
@@ -634,6 +745,7 @@
               btnCancel.disabled =
                 !state.myRegistration ||
                 state.myRegistration.status !== 'reserved';
+              setBusy(false);
             }
           };
         }
@@ -742,8 +854,7 @@
 
       function setupPaymentHandlers() {
         const ev = state.upcomingEvent;
-        const me = state.me;
-        if (!ev || !me) return;
+        if (!ev) return;
 
         const checkboxes = document.querySelectorAll('.pay-toggle');
         checkboxes.forEach((cb) => {
@@ -751,6 +862,7 @@
             const memberId = e.target.dataset.memberId;
             const checked = e.target.checked;
 
+            setBusy(true, '支払状況を更新中です…');
             try {
               e.target.disabled = true;
               await callApi(
@@ -763,7 +875,6 @@
                 { method: 'POST' }
               );
 
-              // 成功したら一覧を再取得して同期
               const partRes = await callApi('get_event_participants', {
                 event_id: ev.event_id,
               });
@@ -775,12 +886,108 @@
             } catch (err) {
               console.error(err);
               alert('支払状況の更新に失敗しました: ' + err.message);
-              // 元に戻す
               e.target.checked = !checked;
               e.target.disabled = false;
+            } finally {
+              setBusy(false);
             }
           };
         });
+      }
+
+      function renderHistory() {
+        const card = document.getElementById('historyCard');
+        const bodyEl = document.getElementById('historyBody');
+        if (!card || !bodyEl) return;
+
+        const hasHistory = state.myHistory && state.myHistory.length > 0;
+        const hasRanking =
+          (state.ranking30 && state.ranking30.length > 0) ||
+          (state.ranking365 && state.ranking365.length > 0);
+
+        if (!hasHistory && !hasRanking) {
+          card.style.display = 'none';
+          return;
+        }
+
+        card.style.display = 'block';
+
+        let html = '';
+
+        // 自分の参加履歴
+        if (hasHistory) {
+          html += `<h3 style="font-size:1rem;margin:0 0 4px;">最近の参加履歴</h3>`;
+          html += `<ul style="list-style:none;padding-left:0;margin:0 0 12px;">`;
+          state.myHistory.forEach((h) => {
+            const label = formatDateLabel(h.date);
+            const time =
+              h.start_time && h.end_time
+                ? `${h.start_time}〜${h.end_time}`
+                : h.start_time || '';
+            const guest =
+              h.guest_count && h.guest_count > 0
+                ? `（友達 ${h.guest_count}人）`
+                : '';
+            html += `<li class="muted" style="margin-bottom:2px;">${label} ${time} @ ${
+              h.location || '大津市立中央小学校 体育館'
+            } ${guest}</li>`;
+          });
+          html += `</ul>`;
+        }
+
+        // ランキングテーブル共通
+        const meId = state.me && state.me.member_id;
+
+        function buildRankingTable(ranking, title) {
+          if (!ranking || !ranking.length) {
+            return `
+              <h3 style="font-size:1rem;margin:8px 0 4px;">${title}</h3>
+              <p class="muted" style="margin:0 0 4px;">データがありません。</p>
+            `;
+          }
+          let rows = '';
+          ranking.slice(0, 10).forEach((r, idx) => {
+            const isMe = r.member_id === meId;
+            const catLabel = formatCategoryLabel(r.category);
+            rows += `
+              <tr class="${isMe ? 'me-row' : ''}">
+                <td>${idx + 1}</td>
+                <td>${r.display_name || ''}</td>
+                <td>${catLabel || ''}</td>
+                <td>${r.count}</td>
+              </tr>
+            `;
+          });
+          return `
+            <h3 style="font-size:1rem;margin:8px 0 4px;">${title}</h3>
+            <table style="margin-bottom:4px;">
+              <thead>
+                <tr>
+                  <th>順位</th>
+                  <th>名前</th>
+                  <th>区分</th>
+                  <th>参加回数</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows}
+              </tbody>
+            </table>
+          `;
+        }
+
+        html += buildRankingTable(
+          state.ranking30,
+          '参加回数ランキング（直近30日）'
+        );
+        html += buildRankingTable(
+          state.ranking365,
+          '参加回数ランキング（直近1年）'
+        );
+
+        html += `<p class="muted" style="margin-top:4px;font-size:0.8rem;">※自分の行は背景が薄い緑色で表示されます。</p>`;
+
+        bodyEl.innerHTML = html;
       }
 
       // ===== 起動 =====
