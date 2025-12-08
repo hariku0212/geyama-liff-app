@@ -51,13 +51,18 @@
       input[type='text'],
       input[type='number'],
       input[type='date'],
-      select {
+      select,
+      textarea {
         width: 100%;
         box-sizing: border-box;
         padding: 6px 8px;
         font-size: 0.95rem;
         border-radius: 6px;
         border: 1px solid #ccc;
+      }
+      textarea {
+        min-height: 60px;
+        resize: vertical;
       }
       button {
         border: none;
@@ -152,20 +157,25 @@
         text-align: center;
         padding: 8px 4px;
         border-radius: 10px 10px 0 0;
-        border: 1px solid transparent;
+        border: 1px solid #ccc;
         border-bottom: none;
-        background: #f0f0f0;
+        background: #e0e0e0;
         font-size: 0.9rem;
         cursor: pointer;
+        color: #333;
+      }
+      .tab:not(.active):hover {
+        background: #d0d0d0;
       }
       .tab.active {
-        background: #ffffff;
-        border-color: #ddd;
-        border-bottom-color: #ffffff;
+        background: #06c755;
+        color: #fff;
+        border-color: #06c755;
+        border-bottom-color: #06c755;
         font-weight: 600;
       }
 
-      /* initial loading overlay */
+      /* 初期ロードオーバーレイ */
       #loading {
         position: fixed;
         inset: 0;
@@ -188,7 +198,8 @@
         margin: 0 auto 12px;
         animation: spin 0.8s linear infinite;
       }
-      /* busy overlay for user actions */
+
+      /* 操作中オーバーレイ */
       #busyOverlay {
         position: fixed;
         inset: 0;
@@ -215,13 +226,32 @@
         margin: 0 auto 8px;
         animation: spin 0.8s linear infinite;
       }
+
       @keyframes spin {
         to {
           transform: rotate(360deg);
         }
       }
+
       #app {
         display: none;
+      }
+
+      /* 管理メニューのボタン */
+      .admin-view-btn {
+        margin-right: 8px;
+        margin-bottom: 4px;
+        padding: 6px 10px;
+        font-size: 0.85rem;
+        border-radius: 999px;
+        border: none;
+        background: #e0e0e0;
+        color: #333;
+        cursor: pointer;
+      }
+      .admin-view-btn.active {
+        background: #06c755;
+        color: #fff;
       }
     </style>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -259,27 +289,25 @@
 
         <!-- タブ -->
         <div class="tabs" id="tabBar">
-          <button class="tab active" data-tab="attendance">参加</button>
-          <button class="tab" data-tab="participants">参加者</button>
+          <button class="tab active" data-tab="session">今週の練習</button>
           <button class="tab" data-tab="history">履歴</button>
           <button class="tab" data-tab="admin" id="adminTabButton">
             管理
           </button>
         </div>
 
-        <!-- 参加タブ -->
-        <section class="card" id="attendanceCard">
+        <!-- 今週の練習（参加＋参加者一覧） -->
+        <section class="card" id="sessionCard">
           <div class="card-header">
-            <h2 style="font-size: 1.15rem">明日の練習</h2>
+            <h2 style="font-size: 1.15rem">今週の練習</h2>
             <div class="small" id="eventSummary"></div>
           </div>
           <div id="eventBody"></div>
-        </section>
 
-        <!-- 参加者タブ -->
-        <section class="card" id="participantsCard" style="display: none">
+          <hr style="margin: 12px 0" />
+
           <div class="card-header">
-            <h2 style="font-size: 1.05rem">参加者一覧</h2>
+            <h3 style="font-size: 1.05rem">参加者一覧</h3>
             <div class="small" id="participantsSummary"></div>
           </div>
           <div id="participantsBody"></div>
@@ -315,13 +343,18 @@
         myRegistration: null,
         participants: [],
         partStats: null,
+        paymentDraft: {},
         myHistory: [],
         ranking30: [],
         ranking365: [],
         accountingSummary: null,
         accountingEntries: [],
+        recentEvents: [],
+        feeSettings: null,
+        members: [],
         editingTxId: null,
-        currentTab: 'attendance',
+        currentTab: 'session',
+        adminView: 'accounting', // accounting | fees | roles
       };
 
       // ===== 共通 API ヘルパー =====
@@ -430,13 +463,11 @@
       async function initApp() {
         try {
           setLoading('LINE と連携中です…');
-
           await liff.init({ liffId: LIFF_ID });
 
           const profile = await liff.getProfile();
           const lineUserId = profile.userId;
 
-          // メンバー情報取得 or 初回登録
           setLoading('メンバー情報を確認中です…');
           let meRes = await callApi('get_me', { lineUserId });
           if (!meRes.exists) {
@@ -458,8 +489,8 @@
           setupTabs();
           showApp();
 
-          // デフォルトで「参加」タブを読み込み
-          switchTab('attendance');
+          // デフォルトは今週の練習タブ
+          switchTab('session');
         } catch (err) {
           console.error(err);
           setLoading('エラーが発生しました: ' + err.message);
@@ -518,27 +549,19 @@
         state.currentTab = tabId;
         updateTabActive(tabId);
 
-        const attendanceCard = document.getElementById('attendanceCard');
-        const participantsCard = document.getElementById('participantsCard');
+        const sessionCard = document.getElementById('sessionCard');
         const historyCard = document.getElementById('historyCard');
         const adminCard = document.getElementById('adminCard');
 
-        if (attendanceCard)
-          attendanceCard.style.display =
-            tabId === 'attendance' ? 'block' : 'none';
-        if (participantsCard)
-          participantsCard.style.display =
-            tabId === 'participants' ? 'block' : 'none';
+        if (sessionCard)
+          sessionCard.style.display = tabId === 'session' ? 'block' : 'none';
         if (historyCard)
           historyCard.style.display = tabId === 'history' ? 'block' : 'none';
         if (adminCard)
           adminCard.style.display = tabId === 'admin' ? 'block' : 'none';
 
-        // タブごとにデータ読み込み
-        if (tabId === 'attendance') {
-          loadAttendanceTab();
-        } else if (tabId === 'participants') {
-          loadParticipantsTab();
+        if (tabId === 'session') {
+          loadSessionTab();
         } else if (tabId === 'history') {
           loadHistoryTab();
         } else if (tabId === 'admin') {
@@ -546,33 +569,17 @@
         }
       }
 
-      // ===== 参加タブ =====
-      async function loadAttendanceTab() {
+      // ===== 今週の練習タブ =====
+      async function loadSessionTab() {
         try {
-          setBusy(true, '明日の練習を読み込み中です…');
+          setBusy(true, '今週の練習情報を読み込み中です…');
 
           const eventsRes = await callApi('get_upcoming_events');
           const events = eventsRes.events || [];
 
-          const today = new Date();
-          const tomorrow = new Date(
-            today.getFullYear(),
-            today.getMonth(),
-            today.getDate() + 1
-          );
-          const yyyy = tomorrow.getFullYear();
-          const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
-          const dd = String(tomorrow.getDate()).padStart(2, '0');
-          const tomorrowStr = `${yyyy}-${mm}-${dd}`;
-
           let upcoming = null;
-          for (const ev of events) {
-            if (ev.date === tomorrowStr) {
-              upcoming = ev;
-              break;
-            }
-          }
-          if (!upcoming && events.length > 0) {
+          if (events.length > 0) {
+            // 最も近い open イベント = 今週の練習
             upcoming = events[0];
           }
           state.upcomingEvent = upcoming;
@@ -587,35 +594,86 @@
             state.myRegistration = null;
           }
 
-          renderAttendance();
+          // 参加者一覧
+          if (upcoming) {
+            const partRes = await callApi('get_event_participants', {
+              event_id: upcoming.event_id,
+            });
+            if (partRes.ok) {
+              state.participants = partRes.participants || [];
+              state.partStats = partRes.stats || null;
+            } else {
+              state.participants = [];
+              state.partStats = null;
+            }
+            state.paymentDraft = {};
+          } else {
+            state.participants = [];
+            state.partStats = null;
+            state.paymentDraft = {};
+          }
+
+          // 会費設定（未取得なら）
+          if (!state.feeSettings) {
+            try {
+              const feeRes = await callApi('get_fee_settings');
+              if (feeRes.ok) {
+                state.feeSettings = {
+                  adult: feeRes.fees?.adult ?? 800,
+                  univ: feeRes.fees?.univ ?? 600,
+                  high: feeRes.fees?.high ?? 500,
+                  paypayMessage: feeRes.paypay_message || '',
+                };
+              }
+            } catch (e) {
+              console.warn('get_fee_settings failed', e);
+            }
+          }
+
+          renderSession();
         } catch (err) {
           console.error(err);
-          const bodyEl = document.getElementById('eventBody');
           const summaryEl = document.getElementById('eventSummary');
+          const eventBody = document.getElementById('eventBody');
+          const partSummary = document.getElementById('participantsSummary');
+          const partBody = document.getElementById('participantsBody');
           if (summaryEl) summaryEl.textContent = '読み込みエラー';
-          if (bodyEl)
-            bodyEl.innerHTML =
-              '<p class="status-text status-error">明日の練習情報の取得に失敗しました。</p>';
+          if (eventBody)
+            eventBody.innerHTML =
+              '<p class="status-text status-error">今週の練習情報の取得に失敗しました。</p>';
+          if (partSummary) partSummary.textContent = '';
+          if (partBody)
+            partBody.innerHTML =
+              '<p class="muted">参加者一覧を取得できませんでした。</p>';
         } finally {
           setBusy(false);
         }
+      }
+
+      function renderSession() {
+        renderAttendance();
+        renderParticipants();
       }
 
       function renderAttendance() {
         const summaryEl = document.getElementById('eventSummary');
         const bodyEl = document.getElementById('eventBody');
         if (!summaryEl || !bodyEl) return;
-        const ev = state.upcomingEvent;
 
+        const ev = state.upcomingEvent;
         if (!ev) {
-          summaryEl.textContent = '明日の練習はありません。';
+          summaryEl.textContent = '今週の練習は登録されていません。';
           bodyEl.innerHTML =
             '<p class="muted">開催予定がないか、まだスケジュールが登録されていません。</p>';
           return;
         }
 
         const dateLabel = formatDateLabel(ev.date);
-        summaryEl.textContent = `${dateLabel} ${ev.start_time}〜${ev.end_time}`;
+        const timeRange =
+          ev.start_time && ev.end_time
+            ? `${ev.start_time}〜${ev.end_time}`
+            : ev.start_time || '';
+        summaryEl.textContent = `${dateLabel} ${timeRange}`;
 
         const myReg = state.myRegistration;
         const isReserved = myReg && myReg.status === 'reserved';
@@ -628,13 +686,22 @@
         const guestCount = isReserved ? myReg.guest_count_requested || 0 : 0;
         const guestNames = isReserved ? myReg.guest_names_requested || '' : '';
 
+        const fees = state.feeSettings || {
+          adult: 800,
+          univ: 600,
+          high: 500,
+          paypayMessage: '',
+        };
+
+        const feeText = `社会人 ${fees.adult}円 / 大学生 ${fees.univ}円 / 高校生以下 ${fees.high}円`;
+
         bodyEl.innerHTML = `
           <div class="status-text ${statusClass}">
             ${statusText}
           </div>
           <div class="muted" style="margin-bottom:8px;">
             場所：大津市立中央小学校 体育館<br/>
-            参加費：社会人 800円 / 大学生 600円 / 高校生以下 500円（予定）
+            参加費：${feeText}
           </div>
 
           <div style="margin-bottom:12px;">
@@ -656,12 +723,19 @@
               </div>
             </div>
             <label>友達の名前（カンマ区切り）</label>
-            <input type="text" id="guestNames" placeholder="例：山田太郎, 佐藤花子" value="${guestNames}" />
+            <input
+              type="text"
+              id="guestNames"
+              placeholder="例：山田太郎, 佐藤花子"
+              value="${guestNames}"
+            />
           </div>
 
           <div>
             <button id="btnSubmitAttendance">
-              ${isReserved ? '参加内容を更新する' : '参加登録する'}
+              ${
+                isReserved ? '参加内容を更新する' : '今週の練習に参加登録する'
+              }
             </button>
             <button id="btnCancelAttendance" class="secondary" ${
               isReserved ? '' : 'disabled'
@@ -671,9 +745,11 @@
           </div>
 
           <div class="muted" style="margin-top:8px;font-size:0.85rem;">
-            ・事前に PayPay で支払っても、当日現金で支払ってもOKです。<br/>
-            ・事前にキャッシュレス支払いをしてから不参加になった場合は、後日返金対応します。<br/>
-            ・友達の分の支払い方法は、今後運営で相談して決めていきます。
+            ${
+              fees.paypayMessage
+                ? fees.paypayMessage
+                : '・事前に PayPay で支払っても、当日現金で支払ってもOKです。'
+            }
           </div>
         `;
 
@@ -751,7 +827,17 @@
                 guest_names_requested: guestNames,
               };
 
-              renderAttendance();
+              // 参加者一覧も再読込
+              const partRes = await callApi('get_event_participants', {
+                event_id: ev.event_id,
+              });
+              if (partRes.ok) {
+                state.participants = partRes.participants || [];
+                state.partStats = partRes.stats || null;
+                state.paymentDraft = {};
+              }
+
+              renderSession();
             } catch (err) {
               console.error(err);
               alert('参加登録に失敗しました: ' + err.message);
@@ -773,7 +859,7 @@
             ) {
               return;
             }
-            if (!confirm('本当に参加をキャンセルしますか？')) return;
+            if (!confirm('本当に今週の練習の参加をキャンセルしますか？')) return;
 
             setBusy(true, 'キャンセル処理中です…');
             try {
@@ -799,7 +885,17 @@
               }
 
               state.myRegistration = null;
-              renderAttendance();
+
+              const partRes = await callApi('get_event_participants', {
+                event_id: ev.event_id,
+              });
+              if (partRes.ok) {
+                state.participants = partRes.participants || [];
+                state.partStats = partRes.stats || null;
+                state.paymentDraft = {};
+              }
+
+              renderSession();
             } catch (err) {
               console.error(err);
               alert('キャンセルに失敗しました: ' + err.message);
@@ -814,88 +910,18 @@
         }
       }
 
-      // ===== 参加者タブ =====
-      async function loadParticipantsTab() {
-        try {
-          setBusy(true, '参加者一覧を読み込み中です…');
-
-          // イベント情報がまだなければ取得
-          if (!state.upcomingEvent) {
-            const eventsRes = await callApi('get_upcoming_events');
-            const events = eventsRes.events || [];
-
-            const today = new Date();
-            const tomorrow = new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate() + 1
-            );
-            const yyyy = tomorrow.getFullYear();
-            const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
-            const dd = String(tomorrow.getDate()).padStart(2, '0');
-            const tomorrowStr = `${yyyy}-${mm}-${dd}`;
-
-            let upcoming = null;
-            for (const ev of events) {
-              if (ev.date === tomorrowStr) {
-                upcoming = ev;
-                break;
-              }
-            }
-            if (!upcoming && events.length > 0) {
-              upcoming = events[0];
-            }
-            state.upcomingEvent = upcoming;
-          }
-
-          const summaryEl = document.getElementById('participantsSummary');
-          const bodyEl = document.getElementById('participantsBody');
-
-          if (!state.upcomingEvent) {
-            if (summaryEl) summaryEl.textContent = '明日の練習はありません。';
-            if (bodyEl)
-              bodyEl.innerHTML =
-                '<p class="muted">開催予定がないか、まだスケジュールが登録されていません。</p>';
-            return;
-          }
-
-          const partRes = await callApi('get_event_participants', {
-            event_id: state.upcomingEvent.event_id,
-          });
-          if (partRes.ok) {
-            state.participants = partRes.participants || [];
-            state.partStats = partRes.stats || null;
-          } else {
-            state.participants = [];
-            state.partStats = null;
-          }
-
-          renderParticipants();
-        } catch (err) {
-          console.error(err);
-          const summaryEl = document.getElementById('participantsSummary');
-          const bodyEl = document.getElementById('participantsBody');
-          if (summaryEl) summaryEl.textContent = '読み込みエラー';
-          if (bodyEl)
-            bodyEl.innerHTML =
-              '<p class="status-text status-error">参加者一覧の取得に失敗しました。</p>';
-        } finally {
-          setBusy(false);
-        }
-      }
-
+      // ===== 参加者一覧（今週の練習カード内） =====
       function renderParticipants() {
-        const card = document.getElementById('participantsCard');
         const bodyEl = document.getElementById('participantsBody');
         const summaryEl = document.getElementById('participantsSummary');
         const ev = state.upcomingEvent;
 
-        if (!card || !bodyEl || !summaryEl) return;
+        if (!bodyEl || !summaryEl) return;
 
         if (!ev) {
-          summaryEl.textContent = '明日の練習はありません。';
+          summaryEl.textContent = '';
           bodyEl.innerHTML =
-            '<p class="muted">開催予定がないか、まだスケジュールが登録されていません。</p>';
+            '<p class="muted">今週の練習が登録されていないため、参加者一覧は表示できません。</p>';
           return;
         }
 
@@ -930,7 +956,6 @@
           );
 
         if (!manager) {
-          // 一般メンバー向け：支払状況は表示しない
           const rowsHtml = sorted
             .map((p) => {
               const catLabel = formatCategoryLabel(p.category);
@@ -944,7 +969,9 @@
               return `
               <tr>
                 <td>${p.display_name || ''}</td>
-                <td>${catLabel ? `<span class="tag">${catLabel}</span>` : ''}</td>
+                <td>${
+                  catLabel ? `<span class="tag">${catLabel}</span>` : ''
+                }</td>
                 <td>${guestLabel}</td>
               </tr>
             `;
@@ -966,7 +993,6 @@
             </table>
           `;
         } else {
-          // 管理メンバー向け：支払状況も表示
           const rowsHtml = sorted
             .map((p) => {
               const catLabel = formatCategoryLabel(p.category);
@@ -977,18 +1003,25 @@
                       : ''
                   }`
                 : '-';
-              const checked = p.payment_status === 'paid';
+              const originalChecked = p.payment_status === 'paid';
+              const draft =
+                state.paymentDraft && p.member_id in state.paymentDraft
+                  ? state.paymentDraft[p.member_id]
+                  : originalChecked;
+              const checked = draft ? 'checked' : '';
               return `
               <tr>
                 <td>${p.display_name || ''}</td>
-                <td>${catLabel ? `<span class="tag">${catLabel}</span>` : ''}</td>
+                <td>${
+                  catLabel ? `<span class="tag">${catLabel}</span>` : ''
+                }</td>
                 <td>${guestLabel}</td>
                 <td class="pay-cell">
                   <label>
                     <input type="checkbox"
                            class="pay-toggle"
                            data-member-id="${p.member_id}"
-                           ${checked ? 'checked' : ''} />
+                           ${checked} />
                     支払い済
                   </label>
                 </td>
@@ -1011,8 +1044,11 @@
                 ${rowsHtml}
               </tbody>
             </table>
-            <p class="muted" style="margin-top:8px;font-size:0.8rem;">
-              ※チェックを入れると「支払い済」として記録されます（現金／PayPayの区別は別途帳簿で管理）。
+            <div style="margin-top:8px;">
+              <button id="savePaymentsButton">支払状況を保存</button>
+            </div>
+            <p class="muted" style="margin-top:4px;font-size:0.8rem;">
+              ※チェックを操作したあと、「支払状況を保存」ボタンを押すとまとめて反映されます。
             </p>
           `;
 
@@ -1024,25 +1060,51 @@
         const ev = state.upcomingEvent;
         if (!ev) return;
 
+        state.paymentDraft = state.paymentDraft || {};
+
         const checkboxes = document.querySelectorAll('.pay-toggle');
         checkboxes.forEach((cb) => {
-          cb.onchange = async (e) => {
+          cb.onchange = (e) => {
             const memberId = e.target.dataset.memberId;
             const checked = e.target.checked;
+            state.paymentDraft[memberId] = checked;
+          };
+        });
 
-            setBusy(true, '支払状況を更新中です…');
-            try {
-              e.target.disabled = true;
-              await callApi(
-                'update_payment_status',
-                {
-                  event_id: ev.event_id,
+        const saveBtn = document.getElementById('savePaymentsButton');
+        if (saveBtn) {
+          saveBtn.onclick = async () => {
+            const participants = state.participants || [];
+            const draft = state.paymentDraft || {};
+            const updates = [];
+
+            Object.entries(draft).forEach(([memberId, checked]) => {
+              const p = participants.find((pp) => pp.member_id === memberId);
+              if (!p) return;
+              const original = p.payment_status === 'paid';
+              if (original !== checked) {
+                updates.push({
                   member_id: memberId,
                   status: checked ? 'paid' : 'unpaid',
+                });
+              }
+            });
+
+            if (!updates.length) {
+              alert('変更はありません。');
+              return;
+            }
+
+            setBusy(true, '支払状況を保存中です…');
+            try {
+              await callApi(
+                'bulk_update_payment_status',
+                {
+                  event_id: ev.event_id,
+                  updates_json: JSON.stringify(updates),
                 },
                 { method: 'POST' }
               );
-
               const partRes = await callApi('get_event_participants', {
                 event_id: ev.event_id,
               });
@@ -1050,17 +1112,17 @@
                 state.participants = partRes.participants || [];
                 state.partStats = partRes.stats || null;
               }
+              state.paymentDraft = {};
               renderParticipants();
             } catch (err) {
               console.error(err);
-              alert('支払状況の更新に失敗しました: ' + err.message);
-              e.target.checked = !checked;
-              e.target.disabled = false;
+              alert('支払状況の保存に失敗しました: ' + err.message);
+              setBusy(false);
             } finally {
               setBusy(false);
             }
           };
-        });
+        }
       }
 
       // ===== 履歴タブ =====
@@ -1110,9 +1172,8 @@
       }
 
       function renderHistory() {
-        const card = document.getElementById('historyCard');
         const bodyEl = document.getElementById('historyBody');
-        if (!card || !bodyEl) return;
+        if (!bodyEl) return;
 
         const hasHistory = state.myHistory && state.myHistory.length > 0;
         const hasRanking =
@@ -1127,7 +1188,6 @@
 
         let html = '';
 
-        // 自分の参加履歴
         if (hasHistory) {
           html += `<h3 style="font-size:1rem;margin:0 0 4px;">最近の参加履歴</h3>`;
           html += `<ul style="list-style:none;padding-left:0;margin:0 0 12px;">`;
@@ -1148,7 +1208,6 @@
           html += `</ul>`;
         }
 
-        // ランキングテーブル共通
         const meId = state.me && state.me.member_id;
 
         function buildRankingTable(ranking, title) {
@@ -1215,27 +1274,43 @@
         }
 
         try {
-          setBusy(true, '帳簿データを読み込み中です…');
+          setBusy(true, '管理データを読み込み中です…');
 
-          const sumRes = await callApi('get_accounting_summary');
-          if (sumRes.ok) {
-            state.accountingSummary = sumRes.summary || null;
-          } else {
-            state.accountingSummary = null;
+          const [sumRes, listRes, recentRes, feeRes, membersRes] =
+            await Promise.all([
+              callApi('get_accounting_summary'),
+              callApi('list_accounting', { limit: 50 }),
+              callApi('list_recent_events', { limit: 10 }),
+              callApi('get_fee_settings'),
+              callApi('list_members'),
+            ]);
+
+          if (sumRes.ok) state.accountingSummary = sumRes.summary || null;
+          else state.accountingSummary = null;
+
+          if (listRes.ok) state.accountingEntries = listRes.entries || [];
+          else state.accountingEntries = [];
+
+          if (recentRes.ok) state.recentEvents = recentRes.events || [];
+          else state.recentEvents = [];
+
+          if (feeRes.ok) {
+            state.feeSettings = {
+              adult: feeRes.fees?.adult ?? 800,
+              univ: feeRes.fees?.univ ?? 600,
+              high: feeRes.fees?.high ?? 500,
+              paypayMessage: feeRes.paypay_message || '',
+            };
           }
 
-          const listRes = await callApi('list_accounting', { limit: 50 });
-          if (listRes.ok) {
-            state.accountingEntries = listRes.entries || [];
-          } else {
-            state.accountingEntries = [];
-          }
+          if (membersRes.ok) state.members = membersRes.members || [];
+          else state.members = [];
 
           renderAdmin();
         } catch (err) {
           console.error(err);
           bodyEl.innerHTML =
-            '<p class="status-text status-error">帳簿データの取得に失敗しました。</p>';
+            '<p class="status-text status-error">管理データの取得に失敗しました。</p>';
         } finally {
           setBusy(false);
         }
@@ -1251,8 +1326,59 @@
           return;
         }
 
+        const view = state.adminView || 'accounting';
+
+        let viewHtml = '';
+        if (view === 'accounting') {
+          viewHtml = buildAccountingViewHtml();
+        } else if (view === 'fees') {
+          viewHtml = buildFeesViewHtml();
+        } else if (view === 'roles') {
+          viewHtml = buildRolesViewHtml();
+        }
+
+        bodyEl.innerHTML = `
+          <div style="margin-bottom:8px;">
+            <button class="admin-view-btn ${
+              view === 'accounting' ? 'active' : ''
+            }" data-view="accounting">帳簿</button>
+            <button class="admin-view-btn ${
+              view === 'fees' ? 'active' : ''
+            }" data-view="fees">会費設定</button>
+            <button class="admin-view-btn ${
+              view === 'roles' ? 'active' : ''
+            }" data-view="roles">メンバー権限</button>
+          </div>
+          <div id="adminViewContainer">
+            ${viewHtml}
+          </div>
+        `;
+
+        setupAdminMenuHandlers();
+        if (view === 'accounting') {
+          setupAccountingHandlers();
+        } else if (view === 'fees') {
+          setupFeesHandlers();
+        } else if (view === 'roles') {
+          setupRolesHandlers();
+        }
+      }
+
+      function setupAdminMenuHandlers() {
+        document.querySelectorAll('.admin-view-btn').forEach((btn) => {
+          btn.onclick = () => {
+            const v = btn.dataset.view;
+            if (!v) return;
+            state.adminView = v;
+            renderAdmin();
+          };
+        });
+      }
+
+      function buildAccountingViewHtml() {
         const summary = state.accountingSummary;
         const entries = state.accountingEntries || [];
+        const recentEvents = state.recentEvents || [];
 
         const today = new Date();
         const yyyy = today.getFullYear();
@@ -1329,7 +1455,29 @@
           `;
         }
 
-        bodyEl.innerHTML = `
+        const eventOptions = recentEvents
+          .map((ev) => {
+            const label =
+              formatDateLabel(ev.date) +
+              (ev.start_time ? ` ${ev.start_time}〜${ev.end_time || ''}` : '');
+            return `<option value="${ev.event_id}" ${
+              formEventId === ev.event_id ? 'selected' : ''
+            }>${label}</option>`;
+          })
+          .join('');
+
+        const eventOptionsForIncome = recentEvents
+          .map((ev, idx) => {
+            const label =
+              formatDateLabel(ev.date) +
+              (ev.start_time ? ` ${ev.start_time}〜${ev.end_time || ''}` : '');
+            return `<option value="${ev.event_id}" ${
+              idx === 0 ? 'selected' : ''
+            }>${label}</option>`;
+          })
+          .join('');
+
+        return `
           <div style="margin-bottom:12px;">
             <h3 style="font-size:1rem;margin:0 0 4px;">口座別 残高（理論値）</h3>
             <ul class="muted" style="margin:0 0 4px;padding-left:18px;font-size:0.9rem;">
@@ -1370,7 +1518,7 @@
             </div>
 
             <div class="row" style="margin-top:4px;">
-              <div>
+              <div id="accAccountGroup">
                 <label>口座（income/expense 用）</label>
                 <select id="accAccount">
                   <option value="" ${
@@ -1387,7 +1535,7 @@
                   }>銀行 (bank)</option>
                 </select>
               </div>
-              <div>
+              <div id="accFromGroup">
                 <label>振替元口座（transfer 用）</label>
                 <select id="accFromAccount">
                   <option value="" ${
@@ -1404,7 +1552,7 @@
                   }>銀行 (bank)</option>
                 </select>
               </div>
-              <div>
+              <div id="accToGroup">
                 <label>振替先口座（transfer 用）</label>
                 <select id="accToAccount">
                   <option value="" ${
@@ -1426,11 +1574,21 @@
             <div class="row" style="margin-top:4px;">
               <div>
                 <label>カテゴリ</label>
-                <input type="text" id="accCategory" placeholder="例：参加費, シャトル, 体育館" value="${formCategory}" />
+                <input
+                  type="text"
+                  id="accCategory"
+                  placeholder="例：参加費, シャトル, 体育館"
+                  value="${formCategory}"
+                />
               </div>
               <div>
-                <label>関連イベントID（任意）</label>
-                <input type="text" id="accEventId" placeholder="例：E20250101" value="${formEventId}" />
+                <label>関連イベント（任意）</label>
+                <select id="accEventId">
+                  <option value="" ${
+                    !formEventId ? 'selected' : ''
+                  }>（なし）</option>
+                  ${eventOptions}
+                </select>
               </div>
               <div>
                 <label>金額</label>
@@ -1454,7 +1612,38 @@
 
             <p class="muted" style="margin-top:6px;font-size:0.8rem;">
               ※種別が income/expense のときは「口座」を、transfer のときは「振替元／振替先口座」を主に使います。<br/>
-              ※イベントごとの参加費合計は、参加人数を見ながら手計算して記録してください。（自動連携は今後の拡張で対応予定）
+              ※イベントごとの参加費合計は、下の「イベント収入の自動記帳」から自動計算して登録できます。
+            </p>
+          </div>
+
+          <hr style="margin:12px 0;" />
+
+          <div style="margin-bottom:12px;">
+            <h3 style="font-size:1rem;margin:0 0 4px;">イベント収入の自動記帳</h3>
+            <div class="row">
+              <div>
+                <label>対象イベント</label>
+                <select id="incomeEvent">
+                  ${eventOptionsForIncome}
+                </select>
+              </div>
+              <div>
+                <label>収入を記帳する口座</label>
+                <select id="incomeAccount">
+                  <option value="cash">現金 (cash)</option>
+                  <option value="paypay">PayPay (paypay)</option>
+                  <option value="bank">銀行 (bank)</option>
+                </select>
+              </div>
+            </div>
+            <div style="margin-top:8px;">
+              <button id="recordEventIncomeButton">
+                参加費収入を帳簿に反映する
+              </button>
+            </div>
+            <p class="muted" style="margin-top:6px;font-size:0.8rem;">
+              ※参加登録（友達人数を含む）と会費設定をもとに、指定イベントの理論上の収入を自動計算して帳簿に記録します。<br/>
+              ※集金が完全に終わっていなくても、「全員払った」前提で一旦記帳し、差額は別途調整用レコードとして手入力してください。
             </p>
           </div>
 
@@ -1465,13 +1654,40 @@
             ${entriesHtml}
           </div>
         `;
-
-        setupAdminHandlers();
       }
 
-      function setupAdminHandlers() {
+      function setupAccountingHandlers() {
         const saveBtn = document.getElementById('accSaveButton');
         const cancelEditBtn = document.getElementById('accCancelEdit');
+        const typeSelect = document.getElementById('accType');
+        const recordEventBtn = document.getElementById('recordEventIncomeButton');
+
+        function updateAccountFieldVisibility() {
+          if (!typeSelect) return;
+          const type = typeSelect.value;
+          const accGroup = document.getElementById('accAccountGroup');
+          const fromGroup = document.getElementById('accFromGroup');
+          const toGroup = document.getElementById('accToGroup');
+
+          if (type === 'income' || type === 'expense') {
+            if (accGroup) accGroup.style.display = '';
+            if (fromGroup) fromGroup.style.display = 'none';
+            if (toGroup) toGroup.style.display = 'none';
+          } else if (type === 'transfer') {
+            if (accGroup) accGroup.style.display = 'none';
+            if (fromGroup) fromGroup.style.display = '';
+            if (toGroup) toGroup.style.display = '';
+          } else {
+            if (accGroup) accGroup.style.display = '';
+            if (fromGroup) fromGroup.style.display = '';
+            if (toGroup) toGroup.style.display = '';
+          }
+        }
+
+        updateAccountFieldVisibility();
+        if (typeSelect) {
+          typeSelect.onchange = updateAccountFieldVisibility;
+        }
 
         if (saveBtn) {
           saveBtn.onclick = async () => {
@@ -1516,10 +1732,7 @@
                 return;
               }
 
-              // 編集モード解除
               state.editingTxId = null;
-
-              // 再読み込み
               await loadAdminTab();
             } catch (err) {
               console.error(err);
@@ -1544,6 +1757,272 @@
             if (!txId) return;
             state.editingTxId = txId;
             renderAdmin();
+          };
+        });
+
+        if (recordEventBtn) {
+          recordEventBtn.onclick = async () => {
+            const eventSelect = document.getElementById('incomeEvent');
+            const accountSelect = document.getElementById('incomeAccount');
+            if (!eventSelect || !accountSelect) return;
+            const eventId = eventSelect.value;
+            const account = accountSelect.value || 'cash';
+            if (!eventId) {
+              alert('対象イベントを選択してください。');
+              return;
+            }
+
+            setBusy(true, 'イベント収入を計算して記帳中です…');
+            try {
+              const res = await callApi(
+                'record_event_income',
+                {
+                  event_id: eventId,
+                  account,
+                },
+                { method: 'POST', allowError: true }
+              );
+              if (!res.ok) {
+                alert(
+                  'イベント収入の記帳に失敗しました: ' +
+                    (res.error || 'unknown error')
+                );
+                return;
+              }
+
+              const breakdown = res.breakdown || {};
+              alert(
+                `イベント収入を記帳しました。\n\n金額: ${
+                  res.amount ?? 0
+                } 円\n内訳(人数): 社会人 ${
+                  breakdown.adult ?? 0
+                } 名, 大学生 ${breakdown.univ ?? 0} 名, 高校生以下 ${
+                  breakdown.high ?? 0
+                } 名\n(ホスト＋友達を合算した人数です)`
+              );
+
+              await loadAdminTab();
+            } catch (err) {
+              console.error(err);
+              alert('イベント収入の記帳に失敗しました: ' + err.message);
+            } finally {
+              setBusy(false);
+            }
+          };
+        }
+      }
+
+      function buildFeesViewHtml() {
+        const fees = state.feeSettings || {
+          adult: 800,
+          univ: 600,
+          high: 500,
+          paypayMessage: '',
+        };
+
+        return `
+          <div style="margin-bottom:12px;">
+            <h3 style="font-size:1rem;margin:0 0 4px;">会費設定</h3>
+            <div class="row">
+              <div>
+                <label>社会人</label>
+                <input
+                  type="number"
+                  id="feeAdult"
+                  min="0"
+                  step="1"
+                  value="${fees.adult}"
+                />
+              </div>
+              <div>
+                <label>大学生</label>
+                <input
+                  type="number"
+                  id="feeUniv"
+                  min="0"
+                  step="1"
+                  value="${fees.univ}"
+                />
+              </div>
+              <div>
+                <label>高校生以下</label>
+                <input
+                  type="number"
+                  id="feeHigh"
+                  min="0"
+                  step="1"
+                  value="${fees.high}"
+                />
+              </div>
+            </div>
+
+            <label style="margin-top:8px;">PayPay 支払い案内（メンバー向け表示）</label>
+            <textarea
+              id="paypayMessage"
+              placeholder="例：PayPay ID: geyama123 / 送金名には「苗字＋名前」が分かる形でお願いします。"
+            >${fees.paypayMessage || ''}</textarea>
+
+            <div style="margin-top:8px;">
+              <button id="saveFeesButton">会費設定を保存</button>
+            </div>
+
+            <p class="muted" style="margin-top:6px;font-size:0.8rem;">
+              ※ここで設定した会費は、今週の練習画面の表示とイベント収入の自動計算に使われます。<br/>
+              ※PayPay案内は、今週の練習画面の下部にそのまま表示されます。
+            </p>
+          </div>
+        `;
+      }
+
+      function setupFeesHandlers() {
+        const btn = document.getElementById('saveFeesButton');
+        if (!btn) return;
+
+        btn.onclick = async () => {
+          const adult = document.getElementById('feeAdult').value;
+          const univ = document.getElementById('feeUniv').value;
+          const high = document.getElementById('feeHigh').value;
+          const msg = document.getElementById('paypayMessage').value;
+
+          setBusy(true, '会費設定を保存中です…');
+          try {
+            const res = await callApi(
+              'save_fee_settings',
+              {
+                fee_adult: adult,
+                fee_univ: univ,
+                fee_high: high,
+                paypay_message: msg,
+              },
+              { method: 'POST' }
+            );
+            if (!res.ok) {
+              alert(
+                '会費設定の保存に失敗しました: ' +
+                  (res.error || 'unknown error')
+              );
+              return;
+            }
+
+            state.feeSettings = {
+              adult: parseInt(adult || '0', 10) || 0,
+              univ: parseInt(univ || '0', 10) || 0,
+              high: parseInt(high || '0', 10) || 0,
+              paypayMessage: msg,
+            };
+
+            alert('会費設定を保存しました。');
+          } catch (err) {
+            console.error(err);
+            alert('会費設定の保存に失敗しました: ' + err.message);
+          } finally {
+            setBusy(false);
+          }
+        };
+      }
+
+      function buildRolesViewHtml() {
+        const members = state.members || [];
+        if (!members.length) {
+          return `
+            <div>
+              <h3 style="font-size:1rem;margin:0 0 4px;">メンバー権限</h3>
+              <p class="muted">メンバー情報がありません。</p>
+            </div>
+          `;
+        }
+
+        const rows = members
+          .map((m) => {
+            const catLabel = formatCategoryLabel(m.category);
+            return `
+            <tr>
+              <td>${m.display_name || ''}</td>
+              <td>${catLabel || ''}</td>
+              <td>${m.total_participation_count || 0}</td>
+              <td>
+                <select class="role-select" data-member-id="${m.member_id}">
+                  <option value="member" ${
+                    m.role === 'member' ? 'selected' : ''
+                  }>member</option>
+                  <option value="sub_admin" ${
+                    m.role === 'sub_admin' ? 'selected' : ''
+                  }>sub_admin</option>
+                  <option value="admin" ${
+                    m.role === 'admin' ? 'selected' : ''
+                  }>admin</option>
+                </select>
+              </td>
+              <td>
+                <button class="secondary role-save" data-member-id="${
+                  m.member_id
+                }">更新</button>
+              </td>
+            </tr>
+          `;
+          })
+          .join('');
+
+        return `
+          <div>
+            <h3 style="font-size:1rem;margin:0 0 4px;">メンバー権限</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>名前</th>
+                  <th>区分</th>
+                  <th>参加回数</th>
+                  <th>権限</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows}
+              </tbody>
+            </table>
+            <p class="muted" style="margin-top:6px;font-size:0.8rem;">
+              ※権限は必要なメンバーだけ admin / sub_admin に設定し、それ以外は member のままにしておいてください。
+            </p>
+          </div>
+        `;
+      }
+
+      function setupRolesHandlers() {
+        const buttons = document.querySelectorAll('.role-save');
+        buttons.forEach((btn) => {
+          btn.onclick = async () => {
+            const memberId = btn.dataset.memberId;
+            if (!memberId) return;
+            const select = document.querySelector(
+              `.role-select[data-member-id="${memberId}"]`
+            );
+            if (!select) return;
+            const role = select.value;
+
+            setBusy(true, '権限を更新中です…');
+            try {
+              const res = await callApi(
+                'update_member_role',
+                {
+                  member_id: memberId,
+                  role,
+                },
+                { method: 'POST' }
+              );
+              if (!res.ok) {
+                alert(
+                  '権限の更新に失敗しました: ' +
+                    (res.error || 'unknown error')
+                );
+                return;
+              }
+              alert('権限を更新しました。');
+            } catch (err) {
+              console.error(err);
+              alert('権限の更新に失敗しました: ' + err.message);
+            } finally {
+              setBusy(false);
+            }
           };
         });
       }
