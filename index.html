@@ -8,30 +8,23 @@
     :root { --primary: #06c755; --bg: #f2f4f8; --card: #ffffff; --text: #333; --danger: #e53935; --gray: #888; --accent: #ff9800; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; }
     .container { max-width: 600px; margin: 0 auto; padding: 15px; }
-    
-    /* カード */
     .card { background: var(--card); padding: 16px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); margin-bottom: 16px; }
     h2 { font-size: 1.1rem; margin: 0 0 10px; border-bottom: 2px solid var(--primary); padding-bottom: 5px; display: inline-block; }
     h3 { font-size: 1rem; margin: 15px 0 8px; font-weight: bold; color: #444; }
     .muted { color: var(--gray); font-size: 0.85rem; line-height: 1.4; }
     .small { font-size: 0.8rem; }
     
-    /* リアルなシャトルアニメーション */
+    /* Loading: Custom Image from fig folder */
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(255,255,255,0.95); z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-    .shuttle-svg { width: 60px; height: 60px; animation: arc 1.2s infinite ease-in-out; }
-    @keyframes arc {
-      0% { transform: translateY(20px) rotate(-20deg); }
-      50% { transform: translateY(-40px) rotate(0deg); }
-      100% { transform: translateY(20px) rotate(20deg); }
-    }
-    
-    /* ナビゲーション */
+    .shuttle-img { width: 80px; height: auto; animation: bounce 1s infinite alternate ease-in-out; }
+    @keyframes bounce { 0% { transform: translateY(0); } 100% { transform: translateY(-30px); } }
+    .loading-text { margin-top: 15px; font-weight: bold; color: var(--primary); }
+
+    /* UI Parts */
     .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid #ddd; padding-bottom: env(safe-area-inset-bottom); z-index: 1000; }
     .nav-item { flex: 1; text-align: center; padding: 10px 0; font-size: 0.7rem; color: var(--gray); cursor: pointer; }
     .nav-item.active { color: var(--primary); font-weight: bold; }
     .nav-icon { font-size: 1.5rem; display: block; margin-bottom: 2px; }
-    
-    /* フォーム・ボタン */
     input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; margin-bottom: 8px; font-size: 1rem; }
     button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 8px; }
     .btn-primary { background: var(--primary); color: #fff; }
@@ -39,35 +32,35 @@
     .btn-accent { background: var(--accent); color: #fff; }
     .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 6px 12px; font-size: 0.9rem; }
     .btn-copy { padding: 4px 8px; font-size: 0.8rem; width: auto; margin: 0 0 0 8px; display: inline-block; }
-    
-    /* ステータスバッジ */
+    .guest-row { display: flex; gap: 8px; }
     .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
     .bg-green { background: #e8f5e9; color: #2e7d32; }
     .bg-gray { background: #eee; color: #666; }
-    .bg-blue { background: #e3f2fd; color: #1565c0; }
-    
-    /* PayPay・運営 */
     .paypay-box { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-top: 10px; font-size: 0.9rem; border: 1px solid #eee; }
     .step-list { padding-left: 20px; font-size: 0.85rem; color: #444; line-height: 1.6; margin-bottom: 10px; }
-    
     .admin-list-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 8px 0; }
     .pay-icon { font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; margin-right: 5px; }
-    .pay-icon.pp { background: #ffeb3b; color: #333; } /* PayPay */
-    .pay-icon.cash { background: #ddd; color: #333; } /* 現金 */
-    
+    .pay-icon.pp { background: #ffeb3b; color: #333; }
+    .pay-icon.cash { background: #ddd; color: #333; }
+    .member-list-chip { display: inline-block; background: #e0f2f1; color: #00695c; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; margin: 2px; }
+    .status-select { padding: 4px; margin: 0; font-size: 0.85rem; }
+    .paid-row { opacity: 0.5; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th, td { padding: 8px; border-bottom: 1px solid #eee; text-align: left; }
+    .rank-1 { color: #d4af37; font-weight: bold; }
     #restrictedMsg { text-align: center; padding: 40px 0; color: #888; }
+    #debugLog { background: #333; color: #0f0; padding: 10px; font-family: monospace; font-size: 0.8rem; margin-bottom: 20px; border-radius: 8px; display: none; }
   </style>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
   <div id="loading">
-    <svg class="shuttle-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M50 80C50 80 40 75 40 65H60C60 75 50 80 50 80Z" fill="#8d6e63"/> <path d="M40 65L25 20L35 15L42 60" fill="#eee" stroke="#ccc"/> <path d="M60 65L75 20L65 15L58 60" fill="#eee" stroke="#ccc"/>
-      <path d="M50 65V15" stroke="#ccc" stroke-width="2"/>
-      <path d="M35 15Q50 5 65 15" fill="none" stroke="#ddd"/>
-    </svg>
-    <div style="margin-top:15px; font-weight:bold; color:#06c755;">Loading...</div>
+    <img src="fig/shuttle.png" class="shuttle-img" alt="loading" onerror="this.style.display='none'; document.querySelector('.fallback-text').style.display='block';">
+    <div class="loading-text">Loading...</div>
+    <div class="fallback-text" style="display:none; font-size:2rem;">🏸</div>
   </div>
+
+  <div id="debugLog"></div>
 
   <div id="app" style="display:none;">
     <div class="container">
@@ -79,7 +72,8 @@
           <div id="regFormArea" style="display:none; margin-top:15px;">
             <div id="regStatusBadge" class="badge bg-gray" style="display:inline-block; margin-bottom:10px;">未登録</div>
             <div style="margin-bottom:15px; font-size:0.9rem;">
-              <span class="muted">現在の参加者:</span> <span id="currentParticipantsCount">0</span>名
+              <span class="muted">現在の参加者:</span> <span id="currentParticipantsCount">0</span>名<br>
+              <div id="regMembersList" style="margin-top:5px;"></div>
             </div>
             
             <form id="regForm">
@@ -92,8 +86,6 @@
 
               <div style="background:#f9f9f9; padding:15px; border-radius:8px; margin-bottom:15px;">
                 <h3 style="margin-top:0;">お支払い方法</h3>
-                <p class="muted small">運営円滑化のため、PayPay事前決済にご協力ください。</p>
-
                 <label style="margin-top:10px; display:flex; align-items:start;">
                   <input type="radio" name="payMethod" value="advance" onchange="togglePayMethod()" style="width:auto; margin-top:4px; margin-right:8px;">
                   <div><span style="font-weight:bold;">事前PayPay決済</span></div>
@@ -102,22 +94,17 @@
                    <div class="paypay-box">
                      <strong>&lt;手順&gt;</strong>
                      <ol class="step-list">
-                       <li>下記の <strong>PayPay ID</strong> をコピー</li>
-                       <li>PayPayアプリ >「送る」>「IDで送る」</li>
-                       <li>IDを貼り付けて検索</li>
+                       <li>下記 <strong>ID</strong> をコピー</li>
+                       <li>PayPayアプリ > 送る > IDで送る</li>
+                       <li>ID貼り付け > 検索</li>
                        <li>名義 <strong class="ppNameTarget">-</strong> を確認</li>
-                       <li>金額入力 (<strong>メモもコピペ推奨</strong>)</li>
-                       <li>送金完了後、チェックを入れる</li>
+                       <li>金額入力 (<strong>メモもコピペ</strong>)</li>
+                       <li>送金後、チェックを入れる</li>
                      </ol>
                      <div>ID: <span class="ppId" style="font-weight:bold;">-</span> <button type="button" class="btn-outline btn-copy" onclick="copyText('ppId')">コピー</button></div>
-                     <div style="margin-top:5px; display:flex;">
-                       <input type="text" id="ppMsg" readonly style="margin:0; font-size:0.8rem; background:#fff; flex:1;">
-                       <button type="button" class="btn-outline btn-copy" onclick="copyText('ppMsg')">メモコピー</button>
-                     </div>
+                     <div style="margin-top:5px; display:flex;"><input type="text" id="ppMsg" readonly style="margin:0; font-size:0.8rem; background:#fff; flex:1;"><button type="button" class="btn-outline btn-copy" onclick="copyText('ppMsg')">メモ</button></div>
                    </div>
-                   <label style="margin-top:10px; color:var(--primary); font-weight:bold;">
-                     <input type="checkbox" id="chkPaidAdvance" style="width:auto;"> 送金しました
-                   </label>
+                   <label style="margin-top:10px; color:var(--primary); font-weight:bold;"><input type="checkbox" id="chkPaidAdvance" style="width:auto;"> 送金しました</label>
                 </div>
 
                 <label style="margin-top:15px; display:flex; align-items:start;">
@@ -129,11 +116,14 @@
                   <div><span style="font-weight:bold;">当日現金支払い</span></div>
                 </label>
               </div>
-
               <button type="button" id="btnRegister" class="btn-primary" onclick="submitRegistration()">参加登録する</button>
               <button type="button" id="btnCancel" class="btn-danger" style="display:none;" onclick="cancelRegistration()">キャンセル</button>
             </form>
           </div>
+        </div>
+        <div id="lazyRegister" style="display:none;">
+          <div class="card"><h2>今後の予定</h2><div id="futureList" class="small">読み込み中...</div></div>
+          <div class="card"><h2>過去の履歴</h2><div id="pastList" class="small">読み込み中...</div></div>
         </div>
       </div>
 
@@ -148,11 +138,8 @@
                 <button class="btn-outline" style="font-size:0.8rem;" onclick="manualAddUser()">+ 手動追加</button>
                 <button class="btn-danger" style="flex:1;" onclick="executeLottery()">抽選実行</button>
               </div>
-              <div style="text-align:right; margin-top:10px;">
-                <button class="btn-outline" style="font-size:0.8rem; color:#888; border-color:#ccc;" onclick="deleteLastRound()">直前の回を取消</button>
-              </div>
+              <div style="text-align:right; margin-top:10px;"><button class="btn-outline" style="font-size:0.8rem; color:#888; border-color:#ccc;" onclick="deleteLastRound()">直前の回を取消</button></div>
             </div>
-            
             <div class="card" style="border-left: 5px solid var(--accent);">
               <h3 style="color:var(--accent);">運営: 集金</h3>
               <p class="small muted">お金を受け取ったらチェックして保存。<br><span class="pay-icon pp">P</span>PayPay <span class="pay-icon cash">現</span>現金</p>
@@ -181,15 +168,12 @@
             </div>
           </div>
         </div>
-        
-        <div id="restrictedMsg">
-          <h3>時間外です</h3>
-          <p>当日用メニューは、練習日の<br>17:30 〜 22:00 の間のみ利用可能です。</p>
-        </div>
+        <div id="restrictedMsg"><h3>時間外です</h3><p>当日用メニューは、練習日の<br>17:30 〜 22:00 の間のみ利用可能です。</p></div>
       </div>
 
       <div id="tab-ranking" class="page" style="display:none;">
-        <div class="card"><h2>今月の参加数</h2><div id="rankMonth">Loading...</div></div>
+        <div class="card"><h2>今月の参加数</h2><table id="rankMonth">Loading...</table></div>
+        <div class="card"><h2>今年の参加数</h2><table id="rankYear">Loading...</table></div>
       </div>
 
       <div id="tab-mypage" class="page" style="display:none;">
@@ -197,7 +181,7 @@
           <h2>設定</h2>
           <label>表示名</label><input type="text" id="myName">
           <label>区分</label>
-          <select id="myCat"><option value="adult">社会人</option><option value="college">大学生</option><option value="student">高校生</option></select>
+          <select id="myCat"><option value="adult">社会人</option><option value="college">大学生</option><option value="student">高校生以下</option></select>
           <button class="btn-primary" onclick="saveProfile()">保存</button>
         </div>
       </div>
@@ -218,6 +202,7 @@
     const INIT_PAGE = params.get('page') || 'register';
 
     let state = { me: null, paypay: null, event: null, reg: null, participants: [] };
+    let loadedTabs = { ranking: false, future: false };
 
     function setBusy(isBusy) { document.getElementById('loading').style.display = isBusy ? 'flex' : 'none'; }
 
@@ -227,45 +212,78 @@
         if (!liff.isLoggedIn()) { liff.login(); return; }
         const profile = await liff.getProfile();
         
-        const [userRes, weekRes] = await Promise.all([
-          callApi('get_me', { lineUserId: profile.userId }),
-          callApi('get_this_week')
-        ]);
-
+        // 1. ユーザー取得 & 自動登録フロー
+        let userRes = await callApi('get_me', { lineUserId: profile.userId });
+        
         if (!userRes.exists) {
-          await callApi('upsert_member', { lineUserId: profile.userId, display_name: profile.displayName }, true);
-          const retry = await callApi('get_me', { lineUserId: profile.userId });
-          state.me = retry.member;
-        } else { state.me = userRes.member; }
-        state.paypay = userRes.paypay_config;
-
-        if(state.me) {
-          document.getElementById('myName').value = state.me.display_name;
-          document.getElementById('myCat').value = state.me.category;
-          if(['admin','sub_admin'].includes(state.me.role)) document.getElementById('subAdminArea').style.display = 'block';
-        }
-        if(state.paypay) {
-          document.querySelectorAll('.ppId').forEach(e => e.innerText = state.paypay.id);
-          document.querySelectorAll('.ppNameTarget').forEach(e => e.innerText = state.paypay.receiver);
+          // 未登録 -> 登録実行 -> 結果受取
+          const regRes = await callApi('upsert_member', { lineUserId: profile.userId, display_name: profile.displayName }, true);
+          state.me = regRes.member;
+          // 初回はマイページ強制
+          state.paypay = userRes.paypay_config; // get_meで取れてるConfig
+          initUI(true); // isFirstTime=true
+        } else {
+          state.me = userRes.member;
+          state.paypay = userRes.paypay_config;
+          initUI(false);
         }
 
-        if(weekRes.event) {
-          state.event = weekRes.event;
-          document.getElementById('thisWeekInfo').innerHTML = `<div>${state.event.date_str} ${state.event.start_time}-${state.event.end_time}</div>`;
-          document.getElementById('regFormArea').style.display = 'block';
-          document.getElementById('ppMsg').value = `${state.event.date_str} ${state.me.display_name}`;
-          
-          const myReg = await callApi('get_my_registration', { event_id: state.event.event_id, member_id: state.me.member_id });
-          state.reg = myReg.registration;
-          renderRegStatus();
-        }
-
-        setBusy(false);
-        document.getElementById('app').style.display = 'block';
-        switchTab(INIT_PAGE);
-
-      } catch (err) { alert('起動エラー: ' + err.message); }
+      } catch (err) { 
+        document.getElementById('debugLog').style.display = 'block';
+        document.getElementById('debugLog').innerText = err.message;
+        alert('起動エラー: ' + err.message); 
+      }
     };
+
+    async function initUI(isFirstTime) {
+      // 基本情報セット
+      if(state.me) {
+        document.getElementById('myName').value = state.me.display_name;
+        document.getElementById('myCat').value = state.me.category;
+        if(['admin','sub_admin'].includes(state.me.role)) document.getElementById('subAdminArea').style.display = 'block';
+      }
+      
+      // PayPay情報 (安全にセット)
+      if(state.paypay) {
+        const setTxt = (sel, txt) => document.querySelectorAll(sel).forEach(e => e.innerText = txt);
+        setTxt('.ppId', state.paypay.id);
+        setTxt('.ppNameTarget', state.paypay.receiver);
+      }
+
+      // イベント情報取得
+      const weekRes = await callApi('get_this_week');
+      if(weekRes.event) {
+        state.event = weekRes.event;
+        document.getElementById('thisWeekInfo').innerHTML = `
+          <div style="font-weight:bold; font-size:1.1rem;">${state.event.date_str}</div>
+          <div>${state.event.start_time} - ${state.event.end_time}</div>
+          <div class="small muted">定員: ${state.event.capacity_total}名</div>
+        `;
+        document.getElementById('regFormArea').style.display = 'block';
+        document.getElementById('ppMsg').value = `${state.event.date_str} ${state.me.display_name}`;
+        
+        // 参加者リスト
+        const mems = weekRes.registrations || [];
+        document.getElementById('currentParticipantsCount').innerText = mems.reduce((a,b)=>a+1+b.guests, 0);
+        document.getElementById('regMembersList').innerHTML = mems.map(m => 
+          `<span class="member-list-chip">${m.name}${m.guests>0?'+'+m.guests:''}</span>`
+        ).join('');
+
+        const myReg = await callApi('get_my_registration', { event_id: state.event.event_id, member_id: state.me.member_id });
+        state.reg = myReg.registration;
+        renderRegStatus();
+      }
+
+      setBusy(false);
+      document.getElementById('app').style.display = 'block';
+      
+      if(isFirstTime) {
+        switchTab('mypage');
+        alert('はじめまして！\nまずは名前と区分(学生/社会人)を設定して保存してください。');
+      } else {
+        switchTab(INIT_PAGE);
+      }
+    }
 
     async function callApi(a, d, p=false) {
       let u = `${API_URL}?action=${a}`, o = { method: p?'POST':'GET' };
@@ -275,27 +293,30 @@
     }
 
     window.switchTab = (page) => {
+      if(page === 'home') page = 'register';
       document.querySelectorAll('.page').forEach(e => e.style.display='none');
       document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
       document.getElementById('tab-'+page).style.display = 'block';
       document.getElementById('nav-'+page).classList.add('active');
 
+      if(page === 'register' && !loadedTabs.future) {
+        loadedTabs.future = true;
+        document.getElementById('lazyRegister').style.display = 'block';
+        loadFutureAndPast();
+      }
+      if(page === 'ranking' && !loadedTabs.ranking) {
+        loadedTabs.ranking = true;
+        loadRankings();
+      }
       if(page === 'day') checkDayAccess();
-      if(page === 'ranking') loadRankings();
     };
 
-    // --- Day Logic ---
     function checkDayAccess() {
       if(!state.event) return;
       const now = new Date();
-      const evDate = new Date(state.event.date); // "YYYY-MM-DD"
-      // 練習日当日か？
-      if(now.toDateString() !== evDate.toDateString()) {
-        // デモ用や開発中はコメントアウトしても良い
-        // document.getElementById('dayContent').style.display = 'none';
-        // document.getElementById('restrictedMsg').style.display = 'block';
-        // return; 
-      }
+      const evDate = new Date(state.event.date);
+      // デバッグ用: 日付チェックをコメントアウトすればいつでも見れる
+      // if(now.toDateString() !== evDate.toDateString()) { ... }
       
       const hh = now.getHours();
       const mm = now.getMinutes();
@@ -306,10 +327,9 @@
         document.getElementById('restrictedMsg').style.display = 'none';
         loadDayData();
       } else {
-        // ★開発中につき、本来は非表示だが表示させておく場合はここを調整
-        document.getElementById('dayContent').style.display = 'block'; // 本番はnone
-        document.getElementById('restrictedMsg').style.display = 'none'; // 本番はblock
-        loadDayData();
+        // ★運用時はここを切り替える
+        document.getElementById('dayContent').style.display = 'none';
+        document.getElementById('restrictedMsg').style.display = 'block';
       }
     }
 
@@ -318,19 +338,18 @@
       state.participants = res.data.participants || [];
       const result = res.data.lastResult;
       
-      // 抽選結果
       const box = document.getElementById('dayLotteryResult');
       if(result && result.courts) {
         let html = `<p style="font-weight:bold;">第${res.data.currentRound}ラウンド</p>`;
         Object.keys(result.courts).forEach(k => {
           const c = result.courts[k];
-          html += `<div style="background:#eee; padding:5px; margin:5px 0; border-radius:4px;">${k}<br>${c[0][0]},${c[0][1]} vs ${c[1][0]},${c[1][1]}</div>`;
+          html += `<div style="background:#eee; padding:5px; margin:5px 0; border-radius:4px; font-size:0.9rem;"><strong>${k}</strong><br>${c[0][0]},${c[0][1]} vs ${c[1][0]},${c[1][1]}</div>`;
         });
         if(result.rest && result.rest.length) html += `<div class="small muted">休憩: ${result.rest.join(', ')}</div>`;
         box.innerHTML = html;
       }
 
-      // 当日払い表示 (自分が day_paypay かつ未払いの場合)
+      // 当日払い表示
       const myP = state.participants.find(p => p.member_id === state.me.member_id);
       if (myP && myP.payment_method === 'day_paypay' && myP.payment_status !== 'paid') {
         document.getElementById('dayPayInfo').style.display = 'block';
@@ -338,19 +357,18 @@
         document.getElementById('dayPayInfo').style.display = 'none';
       }
 
-      // SubAdmin
       if(['admin','sub_admin'].includes(state.me.role)) {
         renderAdminLists();
       }
     }
 
     function renderAdminLists() {
-      // 抽選リスト
+      // 抽選
       const lBox = document.getElementById('adminLotteryList');
       lBox.innerHTML = state.participants.map(p => `
         <div class="admin-list-item">
           <div>${p.name} <span class="small muted">(${p.play_count}回)</span></div>
-          <select id="stat-${p.participant_id}" style="width:auto; padding:2px; margin:0;">
+          <select id="stat-${p.participant_id}" class="status-select">
             <option value="participating" ${p.status=='participating'?'selected':''}>参加</option>
             <option value="late" ${p.status=='late'?'selected':''}>遅刻</option>
             <option value="leave" ${p.status=='leave'?'selected':''}>早退</option>
@@ -358,7 +376,7 @@
           </select>
         </div>`).join('');
 
-      // 集金リスト
+      // 集金
       const cBox = document.getElementById('adminCollectionList');
       cBox.innerHTML = state.participants.map(p => {
         const isPaid = p.payment_status === 'paid' || p.payment_status === 'paid_advance';
@@ -416,22 +434,17 @@
       loadDayData();
     };
 
-    // --- Registration ---
     function renderRegStatus() {
       const badge = document.getElementById('regStatusBadge');
       const btnReg = document.getElementById('btnRegister');
       const btnCancel = document.getElementById('btnCancel');
       
-      // 参加人数表示
-      document.getElementById('currentParticipantsCount').innerText = state.reg && state.reg.guest_count ? 1 + state.reg.guest_count : 0; // 簡易
-
       if(state.reg && state.reg.status === 'reserved') {
         badge.innerText = '参加登録済';
         badge.className = 'badge bg-green';
         btnReg.innerText = '登録更新';
         btnCancel.style.display = 'inline-block';
         
-        // 支払い方法復元
         const method = state.reg.payment_method;
         if(method) {
           const radio = document.querySelector(`input[name="payMethod"][value="${method}"]`);
@@ -469,39 +482,60 @@
       setBusy(true);
       await callApi('register', {
         event_id: state.event.event_id, member_id: state.me.member_id, status: 'reserved',
-        guests: [], // ゲスト実装省略(UIはあるが)
+        guests: [], // Guests logic omitted for brevity but UI exists
         is_paid: isPaid, pay_method: method
       }, true);
       alert('登録しました');
       location.reload();
     };
 
-    // 他関数(toggleGuests, calcTotal等)は省略せず実装済みと仮定
     window.toggleGuests = () => {
-        const on = document.getElementById('friendToggle').checked;
-        document.getElementById('guestSection').style.display = on ? 'block' : 'none';
-        if(on && document.getElementById('guestCount').value==0) {
-            document.getElementById('guestCount').value = 1;
-            renderGuestInputs();
-        }
-        calcTotal();
+      const on = document.getElementById('friendToggle').checked;
+      document.getElementById('guestSection').style.display = on?'block':'none';
+      if(on && document.getElementById('guestCount').value==0) {
+        document.getElementById('guestCount').value=1; renderGuestInputs();
+      }
+      calcTotal();
     };
     window.renderGuestInputs = () => {
-        const cnt = document.getElementById('guestCount').value;
-        const box = document.getElementById('guestInputs');
-        box.innerHTML = '';
-        // 簡易実装
-        for(let i=0; i<cnt; i++) {
-            box.innerHTML += `<div class="guest-row"><input type="text" placeholder="名前"></div>`;
-        }
-        calcTotal();
+      const cnt = document.getElementById('guestCount').value;
+      const box = document.getElementById('guestInputs');
+      box.innerHTML = '';
+      for(let i=0; i<cnt; i++) box.innerHTML += `<div class="guest-row"><input type="text" placeholder="名前"></div>`;
+      calcTotal();
     };
-    window.calcTotal = () => {}; // 料金計算
-    window.saveProfile = async () => {}; // プロフィール保存
-    window.loadRankings = async () => {}; // ランキング
+    window.calcTotal = () => {}; 
+    window.saveProfile = async () => {
+      const name = document.getElementById('myName').value;
+      const cat = document.getElementById('myCat').value;
+      if(!name) return;
+      setBusy(true);
+      await callApi('upsert_member', { lineUserId: state.me.line_user_id, display_name: name, category: cat }, true);
+      alert('保存しました');
+      setBusy(false);
+    };
+    window.loadRankings = async () => {
+      const res = await callApi('get_rankings');
+      renderTable('rankMonth', res.data.month);
+      renderTable('rankYear', res.data.year);
+    };
+    function renderTable(id, list) {
+      document.getElementById(id).innerHTML = list.map((r,i) => `<tr><td style="width:30px;">${i+1}</td><td class="${i==0?'rank-1':''}">${r.name}</td><td style="text-align:right;">${i==0?r.month||r.year:r.month||r.year}回</td></tr>`).join('');
+    }
+    async function loadFutureAndPast() {
+      const [fut, past] = await Promise.all([callApi('get_future_events'), callApi('get_past_events')]);
+      const boxF = document.getElementById('futureList');
+      const boxP = document.getElementById('pastList');
+      if(!fut.events || !fut.events.length) boxF.innerText = '予定なし';
+      else boxF.innerHTML = fut.events.map(e => `<div style="border-bottom:1px solid #eee; padding:5px;">${e.date_str} ${e.start_time}-${e.end_time} (${e.status})</div>`).join('');
+      if(!past.events || !past.events.length) boxP.innerText = '履歴なし';
+      else boxP.innerHTML = past.events.map(e => `<div style="border-bottom:1px solid #eee; padding:5px;">${e.date_str}</div>`).join('');
+    }
     window.copyText = (id) => {
-        const t = document.getElementById(id) ? (document.getElementById(id).value || document.getElementById(id).innerText) : document.querySelector('.'+id).innerText;
-        navigator.clipboard.writeText(t).then(()=>alert('コピーしました'));
+      const el = document.querySelector('.'+id) || document.getElementById(id);
+      const t = el.tagName==='INPUT' ? el.value : el.innerText;
+      if (navigator.clipboard) { navigator.clipboard.writeText(t).then(()=>alert('コピーしました')).catch(()=>prompt('コピー', t)); }
+      else { prompt('コピー', t); }
     };
   </script>
 </body>
