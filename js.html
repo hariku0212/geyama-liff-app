@@ -1,5 +1,5 @@
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbx3QQMnnjQl-3bb77-HO9SVztNzaBpl8sXTHNBm7ydsLZMK50dlNqau-qHXU16HufrEBQ/exec'; // GASのURL
+const API_URL = '<?!= ScriptApp.getService().getUrl() ?>'; // GASのURL
 let currentUser = null;
 let currentEvent = null;
 
