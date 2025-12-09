@@ -9,21 +9,25 @@
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; }
     .container { max-width: 600px; margin: 0 auto; padding: 15px; }
     
+    /* カード */
     .card { background: var(--card); padding: 16px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); margin-bottom: 16px; }
     h2 { font-size: 1.1rem; margin: 0 0 10px; border-bottom: 2px solid var(--primary); padding-bottom: 5px; display: inline-block; }
     h3 { font-size: 1rem; margin: 15px 0 8px; font-weight: bold; color: #444; }
     .muted { color: var(--gray); font-size: 0.85rem; line-height: 1.4; }
     .small { font-size: 0.8rem; }
     
+    /* Loading */
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(255,255,255,0.95); z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     .shuttle-img { width: 80px; height: auto; animation: bounce 1s infinite alternate ease-in-out; }
     @keyframes bounce { 0% { transform: translateY(0); } 100% { transform: translateY(-30px); } }
     
+    /* Nav */
     .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid #ddd; padding-bottom: env(safe-area-inset-bottom); z-index: 1000; }
     .nav-item { flex: 1; text-align: center; padding: 8px 0; font-size: 0.65rem; color: var(--gray); cursor: pointer; }
     .nav-item.active { color: var(--primary); font-weight: bold; }
     .nav-icon { font-size: 1.4rem; display: block; margin-bottom: 2px; }
     
+    /* Inputs */
     input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; margin-bottom: 8px; font-size: 1rem; }
     button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 8px; }
     .btn-primary { background: var(--primary); color: #fff; }
@@ -33,9 +37,12 @@
     .btn-copy { padding: 4px 8px; font-size: 0.8rem; width: auto; margin: 0 0 0 8px; display: inline-block; }
     .btn-sm { width: auto; padding: 4px 8px; font-size: 0.8rem; margin: 0; border-radius: 4px; }
     
-    input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; margin: 0 8px 0 0; vertical-align: middle; }
+    /* Checkbox & Radio */
+    input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; margin: 0 8px 0 0; vertical-align: middle; -webkit-appearance: checkbox; appearance: auto; }
+    input[type="radio"] { -webkit-appearance: radio; border-radius: 50%; }
     .inline-label { display: flex; align-items: center; width: 100%; cursor: pointer; margin-bottom: 8px; }
 
+    /* Admin UI */
     .admin-list-item { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; padding: 10px 0; }
     .admin-item-left { flex: 1; display: flex; align-items: center; overflow: hidden; margin-right: 10px; }
     .admin-item-right { flex: 0 0 auto; display: flex; align-items: center; justify-content: flex-end; }
@@ -51,6 +58,7 @@
     .admin-menu-btn:active { background: #f0f0f0; }
     .admin-icon { font-size: 1.5rem; display: block; margin-bottom: 5px; }
     
+    /* Others */
     .guest-row { display: flex; gap: 5px; margin-bottom: 5px; }
     .guest-row input { flex: 2; }
     .guest-row select { flex: 1; font-size: 0.85rem; padding: 8px 4px; }
@@ -61,9 +69,11 @@
     .step-list { padding-left: 20px; font-size: 0.85rem; color: #444; line-height: 1.6; margin-bottom: 10px; }
     .member-list-chip { display: inline-block; background: #e0f2f1; color: #00695c; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; margin: 2px; }
     .paid-row { opacity: 0.5; }
+    
     table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     th, td { padding: 8px; border-bottom: 1px solid #eee; text-align: left; }
     .rank-1 { color: #d4af37; font-weight: bold; }
+    
     #restrictedMsg { text-align: center; padding: 40px 0; color: #888; }
     #debugLog { background: #333; color: #0f0; padding: 10px; font-family: monospace; font-size: 0.8rem; margin-bottom: 20px; border-radius: 8px; display: none; }
     .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1500; display:none; justify-content:center; align-items:center; }
@@ -96,7 +106,11 @@
             </div>
             
             <form id="regForm">
-              <label class="inline-label"><input type="checkbox" id="friendToggle" onchange="toggleGuests()"><span>友達を連れていく</span></label>
+              <label class="inline-label">
+                <input type="checkbox" id="friendToggle" onchange="toggleGuests()">
+                <span>友達を連れていく</span>
+              </label>
+              
               <div id="guestSection" style="display:none; background:#f9f9f9; padding:10px; border-radius:8px;">
                 <label>人数: <input type="number" id="guestCount" min="0" max="5" value="0" onchange="renderGuestInputs()"></label>
                 <div id="guestInputs"></div>
@@ -145,7 +159,10 @@
             </div>
           </div>
 
-          <div class="card"><h2>本日の練習</h2><div id="dayLotteryResult"><p>抽選結果はまだありません。</p></div></div>
+          <div class="card">
+            <h2>本日の練習</h2>
+            <div id="dayLotteryResult"><p>抽選結果はまだありません。</p></div>
+          </div>
 
           <div id="subAdminCollection" style="display:none;">
             <div class="card" style="border-left: 5px solid var(--accent);">
@@ -265,7 +282,7 @@
   </div>
 
   <script>
-    // --- Global Definition ---
+    // --- 1. GLOBAL VARIABLES & UTILS (Defined FIRST) ---
     const API_URL = 'https://script.google.com/macros/s/AKfycbx3QQMnnjQl-3bb77-HO9SVztNzaBpl8sXTHNBm7ydsLZMK50dlNqau-qHXU16HufrEBQ/exec';
     const LIFF_ID = '2008652596-Gew4K44V';
     const params = new URLSearchParams(window.location.search);
@@ -285,8 +302,10 @@
       return await r.json();
     }
 
-    // --- Action Functions ---
-    function switchTab(page) {
+    // --- 2. CORE ACTION FUNCTIONS (Defined Globally) ---
+    
+    // Tab & Menu Switching
+    window.switchTab = function(page) {
       document.querySelectorAll('.page').forEach(e => e.style.display='none');
       document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
       document.getElementById('tab-'+page).style.display = 'block';
@@ -297,49 +316,124 @@
       if(page === 'day') checkDayAccess();
     }
 
-    function showAdminView(view) {
+    window.showAdminView = function(view) {
       ['menu','acc','sched','fees','roles'].forEach(v => document.getElementById('adminView-'+v).style.display = 'none');
       document.getElementById('adminMenu').style.display = (view==='menu')?'block':'none';
       if(view!=='menu') document.getElementById('adminView-'+view).style.display = 'block';
     }
 
-    async function saveAccounting() {
+    // Initialization
+    window.initUI = function(isFirst) {
+      if(state.me) {
+        document.getElementById('myName').value = state.me.display_name;
+        document.getElementById('myCat').value = state.me.category;
+        const r = state.me.role;
+        const isAdmin = (r==='admin'||r==='sub_admin');
+        if(isAdmin) {
+          document.getElementById('subAdminArea').style.display = 'block';
+          document.getElementById('subAdminCollection').style.display = 'block';
+          document.getElementById('nav-admin').style.display = 'block';
+          if(r==='admin') {
+             document.getElementById('cancelEventArea').style.display = 'block';
+          } else {
+             // SubAdmin: Hide sensitive buttons
+             document.querySelector('.admin-menu-btn[onclick*="fees"]').style.display = 'none';
+             document.querySelector('.admin-menu-btn[onclick*="roles"]').style.display = 'none';
+          }
+        }
+      }
+      if(state.paypay) {
+        const setT = (s,t) => document.querySelectorAll(s).forEach(e => e.innerText=t);
+        setT('.ppId', state.paypay.id); setT('.ppNameTarget', state.paypay.receiver);
+      }
+      if(state.isDebug) {
+        document.getElementById('debugRibbon').style.display='block';
+        if(['admin','sub_admin'].includes(state.me.role)) document.getElementById('debugAdminArea').style.display='block';
+      }
+      setBusy(false);
+      document.getElementById('app').style.display = 'block';
+      switchTab(isFirst ? 'mypage' : INIT_PAGE);
+    }
+
+    // Admin Actions
+    window.saveAccounting = async function() {
       const amt = document.getElementById('accAmount').value;
       if(!amt) return;
       await callApi('save_accounting', { type:document.getElementById('accType').value, wallet:document.getElementById('accWallet').value, amount:amt, desc:document.getElementById('accDesc').value }, true);
       alert('保存しました'); loadAdminData();
     }
-    async function saveTransfer() {
+    window.saveTransfer = async function() {
       const amt = document.getElementById('trAmount').value;
       if(!amt) return;
       await callApi('save_transfer', { amount:amt, from_wallet:document.getElementById('trFrom').value, to_wallet:document.getElementById('trTo').value }, true);
       alert('移動しました'); loadAdminData();
     }
-    async function saveFees() {
-      await callApi('save_fee_config', { adult:document.getElementById('cfgAdult').value, college:document.getElementById('cfgCollege').value, student:document.getElementById('cfgStudent').value, capacity:document.getElementById('cfgCapacity').value }, true);
+    window.saveFees = async function() {
+      await callApi('save_fee_config', { 
+        adult:document.getElementById('cfgAdult').value, 
+        college:document.getElementById('cfgCollege').value, 
+        student:document.getElementById('cfgStudent').value,
+        capacity:document.getElementById('cfgCapacity').value 
+      }, true);
       alert('保存しました');
     }
-    async function updateRole(mid, role) { await callApi('update_role', { member_id: mid, role: role }, true); }
-    async function saveSchedule() {
+    window.updateRole = async function(mid, role) { await callApi('update_role', { member_id: mid, role: role }, true); }
+    window.saveSchedule = async function() {
       const dates = []; document.querySelectorAll('.sch-chk:checked').forEach(c => dates.push(c.value));
       if(!dates.length) return alert('選択してください');
       if(confirm('登録しますか？')) { setBusy(true); await callApi('save_schedule', { dates:dates }, true); alert('登録しました'); setBusy(false); }
     }
-    async function cancelEvent() { if(confirm('本当に中止にしますか？')) { setBusy(true); await callApi('cancel_event', { event_id: state.event.event_id }, true); alert('中止しました'); location.reload(); } }
+    window.cancelEvent = async function() { if(confirm('本当に中止にしますか？')) { setBusy(true); await callApi('cancel_event', { event_id: state.event.event_id }, true); alert('中止しました'); location.reload(); } }
 
-    async function executeLottery() {
+    // Day Actions
+    window.executeLottery = async function() {
       const stats = {}; state.participants.forEach(p => { const v=document.getElementById(`stat-${p.participant_id}`).value; if(v!==p.status) stats[p.participant_id]=v; });
       if(confirm('抽選実行？')) { setBusy(true); await callApi('run_lottery', { event_id: state.event.event_id, statuses: stats }, true); alert('完了'); loadDayData(); setBusy(false); }
     }
-    async function saveCollection() {
+    window.saveCollection = async function() {
       const ids = []; document.querySelectorAll('.col-chk:checked:not([disabled])').forEach(e => ids.push(e.value));
       if(!ids.length) return alert('チェックなし');
       if(confirm('保存しますか？')) { setBusy(true); await callApi('update_collection', { event_id: state.event.event_id, paid_ids: ids }, true); alert('保存しました'); loadDayData(); setBusy(false); }
     }
-    async function deleteLastRound() { if(confirm('取消しますか？')) { setBusy(true); await callApi('delete_round', { event_id: state.event.event_id }); loadDayData(); setBusy(false); } }
-    async function manualAddUser() { const n = prompt('名前:'); if(n) { setBusy(true); await callApi('manual_add_participant', { event_id: state.event.event_id, name: n }); loadDayData(); setBusy(false); } }
-    async function genDebugData() { if(confirm('生成しますか？')) { setBusy(true); await callApi('generate_debug', {}, true); alert('完了'); location.reload(); } }
+    window.deleteLastRound = async function() { if(confirm('取消しますか？')) { setBusy(true); await callApi('delete_round', { event_id: state.event.event_id }); loadDayData(); setBusy(false); } }
+    window.manualAddUser = async function() { const n = prompt('名前:'); if(n) { setBusy(true); await callApi('manual_add_participant', { event_id: state.event.event_id, name: n }); loadDayData(); setBusy(false); } }
+    window.genDebugData = async function() { if(confirm('生成しますか？')) { setBusy(true); await callApi('generate_debug', {}, true); alert('完了'); location.reload(); } }
 
+    // Registration Logic
+    window.togglePayMethod = function() {
+      const val = document.querySelector('input[name="payMethod"]:checked')?.value;
+      document.getElementById('payDetail-advance').style.display = (val === 'advance') ? 'block' : 'none';
+    }
+    window.submitRegistration = async function() {
+      const method = document.querySelector('input[name="payMethod"]:checked')?.value;
+      if(!method) return alert('支払い方法を選択してください');
+      let isPaid = false;
+      if(method === 'advance') { if(!document.getElementById('chkPaidAdvance').checked) return alert('送金完了チェックを入れてください'); isPaid = true; }
+      const guests = [];
+      if(document.getElementById('friendToggle').checked) {
+        const names = document.querySelectorAll('.g-name');
+        const cats = document.querySelectorAll('.g-cat');
+        for(let i=0; i<names.length; i++) { if(!names[i].value) return alert('ゲスト名を入力'); guests.push({name:names[i].value, category:cats[i].value}); }
+      }
+      if(confirm('登録しますか？')) { setBusy(true); try { await callApi('register', { event_id: state.event.event_id, member_id: state.me.member_id, status: 'reserved', guests: guests, is_paid: isPaid, pay_method: method }, true); alert('登録しました'); location.reload(); } catch(e) { setBusy(false); alert(e.message); } }
+    }
+    window.cancelRegistration = async function() { if(confirm('キャンセルしますか？')) { setBusy(true); await callApi('register', { event_id: state.event.event_id, member_id: state.me.member_id, status: 'canceled', guests: [] }, true); alert('キャンセルしました'); location.reload(); } }
+    window.saveProfile = async function() {
+      const name = document.getElementById('myName').value; const cat = document.getElementById('myCat').value; if(!name) return; setBusy(true); await callApi('upsert_member', { lineUserId: state.me.line_user_id, display_name: name, category: cat }, true); alert('保存しました'); setBusy(false);
+    }
+    window.toggleGuests = function() { const on = document.getElementById('friendToggle').checked; document.getElementById('guestSection').style.display = on?'block':'none'; if(on && document.getElementById('guestCount').value==0) { document.getElementById('guestCount').value=1; renderGuestInputs(); } calcTotal(); }
+    window.renderGuestInputs = function() { 
+        const cnt = document.getElementById('guestCount').value; const box = document.getElementById('guestInputs'); box.innerHTML = '';
+        for(let i=0; i<cnt; i++) box.innerHTML += `<div class="guest-row"><input type="text" class="g-name" placeholder="名前" required><select class="g-cat" onchange="calcTotal()"><option value="adult">社会人</option><option value="college">大学生</option><option value="student">高校生</option></select></div>`; calcTotal(); 
+    }
+    window.calcTotal = function() { if(!state.me) return; let sum = getFee(state.me.category); if(document.getElementById('friendToggle').checked) document.querySelectorAll('.g-cat').forEach(e => sum += getFee(e.value)); document.getElementById('feeDisplay').innerText = `支払予定: ${sum} 円`; }
+    window.copyText = function(id) { const el = document.querySelector('.'+id) || document.getElementById(id); const t = el.tagName==='INPUT' ? el.value : el.innerText; if (navigator.clipboard) { navigator.clipboard.writeText(t).then(()=>alert('コピーしました')).catch(()=>prompt('コピー', t)); } else { prompt('コピー', t); } }
+    window.closeModal = function() { document.getElementById('infoModal').style.display = 'none'; }
+    window.showPastDetail = async function(eid) { setBusy(true); const res = await callApi('get_past_event_detail', { event_id: eid }); setBusy(false); document.getElementById('modalContent').innerHTML = res.participants.length ? `<ul>${res.participants.map(p=>`<li>${p}</li>`).join('')}</ul>` : '参加者なし'; document.getElementById('infoModal').style.display = 'flex'; }
+
+    // Helpers
+    function getFee(c){ return c=='adult'?800:c=='college'?600:500; }
+    
     function renderRegStatus() {
       const badge = document.getElementById('regStatusBadge');
       const btnReg = document.getElementById('btnRegister');
@@ -360,54 +454,41 @@
       }
       togglePayMethod(); calcTotal();
     }
-    function togglePayMethod() {
-      const val = document.querySelector('input[name="payMethod"]:checked')?.value;
-      document.getElementById('payDetail-advance').style.display = (val === 'advance') ? 'block' : 'none';
-    }
-    async function submitRegistration() {
-      const method = document.querySelector('input[name="payMethod"]:checked')?.value;
-      if(!method) return alert('支払い方法を選択してください');
-      let isPaid = false;
-      if(method === 'advance') { if(!document.getElementById('chkPaidAdvance').checked) return alert('送金完了チェックを入れてください'); isPaid = true; }
-      const guests = [];
-      if(document.getElementById('friendToggle').checked) {
-        const names = document.querySelectorAll('.g-name');
-        const cats = document.querySelectorAll('.g-cat');
-        for(let i=0; i<names.length; i++) { if(!names[i].value) return alert('ゲスト名を入力'); guests.push({name:names[i].value, category:cats[i].value}); }
-      }
-      if(confirm('登録しますか？')) { setBusy(true); try { await callApi('register', { event_id: state.event.event_id, member_id: state.me.member_id, status: 'reserved', guests: guests, is_paid: isPaid, pay_method: method }, true); alert('登録しました'); location.reload(); } catch(e) { setBusy(false); alert(e.message); } }
-    }
-    async function cancelRegistration() { if(confirm('キャンセルしますか？')) { setBusy(true); await callApi('register', { event_id: state.event.event_id, member_id: state.me.member_id, status: 'canceled', guests: [] }, true); alert('キャンセルしました'); location.reload(); } }
-    async function saveProfile() {
-      const name = document.getElementById('myName').value; const cat = document.getElementById('myCat').value; if(!name) return; setBusy(true); await callApi('upsert_member', { lineUserId: state.me.line_user_id, display_name: name, category: cat }, true); alert('保存しました'); setBusy(false);
-    }
-    function toggleGuests() { const on = document.getElementById('friendToggle').checked; document.getElementById('guestSection').style.display = on?'block':'none'; if(on && document.getElementById('guestCount').value==0) { document.getElementById('guestCount').value=1; renderGuestInputs(); } calcTotal(); }
-    function renderGuestInputs() { const cnt = document.getElementById('guestCount').value; const box = document.getElementById('guestInputs'); box.innerHTML = ''; for(let i=0; i<cnt; i++) box.innerHTML += `<div class="guest-row"><input type="text" class="g-name" placeholder="名前" required><select class="g-cat" onchange="calcTotal()"><option value="adult">社会人</option><option value="college">大学生</option><option value="student">高校生</option></select></div>`; calcTotal(); }
-    function calcTotal() { if(!state.me) return; let sum = getFee(state.me.category); if(document.getElementById('friendToggle').checked) document.querySelectorAll('.g-cat').forEach(e => sum += getFee(e.value)); document.getElementById('feeDisplay').innerText = `支払予定: ${sum} 円`; }
-    function getFee(c){ return c=='adult'?800:c=='college'?600:500; }
-    
-    function copyText(id) { const el = document.querySelector('.'+id) || document.getElementById(id); const t = el.tagName==='INPUT' ? el.value : el.innerText; if (navigator.clipboard) { navigator.clipboard.writeText(t).then(()=>alert('コピーしました')).catch(()=>prompt('コピー', t)); } else { prompt('コピー', t); } }
-    function closeModal() { document.getElementById('infoModal').style.display = 'none'; }
-    async function showPastDetail(eid) { setBusy(true); const res = await callApi('get_past_event_detail', { event_id: eid }); setBusy(false); document.getElementById('modalContent').innerHTML = res.participants.length ? `<ul>${res.participants.map(p=>`<li>${p}</li>`).join('')}</ul>` : '参加者なし'; document.getElementById('infoModal').style.display = 'flex'; }
 
-    // --- Loading & Render Helpers ---
     function checkDayAccess() {
       if(!state.event) return;
       const now = new Date(); const hh = now.getHours(); const mm = now.getMinutes(); const t = hh * 60 + mm;
       if(state.isDebug || (t >= 1050 && t <= 1320)) { document.getElementById('dayContent').style.display = 'block'; document.getElementById('restrictedMsg').style.display = 'none'; loadDayData(); }
       else { document.getElementById('dayContent').style.display = 'none'; document.getElementById('restrictedMsg').style.display = 'block'; }
     }
+
     async function loadDayData() {
-      setBusy(true); const res = await callApi('get_participants_detail', { event_id: state.event.event_id }); setBusy(false);
-      state.participants = res.data.participants || []; const rounds = res.data.allRounds || []; 
+      setBusy(true);
+      const res = await callApi('get_participants_detail', { event_id: state.event.event_id });
+      setBusy(false);
+      state.participants = res.data.participants || [];
+      const rounds = res.data.allRounds || []; 
+      
       const box = document.getElementById('dayLotteryResult');
       if(rounds.length > 0) {
-        let html = ''; rounds.forEach(r => { html += `<div style="margin-bottom:15px; border-bottom:1px dashed #ccc; padding-bottom:10px;"><p style="font-weight:bold; margin:0 0 5px;">第${r.round_no}ラウンド</p>`; Object.keys(r.result.courts).forEach(k => { const c = r.result.courts[k]; html += `<div style="background:#eee; padding:5px; margin:2px 0; border-radius:4px; font-size:0.85rem;"><strong>${k}</strong><br>${c[0][0]},${c[0][1]} vs ${c[1][0]},${c[1][1]}</div>`; }); if(r.result.rest && r.result.rest.length) html += `<div class="small muted">休憩: ${r.result.rest.join(', ')}</div>`; html += `</div>`; }); box.innerHTML = html;
+        let html = '';
+        rounds.forEach(r => {
+          html += `<div style="margin-bottom:15px; border-bottom:1px dashed #ccc; padding-bottom:10px;"><p style="font-weight:bold; margin:0 0 5px;">第${r.round_no}ラウンド</p>`;
+          Object.keys(r.result.courts).forEach(k => {
+            const c = r.result.courts[k];
+            html += `<div style="background:#eee; padding:5px; margin:2px 0; border-radius:4px; font-size:0.85rem;"><strong>${k}</strong><br>${c[0][0]},${c[0][1]} vs ${c[1][0]},${c[1][1]}</div>`;
+          });
+          if(r.result.rest && r.result.rest.length) html += `<div class="small muted">休憩: ${r.result.rest.join(', ')}</div>`;
+          html += `</div>`;
+        });
+        box.innerHTML = html;
       } else { box.innerHTML = '<p>抽選結果はまだありません。</p>'; }
+      
       const myP = state.participants.find(p => p.member_id === state.me.member_id);
       document.getElementById('dayPayInfo').style.display = (myP && myP.payment_method === 'day_paypay' && myP.payment_status !== 'paid') ? 'block' : 'none';
       if(['admin','sub_admin'].includes(state.me.role)) renderAdminLists();
     }
+
     function renderAdminLists() {
       document.getElementById('adminLotteryList').innerHTML = state.participants.map(p => `
         <div class="admin-list-item"><div class="admin-item-left"><span class="admin-name">${p.name}</span><span class="small muted" style="margin-left:5px;">(${p.play_count})</span></div><div class="admin-item-right"><select id="stat-${p.participant_id}" class="status-select"><option value="participating" ${p.status=='participating'?'selected':''}>参加</option><option value="late" ${p.status=='late'?'selected':''}>遅刻</option><option value="leave" ${p.status=='leave'?'selected':''}>早退</option><option value="rest_request" ${p.status=='rest_request'?'selected':''}>休憩</option></select></div></div>`).join('');
@@ -417,6 +498,7 @@
         return `<div class="admin-list-item ${isPaid?'paid-row':''}"><div class="admin-item-left"><label><input type="checkbox" class="col-chk" value="${p.member_id}" ${isPaid?'disabled checked':''}> <span class="admin-name">${p.name}</span></label></div><div class="admin-item-right">${icon} <span class="pay-status">${stTxt}</span></div></div>`;
       }).join('');
     }
+
     async function loadAdminData() {
       setBusy(true); const res = await callApi('get_admin_init'); setBusy(false);
       const s = res.summary; document.getElementById('accSummary').innerText = `合計: ${s.total}円 (現:${s.cash}/P:${s.paypay}/口:${s.bank})`;
@@ -443,6 +525,7 @@
     async function loadRankings() { setBusy(true); const res = await callApi('get_rankings'); setBusy(false); renderTable('rankMonth', res.data.month); renderTable('rankYear', res.data.year); }
     function renderTable(id, list) { const el = document.getElementById(id); if(!list.length) { el.innerHTML = '<tr><td>データなし</td></tr>'; return; } el.innerHTML = list.map((r,i) => `<tr><td style="width:30px;">${i+1}</td><td class="${i==0?'rank-1':''}">${r.name}</td><td style="text-align:right;">${i==0?r.month||r.year:r.month||r.year}回</td></tr>`).join(''); }
 
+    // --- 3. ENTRY POINT ---
     window.onload = async () => {
       try {
         await liff.init({ liffId: LIFF_ID });
