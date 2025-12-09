@@ -1,0 +1,181 @@
+<script>
+const API_URL = '<?!= ScriptApp.getService().getUrl() ?>'; // GASのURL
+let currentUser = null;
+let currentEvent = null;
+
+// 初期化
+window.onload = async () => {
+  await liff.init({ liffId: '2008652596-Gew4K44V' });
+  if (!liff.isLoggedIn()) {
+    liff.login();
+    return;
+  }
+  const profile = await liff.getProfile();
+  
+  // ユーザー情報取得 (API呼び出し)
+  const userRes = await callApi('get_me', { lineUserId: profile.userId });
+  if(!userRes.exists) {
+    // 初回登録ロジック (省略)
+    alert('初回登録が必要です');
+  }
+  currentUser = userRes.member;
+  
+  document.getElementById('userInfo').innerText = `${currentUser.display_name} (${formatCat(currentUser.category)})`;
+  if(currentUser.role === 'admin' || currentUser.role === 'sub_admin') {
+    document.getElementById('adminTabBtn').style.display = 'block';
+  }
+  
+  // イベント取得
+  loadEvent();
+  
+  document.getElementById('app').style.display = 'block';
+};
+
+// API呼び出しヘルパー
+async function callApi(action, data) {
+  const isPost = data && !data.lineUserId; // 簡易判定
+  let url = `${API_URL}?action=${action}`;
+  let options = {};
+  
+  if (isPost) {
+    options = {
+      method: 'POST',
+      body: JSON.stringify(data)
+    };
+  } else if (data) {
+    Object.keys(data).forEach(k => url += `&${k}=${data[k]}`);
+  }
+  
+  const res = await fetch(url, options);
+  return await res.json();
+}
+
+// イベント読み込み
+async function loadEvent() {
+  const res = await callApi('get_upcoming');
+  if(!res.event) {
+    document.getElementById('eventInfo').innerText = '現在予定されている練習はありません';
+    return;
+  }
+  currentEvent = res.event;
+  const d = new Date(currentEvent.date);
+  document.getElementById('eventInfo').innerText = 
+    `${d.getMonth()+1}/${d.getDate()} ${currentEvent.start_time} - ${currentEvent.end_time}`;
+    
+  // 自分の登録状況確認
+  // ... (get_my_registration APIを呼んでフォームに反映)
+}
+
+// ゲスト入力欄の制御
+function toggleGuests() {
+  const on = document.getElementById('friendToggle').checked;
+  document.getElementById('guestSection').style.display = on ? 'block' : 'none';
+  if(on && document.getElementById('guestCount').value == 0) {
+    document.getElementById('guestCount').value = 1;
+    renderGuestInputs();
+  }
+  calcTotal();
+}
+
+function renderGuestInputs() {
+  const count = document.getElementById('guestCount').value;
+  const container = document.getElementById('guestInputs');
+  container.innerHTML = '';
+  
+  for(let i=0; i<count; i++) {
+    const div = document.createElement('div');
+    div.className = 'guest-row';
+    div.innerHTML = `
+      <input type="text" placeholder="友達${i+1}の名前" class="guest-name" required>
+      <select class="guest-cat" onchange="calcTotal()">
+        <option value="adult">社会人</option>
+        <option value="college">大学生</option>
+        <option value="student">高校生以下</option>
+      </select>
+    `;
+    container.appendChild(div);
+  }
+  calcTotal();
+}
+
+function calcTotal() {
+  let total = getFee(currentUser.category); // 本人
+  
+  if(document.getElementById('friendToggle').checked) {
+    const cats = document.querySelectorAll('.guest-cat');
+    cats.forEach(c => {
+      total += getFee(c.value);
+    });
+  }
+  document.getElementById('feeTotal').innerText = `支払予定額: ${total} 円`;
+}
+
+function getFee(cat) {
+  if(cat === 'college') return 600;
+  if(cat === 'student') return 500;
+  return 800; // default adult
+}
+
+function formatCat(c) {
+  if(c==='adult') return '社会人';
+  if(c==='college') return '大学生';
+  return '高校生以下';
+}
+
+// 登録送信
+async function submitRegistration() {
+  if(!currentEvent) return;
+  
+  const guests = [];
+  if(document.getElementById('friendToggle').checked) {
+    const names = document.querySelectorAll('.guest-name');
+    const cats = document.querySelectorAll('.guest-cat');
+    for(let i=0; i<names.length; i++) {
+      if(!names[i].value) {
+        alert('友達の名前を入力してください');
+        return;
+      }
+      guests.push({
+        name: names[i].value,
+        category: cats[i].value
+      });
+    }
+  }
+  
+  if(!confirm(`参加登録しますか？\n支払予定: ${document.getElementById('feeTotal').innerText}`)) return;
+  
+  await callApi('register', {
+    event_id: currentEvent.event_id,
+    member_id: currentUser.member_id,
+    status: 'reserved',
+    guests: guests
+  });
+  
+  alert('登録しました！');
+  location.reload();
+}
+
+// タブ切り替え
+function switchTab(t) {
+  document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-'+t).style.display = 'block';
+  // active class logic...
+}
+
+// 管理: 抽選実行
+async function runLottery() {
+  if(!confirm('抽選を実行しますか？（参加者に通知が飛びます）')) return;
+  const courts = document.getElementById('adminCourts').value;
+  
+  const res = await callApi('run_lottery', {
+    event_id: currentEvent.event_id,
+    courts: courts
+  });
+  
+  if(res.ok) {
+    alert('抽選完了！ 第' + res.data.round + 'ラウンド');
+    // 結果表示ロジック...
+  }
+}
+</script>
