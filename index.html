@@ -5,25 +5,18 @@
   <title>ゲヤマクラブ</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <style>
-    :root { --primary: #06c755; --bg: #f2f4f8; --card: #ffffff; --text: #333; --danger: #e53935; --gray: #888; --accent: #ff9800; --blue: #1976d2; }
+    :root { --primary: #06c755; --bg: #f2f4f8; --card: #ffffff; --text: #333; --danger: #e53935; --gray: #888; --accent: #ff9800; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; }
     .container { max-width: 600px; margin: 0 auto; padding: 15px; }
-    
     .card { background: var(--card); padding: 16px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); margin-bottom: 16px; }
     h2 { font-size: 1.1rem; margin: 0 0 10px; border-bottom: 2px solid var(--primary); padding-bottom: 5px; display: inline-block; }
-    h3 { font-size: 1rem; margin: 15px 0 8px; font-weight: bold; color: #444; border-left: 4px solid #ccc; padding-left: 8px; }
-    
+    h3 { font-size: 1rem; margin: 10px 0 8px; font-weight: bold; color: #444; }
     .muted { color: var(--gray); font-size: 0.85rem; line-height: 1.4; }
     .small { font-size: 0.8rem; }
     
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(255,255,255,0.95); z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-    /* 高品質なシャトルSVG */
-    .shuttle-svg { width: 60px; height: 60px; animation: fly 1.2s infinite ease-in-out; }
-    @keyframes fly { 
-      0% { transform: translateY(10px) rotate(-10deg); } 
-      50% { transform: translateY(-30px) rotate(10deg); } 
-      100% { transform: translateY(10px) rotate(-10deg); } 
-    }
+    .shuttle-img { width: 80px; height: auto; animation: bounce 1s infinite alternate ease-in-out; }
+    @keyframes bounce { 0% { transform: translateY(0); } 100% { transform: translateY(-30px); } }
     
     .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid #ddd; padding-bottom: env(safe-area-inset-bottom); z-index: 1000; }
     .nav-item { flex: 1; text-align: center; padding: 10px 0; font-size: 0.7rem; color: var(--gray); cursor: pointer; }
@@ -35,59 +28,49 @@
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-danger { background: var(--danger); color: #fff; }
     .btn-accent { background: var(--accent); color: #fff; }
-    .btn-blue { background: var(--blue); color: #fff; }
     .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 6px 12px; font-size: 0.9rem; }
     .btn-copy { padding: 4px 8px; font-size: 0.8rem; width: auto; margin: 0 0 0 8px; display: inline-block; }
     
-    .guest-row { display: flex; gap: 8px; margin-bottom: 8px; }
     .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
     .bg-green { background: #e8f5e9; color: #2e7d32; }
     .bg-gray { background: #eee; color: #666; }
-    
     .paypay-box { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-top: 10px; font-size: 0.9rem; border: 1px solid #eee; }
     .step-list { padding-left: 20px; font-size: 0.85rem; color: #444; line-height: 1.6; margin-bottom: 10px; }
     
-    .admin-card { border: 1px solid #eee; padding: 10px; border-radius: 8px; margin-bottom: 15px; }
-    .admin-card.lottery { border-left: 5px solid var(--danger); background: #fff5f5; }
-    .admin-card.collection { border-left: 5px solid var(--accent); background: #fff8e1; }
-    
-    .admin-list-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding: 8px 0; }
-    .pay-icon { font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; margin-right: 5px; font-weight: bold; }
+    /* 運営UI */
+    .admin-card { border: 1px solid #eee; padding: 10px; border-radius: 8px; margin-bottom: 10px; background: #fafafa; }
+    .admin-list-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 8px 0; }
+    .pay-icon { font-size: 0.7rem; padding: 2px 4px; border-radius: 3px; margin-right: 5px; font-weight: bold; }
     .pay-icon.pp { background: #ffeb3b; color: #333; }
-    .pay-icon.cash { background: #bdbdbd; color: #fff; }
+    .pay-icon.cash { background: #bdbdbd; color: #333; }
     
-    .member-list-chip { display: inline-block; background: #e0f2f1; color: #00695c; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; margin: 2px; }
-    .status-select { padding: 4px; margin: 0; font-size: 0.85rem; background: #fff; }
-    .paid-row { opacity: 0.6; }
+    /* モーダル */
+    .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1500; display:none; justify-content:center; align-items:center; }
+    .modal { background:#fff; padding:20px; border-radius:12px; width:85%; max-width:400px; max-height:80%; overflow-y:auto; }
     
-    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-    th, td { padding: 8px; border-bottom: 1px solid #eee; text-align: left; }
-    .rank-1 { color: #d4af37; font-weight: bold; }
-    #restrictedMsg { text-align: center; padding: 40px 0; color: #888; }
-    #debugLog { background: #333; color: #0f0; padding: 10px; font-family: monospace; font-size: 0.8rem; margin-bottom: 20px; border-radius: 8px; display: none; }
-    
-    .past-event-item { padding: 8px 0; border-bottom: 1px solid #eee; cursor: pointer; }
-    .past-event-item:active { background: #f0f0f0; }
+    /* Debug Ribbon */
+    .debug-ribbon { position: fixed; top:0; right:0; background:red; color:white; font-size:0.7rem; padding:2px 10px; z-index:9999; pointer-events:none; }
   </style>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
   <div id="loading">
-    <svg class="shuttle-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M50 85 C50 85 38 78 38 65 H62 C62 78 50 85 50 85 Z" fill="#795548"/>
-      <path d="M38 65 L20 15 L32 10 L40 60" fill="#f5f5f5" stroke="#ccc"/>
-      <path d="M62 65 L80 15 L68 10 L60 60" fill="#f5f5f5" stroke="#ccc"/>
-      <path d="M50 65 V 10" stroke="#ccc" stroke-width="2"/>
-      <path d="M32 10 Q 50 0 68 10" fill="none" stroke="#ddd"/>
-    </svg>
+    <img src="fig/shuttle.png" class="shuttle-img" onerror="this.style.display='none';">
     <div style="margin-top:15px; font-weight:bold; color:#06c755;">Loading...</div>
   </div>
+  
+  <div id="debugRibbon" class="debug-ribbon" style="display:none;">DEBUG MODE</div>
 
-  <div id="debugLog"></div>
+  <div id="infoModal" class="modal-overlay" onclick="closeModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <h3 id="modalTitle">詳細</h3>
+      <div id="modalContent"></div>
+      <button class="btn-outline" onclick="closeModal()" style="margin-top:15px;">閉じる</button>
+    </div>
+  </div>
 
   <div id="app" style="display:none;">
     <div class="container">
-      
       <div id="tab-register" class="page">
         <div class="card">
           <h2>今週の練習</h2>
@@ -108,7 +91,7 @@
               <div id="feeDisplay" style="text-align:center; font-weight:bold; color:var(--primary); margin:15px 0;">支払予定: - 円</div>
 
               <div style="background:#f9f9f9; padding:15px; border-radius:8px; margin-bottom:15px;">
-                <h3 style="margin-top:0; border:none; padding:0; color:#333;">お支払い方法</h3>
+                <h3 style="margin-top:0;">お支払い方法</h3>
                 <label style="margin-top:10px; display:flex; align-items:start;">
                   <input type="radio" name="payMethod" value="advance" onchange="togglePayMethod()" style="width:auto; margin-top:4px; margin-right:8px;">
                   <div><span style="font-weight:bold;">事前PayPay決済</span></div>
@@ -117,19 +100,19 @@
                    <div class="paypay-box">
                      <strong>&lt;手順&gt;</strong>
                      <ol class="step-list">
-                       <li>下記 <strong>PayPay ID</strong> をコピー</li>
-                       <li>PayPayアプリ >「送る」>「IDで送る」</li>
-                       <li>IDを貼り付け検索 > 名義 <strong class="ppNameTarget">-</strong> を確認</li>
-                       <li>金額を入力</li>
-                       <li><strong>「メッセージを追加」にコピーしたメモ(日付・名前)を貼り付け</strong></li>
-                       <li>送金後、下記チェックを入れる</li>
+                       <li>下記の <strong>PayPay ID</strong> をコピー</li>
+                       <li>PayPayアプリ > 送る > IDで送る</li>
+                       <li>ID貼り付け > 検索</li>
+                       <li>名義 <strong class="ppNameTarget">-</strong> を確認</li>
+                       <li>金額入力</li>
+                       <li>メッセージに<strong>メモを貼り付け</strong></li>
+                       <li>送金完了後、チェックを入れる</li>
                      </ol>
                      <div>ID: <span class="ppId" style="font-weight:bold;">-</span> <button type="button" class="btn-outline btn-copy" onclick="copyText('ppId')">コピー</button></div>
-                     <div style="margin-top:5px; display:flex;"><input type="text" id="ppMsg" readonly style="margin:0; font-size:0.8rem; background:#fff; flex:1;"><button type="button" class="btn-outline btn-copy" onclick="copyText('ppMsg')">メモをコピー</button></div>
+                     <div style="margin-top:5px; display:flex;"><input type="text" id="ppMsg" readonly style="margin:0; font-size:0.8rem; background:#fff; flex:1;"><button type="button" class="btn-outline btn-copy" onclick="copyText('ppMsg')">メモコピー</button></div>
                    </div>
                    <label style="margin-top:10px; color:var(--primary); font-weight:bold;"><input type="checkbox" id="chkPaidAdvance" style="width:auto;"> 送金しました</label>
                 </div>
-
                 <label style="margin-top:15px; display:flex; align-items:start;">
                   <input type="radio" name="payMethod" value="day_paypay" onchange="togglePayMethod()" style="width:auto; margin-top:4px; margin-right:8px;">
                   <div><span style="font-weight:bold;">当日PayPay支払い</span></div>
@@ -153,22 +136,24 @@
       <div id="tab-day" class="page" style="display:none;">
         <div id="dayContent" style="display:none;">
           <div id="subAdminArea" style="display:none;">
-            <h2>運営メニュー</h2>
-            <div class="admin-card lottery">
-              <h3 style="color:var(--danger); border-color:var(--danger);">抽選管理</h3>
-              <p class="small muted">参加状況を確認して抽選を実行します。</p>
-              <div id="adminLotteryList"></div>
-              <div style="margin-top:10px; display:flex; gap:10px;">
-                <button class="btn-outline" style="font-size:0.8rem; background:#fff;" onclick="manualAddUser()">+ 手動追加</button>
-                <button class="btn-danger" style="flex:1;" onclick="executeLottery()">抽選実行</button>
+            <div class="card" style="border-left: 5px solid var(--danger);">
+              <h3 style="color:var(--danger); display:flex; justify-content:space-between;">運営: 抽選 <span class="small muted">自動コート割</span></h3>
+              <div class="admin-card">
+                <div id="adminLotteryList"></div>
+                <div style="margin-top:10px; display:flex; gap:10px;">
+                  <button class="btn-outline" style="font-size:0.8rem;" onclick="manualAddUser()">+ 追加</button>
+                  <button class="btn-danger" style="flex:1;" onclick="executeLottery()">抽選実行</button>
+                </div>
               </div>
-              <div style="text-align:right; margin-top:5px;"><button style="font-size:0.7rem; width:auto; background:#fff; border:1px solid #ccc; color:#666;" onclick="deleteLastRound()">直前取消</button></div>
+              <div style="text-align:right;"><button class="btn-outline" style="font-size:0.8rem; color:#888; border-color:#ccc;" onclick="deleteLastRound()">直前の回を取消</button></div>
             </div>
-            <div class="admin-card collection">
-              <h3 style="color:var(--accent); border-color:var(--accent);">集金管理</h3>
-              <p class="small muted">お金を受け取ったらチェックして保存。<br><span class="pay-icon pp">P</span>PayPay <span class="pay-icon cash">現</span>現金</p>
-              <div id="adminCollectionList"></div>
-              <button class="btn-accent" onclick="saveCollection()">集金状況を保存</button>
+            
+            <div class="card" style="border-left: 5px solid var(--accent);">
+              <h3 style="color:var(--accent);">運営: 集金</h3>
+              <div class="admin-card">
+                <div id="adminCollectionList"></div>
+                <button class="btn-accent" onclick="saveCollection()">集金状況を保存</button>
+              </div>
             </div>
           </div>
 
@@ -178,14 +163,13 @@
           </div>
           
           <div class="card" id="dayPayInfo" style="display:none;">
-            <h2>当日PayPay支払い</h2>
+            <h2>当日PayPay支払い手順</h2>
             <div class="paypay-box">
-              <strong>&lt;手順&gt;</strong>
               <ol class="step-list">
                 <li>ID: <strong class="ppId">-</strong> をコピー</li>
                 <li>PayPayアプリで送金</li>
                 <li>名義 <strong class="ppNameTarget">-</strong> を確認</li>
-                <li>金額入力 (メモに名前)</li>
+                <li>金額入力 (<strong>メモに名前を入力</strong>)</li>
                 <li><span style="color:red;font-weight:bold;">完了画面を集金担当者に見せる</span></li>
               </ol>
               <div>ID: <span class="ppId" style="font-weight:bold;">-</span> <button class="btn-outline btn-copy" onclick="copyText('ppId')">コピー</button></div>
@@ -205,8 +189,13 @@
           <h2>設定</h2>
           <label>表示名</label><input type="text" id="myName">
           <label>区分</label>
-          <select id="myCat"><option value="adult">社会人</option><option value="college">大学生</option><option value="student">高校生以下</option></select>
+          <select id="myCat"><option value="adult">社会人</option><option value="college">大学生</option><option value="student">高校生</option></select>
           <button class="btn-primary" onclick="saveProfile()">保存</button>
+        </div>
+        <div class="card" id="debugAdminArea" style="display:none; border:2px dashed red;">
+          <h2 style="color:red;">デバッグメニュー</h2>
+          <button class="btn-danger" onclick="genDebugData()">ダミーデータ生成(今日)</button>
+          <p class="small muted">今日の練習イベントと10人の参加者を作成します。</p>
         </div>
       </div>
     </div>
@@ -224,9 +213,8 @@
     const LIFF_ID = '2008652596-Gew4K44V';
     const params = new URLSearchParams(window.location.search);
     const INIT_PAGE = params.get('page') || 'register';
-    const IS_DEBUG = params.get('debug') === '1';
 
-    let state = { me: null, paypay: null, event: null, reg: null, participants: [] };
+    let state = { me: null, paypay: null, event: null, reg: null, participants: [], isDebug: false };
     let loadedTabs = { ranking: false, future: false };
 
     function setBusy(isBusy) { document.getElementById('loading').style.display = isBusy ? 'flex' : 'none'; }
@@ -237,64 +225,56 @@
         if (!liff.isLoggedIn()) { liff.login(); return; }
         const profile = await liff.getProfile();
         
-        const [userRes, weekRes] = await Promise.all([
-          callApi('get_me', { lineUserId: profile.userId }),
-          callApi('get_this_week')
-        ]);
+        const [userRes, weekRes] = await Promise.all([callApi('get_me', { lineUserId: profile.userId }), callApi('get_this_week')]);
 
         if (!userRes.exists) {
-          const regRes = await callApi('upsert_member', { lineUserId: profile.userId, display_name: profile.displayName }, true);
-          state.me = regRes.member;
-          state.paypay = userRes.paypay_config;
-          initUI(true);
-        } else {
-          state.me = userRes.member;
-          state.paypay = userRes.paypay_config;
-          initUI(false);
+          await callApi('upsert_member', { lineUserId: profile.userId, display_name: profile.displayName }, true);
+          const retry = await callApi('get_me', { lineUserId: profile.userId });
+          state.me = retry.member;
+        } else { state.me = userRes.member; }
+        state.paypay = userRes.paypay_config;
+        state.isDebug = userRes.is_debug;
+
+        if(state.isDebug) {
+          document.getElementById('debugRibbon').style.display = 'block';
+          if(['admin','sub_admin'].includes(state.me.role)) document.getElementById('debugAdminArea').style.display = 'block';
         }
+
+        if(state.me) {
+          document.getElementById('myName').value = state.me.display_name;
+          document.getElementById('myCat').value = state.me.category;
+          if(['admin','sub_admin'].includes(state.me.role)) document.getElementById('subAdminArea').style.display = 'block';
+        }
+        if(state.paypay) {
+          const setT = (s,t) => document.querySelectorAll(s).forEach(e => e.innerText=t);
+          setT('.ppId', state.paypay.id); setT('.ppNameTarget', state.paypay.receiver);
+        }
+
+        if(weekRes.event) {
+          state.event = weekRes.event;
+          document.getElementById('thisWeekInfo').innerHTML = `
+            <div style="font-weight:bold; font-size:1.1rem;">${state.event.date_str}</div>
+            <div>${state.event.start_time} - ${state.event.end_time}</div>
+            <div class="small muted">定員: ${state.event.capacity_total}名</div>
+          `;
+          document.getElementById('regFormArea').style.display = 'block';
+          document.getElementById('ppMsg').value = `${state.event.date_str} ${state.me.display_name}`;
+          
+          const mems = weekRes.registrations || [];
+          document.getElementById('currentParticipantsCount').innerText = mems.reduce((a,b)=>a+1+b.guests, 0);
+          document.getElementById('regMembersList').innerHTML = mems.map(m => `<span class="member-list-chip">${m.name}${m.guests>0?'+'+m.guests:''}</span>`).join('');
+
+          const myReg = await callApi('get_my_registration', { event_id: state.event.event_id, member_id: state.me.member_id });
+          state.reg = myReg.registration;
+          renderRegStatus();
+        }
+
+        setBusy(false);
+        document.getElementById('app').style.display = 'block';
+        switchTab(INIT_PAGE);
+
       } catch (err) { alert('起動エラー: ' + err.message); }
     };
-
-    function initUI(isFirst) {
-      if(state.me) {
-        document.getElementById('myName').value = state.me.display_name;
-        document.getElementById('myCat').value = state.me.category;
-        if(['admin','sub_admin'].includes(state.me.role)) document.getElementById('subAdminArea').style.display = 'block';
-      }
-      if(state.paypay) {
-        document.querySelectorAll('.ppId').forEach(e => e.innerText = state.paypay.id);
-        document.querySelectorAll('.ppNameTarget').forEach(e => e.innerText = state.paypay.receiver);
-      }
-
-      if(state.event) { // weekRes logic moved here
-        const ev = state.event;
-        document.getElementById('thisWeekInfo').innerHTML = `
-          <div style="font-weight:bold; font-size:1.1rem;">${ev.date_str}</div>
-          <div>${ev.start_time} - ${ev.end_time}</div>
-          <div class="small muted">定員: ${ev.capacity_total}名</div>
-        `;
-        document.getElementById('regFormArea').style.display = 'block';
-        document.getElementById('ppMsg').value = `${ev.date_str} ${state.me.display_name}`;
-      } else {
-        // weekResがnullの場合(Main.gsのgetThisWeekEvent_()がnull)
-        // API呼び出し時にセットされているはずなので、ここではstate.eventの有無で判定
-      }
-      // 非同期で登録状況取得
-      if(state.event) {
-        callApi('get_my_registration', { event_id: state.event.event_id, member_id: state.me.member_id })
-          .then(res => { state.reg = res.registration; renderRegStatus(); });
-        // 参加者リスト
-        callApi('get_this_week').then(res => { // リスト更新のため再取得
-           const mems = res.registrations || [];
-           document.getElementById('currentParticipantsCount').innerText = mems.reduce((a,b)=>a+1+b.guests, 0);
-           document.getElementById('regMembersList').innerHTML = mems.map(m => `<span class="member-list-chip">${m.name}${m.guests>0?'+'+m.guests:''}</span>`).join('');
-        });
-      }
-
-      setBusy(false);
-      document.getElementById('app').style.display = 'block';
-      if(isFirst) { switchTab('mypage'); alert('初期設定をお願いします'); } else { switchTab(INIT_PAGE); }
-    }
 
     async function callApi(a, d, p=false) {
       let u = `${API_URL}?action=${a}`, o = { method: p?'POST':'GET' };
@@ -304,34 +284,21 @@
     }
 
     window.switchTab = (page) => {
-      if(page === 'home') page = 'register';
       document.querySelectorAll('.page').forEach(e => e.style.display='none');
       document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
       document.getElementById('tab-'+page).style.display = 'block';
       document.getElementById('nav-'+page).classList.add('active');
-
-      if(page === 'register' && !loadedTabs.future) {
-        loadedTabs.future = true;
-        document.getElementById('lazyRegister').style.display = 'block';
-        loadFutureAndPast();
-      }
-      if(page === 'ranking' && !loadedTabs.ranking) {
-        loadedTabs.ranking = true;
-        loadRankings();
-      }
+      if(page === 'register' && !loadedTabs.future) { loadedTabs.future = true; document.getElementById('lazyRegister').style.display='block'; loadFutureAndPast(); }
+      if(page === 'ranking' && !loadedTabs.ranking) { loadedTabs.ranking = true; loadRankings(); }
       if(page === 'day') checkDayAccess();
     };
 
     function checkDayAccess() {
       if(!state.event) return;
       const now = new Date();
-      const hh = now.getHours(); const mm = now.getMinutes();
-      const timeVal = hh * 60 + mm;
-      const evDate = new Date(state.event.date);
-      const isToday = now.toDateString() === evDate.toDateString();
-      
-      // 17:30(1050) ~ 22:00(1320)
-      if(IS_DEBUG || (isToday && timeVal >= 1050 && timeVal <= 1320)) {
+      const hh = now.getHours(); const mm = now.getMinutes(); const t = hh * 60 + mm;
+      // デバッグモード or 17:30(1050)~22:00(1320)
+      if(state.isDebug || (t >= 1050 && t <= 1320)) {
         document.getElementById('dayContent').style.display = 'block';
         document.getElementById('restrictedMsg').style.display = 'none';
         loadDayData();
@@ -345,7 +312,6 @@
       const res = await callApi('get_participants_detail', { event_id: state.event.event_id });
       state.participants = res.data.participants || [];
       const result = res.data.lastResult;
-      
       const box = document.getElementById('dayLotteryResult');
       if(result && result.courts) {
         let html = `<p style="font-weight:bold;">第${res.data.currentRound}ラウンド</p>`;
@@ -355,20 +321,15 @@
         });
         if(result.rest && result.rest.length) html += `<div class="small muted">休憩: ${result.rest.join(', ')}</div>`;
         box.innerHTML = html;
-      } else { box.innerHTML = '<p>抽選結果はまだありません。</p>'; }
-
-      const myP = state.participants.find(p => p.member_id === state.me.member_id);
-      if (myP && myP.payment_method === 'day_paypay' && myP.payment_status !== 'paid') {
-        document.getElementById('dayPayInfo').style.display = 'block';
-      } else {
-        document.getElementById('dayPayInfo').style.display = 'none';
       }
+      
+      const myP = state.participants.find(p => p.member_id === state.me.member_id);
+      document.getElementById('dayPayInfo').style.display = (myP && myP.payment_method === 'day_paypay' && myP.payment_status !== 'paid') ? 'block' : 'none';
 
       if(['admin','sub_admin'].includes(state.me.role)) renderAdminLists();
     }
 
     function renderAdminLists() {
-      // Lottery
       const lBox = document.getElementById('adminLotteryList');
       lBox.innerHTML = state.participants.map(p => `
         <div class="admin-list-item">
@@ -381,15 +342,12 @@
           </select>
         </div>`).join('');
 
-      // Collection
       const cBox = document.getElementById('adminCollectionList');
       cBox.innerHTML = state.participants.map(p => {
         const isPaid = p.payment_status === 'paid' || p.payment_status === 'paid_advance';
         const method = p.payment_method;
-        let icon = '';
-        if(method === 'advance' || method === 'day_paypay') icon = '<span class="pay-icon pp">P</span>';
-        else icon = '<span class="pay-icon cash">現</span>';
-        return `<div class="admin-list-item ${isPaid?'paid-row':''}">
+        const icon = (method === 'advance' || method === 'day_paypay') ? '<span class="pay-icon pp">P</span>' : '<span class="pay-icon cash">現</span>';
+        return `<div class="admin-list-item ${isPaid?'muted':''}">
           <label style="flex:1; display:flex; align-items:center;">
             <input type="checkbox" class="col-chk" value="${p.member_id}" ${isPaid?'disabled checked':''}>
             <span style="margin-left:5px;">${icon}${p.name}</span>
@@ -399,21 +357,19 @@
       }).join('');
     }
 
-    // --- Actions ---
     window.executeLottery = async () => {
-      if(!confirm('抽選実行？')) return;
       const stats = {};
       state.participants.forEach(p => {
         const val = document.getElementById(`stat-${p.participant_id}`).value;
         if(val !== p.status) stats[p.participant_id] = val;
       });
+      if(!confirm('抽選実行？')) return;
       setBusy(true);
       await callApi('run_lottery', { event_id: state.event.event_id, statuses: stats }, true);
       alert('完了');
       loadDayData();
       setBusy(false);
     };
-
     window.saveCollection = async () => {
       const ids = [];
       document.querySelectorAll('.col-chk:checked:not([disabled])').forEach(e => ids.push(e.value));
@@ -425,83 +381,60 @@
       loadDayData();
       setBusy(false);
     };
+    window.deleteLastRound = async () => { if(confirm('取消しますか？')) { await callApi('delete_round', { event_id: state.event.event_id }); loadDayData(); } };
+    window.manualAddUser = async () => { const n = prompt('名前:'); if(n) { await callApi('manual_add_participant', { event_id: state.event.event_id, name: n }); loadDayData(); } };
+    window.genDebugData = async () => { if(confirm('今日の練習とダミー10人を生成します。よろしいですか？')) { setBusy(true); await callApi('generate_debug', {}, true); alert('生成完了。リロードします。'); location.reload(); } };
 
-    window.deleteLastRound = async () => {
-      if(!confirm('直前の回を取り消しますか？')) return;
-      await callApi('delete_round', { event_id: state.event.event_id });
-      loadDayData();
-    };
-
-    window.manualAddUser = async () => {
-      const name = prompt('名前:');
-      if(name) await callApi('manual_add_participant', { event_id: state.event.event_id, name: name });
-      loadDayData();
-    };
-
-    // --- Reg & Logic ---
     function renderRegStatus() {
       const badge = document.getElementById('regStatusBadge');
       const btnReg = document.getElementById('btnRegister');
       const btnCancel = document.getElementById('btnCancel');
-      
       if(state.reg && state.reg.status === 'reserved') {
-        badge.innerText = '参加登録済';
-        badge.className = 'badge bg-green';
-        btnReg.innerText = '登録更新';
-        btnCancel.style.display = 'inline-block';
-        if(state.reg.payment_status === 'paid_advance') {
-           document.querySelector('input[name="payMethod"][value="advance"]').checked = true;
-           document.getElementById('chkPaidAdvance').checked = true;
-           document.getElementById('chkPaidAdvance').disabled = true;
-        } else if(state.reg.payment_method) {
-           const r = document.querySelector(`input[name="payMethod"][value="${state.reg.payment_method}"]`);
-           if(r) r.checked = true;
-        }
-        if(state.reg.guest_count > 0) {
-          document.getElementById('friendToggle').checked = true;
-          document.getElementById('guestSection').style.display = 'block';
-          document.getElementById('guestCount').value = state.reg.guest_count;
-          const container = document.getElementById('guestInputs');
-          container.innerHTML = '';
-          const guests = JSON.parse(state.reg.guest_info||'[]');
-          guests.forEach((g,i) => container.appendChild(createGuestRow(i, g.name, g.category)));
+        badge.innerText = '参加登録済'; badge.className = 'badge bg-green';
+        btnReg.innerText = '登録更新'; btnCancel.style.display = 'inline-block';
+        const method = state.reg.payment_method;
+        if(method) {
+          const radio = document.querySelector(`input[name="payMethod"][value="${method}"]`);
+          if(radio) radio.checked = true;
+          if(method === 'advance' && state.reg.payment_status === 'paid_advance') {
+            document.getElementById('chkPaidAdvance').checked = true; document.getElementById('chkPaidAdvance').disabled = true;
+          }
         }
       } else {
-        badge.innerText = '未登録';
-        badge.className = 'badge bg-gray';
-        btnReg.innerText = '参加登録';
-        btnCancel.style.display = 'none';
+        badge.innerText = '未登録'; badge.className = 'badge bg-gray';
+        btnReg.innerText = '参加登録'; btnCancel.style.display = 'none';
       }
-      togglePayMethod();
-      calcTotal();
+      togglePayMethod(); calcTotal();
     }
-
     window.togglePayMethod = () => {
       const val = document.querySelector('input[name="payMethod"]:checked')?.value;
       document.getElementById('payDetail-advance').style.display = (val === 'advance') ? 'block' : 'none';
     };
-
+    window.submitRegistration = async () => {
+      const method = document.querySelector('input[name="payMethod"]:checked')?.value;
+      if(!method) { alert('支払い方法を選択してください'); return; }
+      let isPaid = false;
+      if(method === 'advance') { if(!document.getElementById('chkPaidAdvance').checked) { alert('送金完了チェックを入れてください'); return; } isPaid = true; }
+      if(!confirm('登録しますか？')) return;
+      setBusy(true);
+      try { await callApi('register', { event_id: state.event.event_id, member_id: state.me.member_id, status: 'reserved', guests: [], is_paid: isPaid, pay_method: method }, true); alert('登録しました'); location.reload(); } catch(e) { setBusy(false); alert('エラー: ' + e.message); }
+    };
+    window.cancelRegistration = async () => { if(confirm('キャンセルしますか？')) { setBusy(true); await callApi('register', { event_id: state.event.event_id, member_id: state.me.member_id, status: 'canceled', guests: [] }, true); alert('キャンセルしました'); location.reload(); } };
+    window.saveProfile = async () => {
+      const name = document.getElementById('myName').value; const cat = document.getElementById('myCat').value;
+      if(!name) return; setBusy(true); await callApi('upsert_member', { lineUserId: state.me.line_user_id, display_name: name, category: cat }, true); alert('保存しました'); setBusy(false);
+    };
     window.toggleGuests = () => {
       const on = document.getElementById('friendToggle').checked;
       document.getElementById('guestSection').style.display = on?'block':'none';
-      if(on && document.getElementById('guestCount').value==0) {
-        document.getElementById('guestCount').value=1; renderGuestInputs();
-      }
+      if(on && document.getElementById('guestCount').value==0) { document.getElementById('guestCount').value=1; renderGuestInputs(); }
       calcTotal();
     };
     window.renderGuestInputs = () => {
-      const cnt = document.getElementById('guestCount').value;
-      const box = document.getElementById('guestInputs');
-      box.innerHTML = '';
-      for(let i=0; i<cnt; i++) box.appendChild(createGuestRow(i));
+      const cnt = document.getElementById('guestCount').value; const box = document.getElementById('guestInputs'); box.innerHTML = '';
+      for(let i=0; i<cnt; i++) box.innerHTML += `<div class="guest-row"><input type="text" placeholder="名前"></div>`;
       calcTotal();
     };
-    function createGuestRow(i, name='', cat='adult') {
-      const d = document.createElement('div');
-      d.className = 'guest-row';
-      d.innerHTML = `<input type="text" class="g-name" placeholder="名前" value="${name}"><select class="g-cat" onchange="calcTotal()"><option value="adult" ${cat=='adult'?'selected':''}>社会人</option><option value="college" ${cat=='college'?'selected':''}>大学生</option><option value="student" ${cat=='student'?'selected':''}>高校生</option></select>`;
-      return d;
-    }
     window.calcTotal = () => {
       if(!state.me) return;
       let sum = getFee(state.me.category);
@@ -509,81 +442,32 @@
       document.getElementById('feeDisplay').innerText = `支払予定: ${sum} 円`;
     };
     function getFee(c){ return c=='adult'?800:c=='college'?600:500; }
-
-    window.submitRegistration = async () => {
-      const method = document.querySelector('input[name="payMethod"]:checked')?.value;
-      if(!method) { alert('支払い方法を選択してください'); return; }
-      let isPaid = false;
-      if(method === 'advance') {
-        if(!document.getElementById('chkPaidAdvance').checked) { alert('送金完了チェックを入れてください'); return; }
-        isPaid = true;
-      }
-      const guests = [];
-      if(document.getElementById('friendToggle').checked) {
-        const names = document.querySelectorAll('.g-name');
-        const cats = document.querySelectorAll('.g-cat');
-        for(let i=0; i<names.length; i++) {
-          if(!names[i].value) { alert('ゲスト名を入力してください'); return; }
-          guests.push({name:names[i].value, category:cats[i].value});
-        }
-      }
-      if(!confirm('登録しますか？')) return;
-      setBusy(true);
-      await callApi('register', {
-        event_id: state.event.event_id, member_id: state.me.member_id, status: 'reserved',
-        guests: guests, is_paid: isPaid, pay_method: method
-      }, true);
-      alert('登録しました');
-      location.reload();
-    };
-
-    window.cancelRegistration = async () => {
-      if(!confirm('キャンセルしますか？')) return;
-      setBusy(true);
-      await callApi('register', { event_id: state.event.event_id, member_id: state.me.member_id, status: 'canceled', guests: [] }, true);
-      alert('キャンセルしました');
-      location.reload();
-    };
-
-    window.saveProfile = async () => {
-      const name = document.getElementById('myName').value;
-      const cat = document.getElementById('myCat').value;
-      if(!name) return;
-      setBusy(true);
-      await callApi('upsert_member', { lineUserId: state.me.line_user_id, display_name: name, category: cat }, true);
-      alert('保存しました');
-      setBusy(false);
-    };
-
+    
     async function loadFutureAndPast() {
       const [fut, past] = await Promise.all([callApi('get_future_events'), callApi('get_past_events')]);
-      const boxF = document.getElementById('futureList');
-      const boxP = document.getElementById('pastList');
-      boxF.innerHTML = fut.events.length ? fut.events.map(e => `<div style="border-bottom:1px solid #eee; padding:5px;">${e.date_str} ${e.start_time}-${e.end_time}</div>`).join('') : '予定なし';
-      boxP.innerHTML = past.events.length ? past.events.map(e => `<div class="past-event-item" onclick="showPastParticipants('${e.event_id}')">${e.date_str}</div>`).join('') : '履歴なし';
+      const boxF = document.getElementById('futureList'); const boxP = document.getElementById('pastList');
+      if(!fut.events || !fut.events.length) boxF.innerText = '予定なし'; else boxF.innerHTML = fut.events.map(e => `<div style="border-bottom:1px solid #eee; padding:5px;">${e.date_str} ${e.start_time}-${e.end_time}</div>`).join('');
+      if(!past.events || !past.events.length) boxP.innerText = '履歴なし'; else boxP.innerHTML = past.events.map(e => `<div style="border-bottom:1px solid #eee; padding:5px;" onclick="showPastDetail('${e.event_id}')">${e.date_str}</div>`).join('');
     }
-    
-    window.showPastParticipants = async (eid) => {
-        setBusy(true);
-        const res = await callApi('get_past_participants', { event_id: eid });
-        setBusy(false);
-        alert('参加者:\n' + res.names.join('\n'));
-    };
-
+    window.showPastDetail = async (eid) => {
+      setBusy(true); const res = await callApi('get_past_event_detail', { event_id: eid }); setBusy(false);
+      document.getElementById('modalContent').innerHTML = res.participants.length ? `<ul>${res.participants.map(p=>`<li>${p}</li>`).join('')}</ul>` : '参加者なし';
+      document.getElementById('infoModal').style.display = 'flex';
+    }
+    window.closeModal = () => document.getElementById('infoModal').style.display = 'none';
     async function loadRankings() {
       const res = await callApi('get_rankings');
-      renderTable('rankMonth', res.data.month);
-      renderTable('rankYear', res.data.year);
+      renderTable('rankMonth', res.data.month); renderTable('rankYear', res.data.year);
     }
     function renderTable(id, list) {
-      document.getElementById(id).innerHTML = list.map((r,i) => `<tr><td style="width:30px;">${i+1}</td><td class="${i==0?'rank-1':''}">${r.name}</td><td style="text-align:right;">${i==0?r.month||r.year:r.month||r.year}回</td></tr>`).join('');
+      const el = document.getElementById(id);
+      if(!list.length) { el.innerHTML = '<tr><td>データなし</td></tr>'; return; }
+      el.innerHTML = list.map((r,i) => `<tr><td style="width:30px;">${i+1}</td><td class="${i==0?'rank-1':''}">${r.name}</td><td style="text-align:right;">${i==0?r.month||r.year:r.month||r.year}回</td></tr>`).join('');
     }
-
     window.copyText = (id) => {
       const el = document.querySelector('.'+id) || document.getElementById(id);
       const t = el.tagName==='INPUT' ? el.value : el.innerText;
-      if (navigator.clipboard) navigator.clipboard.writeText(t).then(()=>alert('コピーしました'));
-      else prompt('コピー', t);
+      if (navigator.clipboard) { navigator.clipboard.writeText(t).then(()=>alert('コピーしました')).catch(()=>prompt('コピー', t)); } else { prompt('コピー', t); }
     };
   </script>
 </body>
