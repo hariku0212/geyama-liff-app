@@ -255,9 +255,17 @@
             document.getElementById('subAdminArea').style.display = 'block';
           }
         }
+        
+        // ★修正ポイント: 要素が存在するかチェックしてから代入
         if(state.paypay) {
-          ['ppId','ppIdDay'].forEach(id => document.getElementById(id).innerText = state.paypay.id);
-          ['ppName','ppNameDay','ppNameTarget'].forEach(id => document.getElementById(id).innerText = state.paypay.receiver);
+          ['ppId','ppIdDay'].forEach(id => {
+             const el = document.getElementById(id);
+             if(el) el.innerText = state.paypay.id;
+          });
+          ['ppName','ppNameDay','ppNameTarget'].forEach(id => {
+             const el = document.getElementById(id);
+             if(el) el.innerText = state.paypay.receiver;
+          });
         }
 
         if(weekRes.event) {
@@ -333,14 +341,13 @@
         btnReg.innerText = '登録内容を更新';
         btnCancel.style.display = 'inline-block';
 
-        // Payment Method Restore
         if(state.reg.payment_status === 'paid_advance') {
-           document.querySelector('input[name="payMethod"][value="advance"]').checked = true;
-           document.getElementById('chkPaidAdvance').checked = true;
-           document.getElementById('chkPaidAdvance').disabled = true;
+           const advRadio = document.querySelector('input[name="payMethod"][value="advance"]');
+           if(advRadio) advRadio.checked = true;
+           const chk = document.getElementById('chkPaidAdvance');
+           if(chk) { chk.checked = true; chk.disabled = true; }
         } else {
-           // Default selection based on current logic? 
-           // If unpaid, select nothing or default.
+           // default or keep current
         }
 
         if(state.reg.guest_count > 0) {
@@ -365,7 +372,8 @@
 
     window.togglePayMethod = () => {
       const val = document.querySelector('input[name="payMethod"]:checked')?.value;
-      document.getElementById('advancePayDetail').style.display = (val === 'advance') ? 'block' : 'none';
+      const detail = document.getElementById('advancePayDetail');
+      if(detail) detail.style.display = (val === 'advance') ? 'block' : 'none';
     };
 
     window.toggleGuests = () => {
@@ -423,7 +431,8 @@
       const payMethod = document.querySelector('input[name="payMethod"]:checked')?.value;
       let isPaid = false;
       if (payMethod === 'advance') {
-        if (!document.getElementById('chkPaidAdvance').checked) {
+        const chk = document.getElementById('chkPaidAdvance');
+        if (chk && !chk.checked) {
           alert('事前PayPay決済を選択されていますが、「送金しました」のチェックが入っていません。');
           return;
         }
@@ -512,8 +521,8 @@
     window.executeLottery = async () => {
       const statuses = {};
       state.participants.forEach(p => {
-        const val = document.getElementById(`status-${p.participant_id}`).value;
-        if(val !== p.status) statuses[p.participant_id] = val;
+        const el = document.getElementById(`status-${p.participant_id}`);
+        if(el && el.value !== p.status) statuses[p.participant_id] = el.value;
       });
       if(!confirm('抽選を実行しますか？')) return;
       setBusy(true);
