@@ -354,7 +354,8 @@
         members: [],
         editingTxId: null,
         currentTab: 'session',
-        adminView: 'accounting', // accounting | fees | roles
+        adminView: 'accounting', // accounting | fees | roles | line
+        lineConfig: null, // LINEグループ設定
       };
 
       // ===== 共通 API ヘルパー =====
@@ -1276,14 +1277,22 @@
         try {
           setBusy(true, '管理データを読み込み中です…');
 
-          const [sumRes, listRes, recentRes, feeRes, membersRes] =
-            await Promise.all([
-              callApi('get_accounting_summary'),
-              callApi('list_accounting', { limit: 50 }),
-              callApi('list_recent_events', { limit: 10 }),
-              callApi('get_fee_settings'),
-              callApi('list_members'),
-            ]);
+          const [
+            sumRes,
+            listRes,
+            recentRes,
+            feeRes,
+            membersRes,
+            lineRes,
+          ] = await Promise.all([
+            callApi('get_accounting_summary'),
+            callApi('list_accounting', { limit: 50 }),
+            callApi('list_recent_events', { limit: 10 }),
+            callApi('get_fee_settings'),
+            callApi('list_members'),
+            // LINE グループ設定（未実装でも allowError で落ちないように）
+            callApi('get_line_config', {}, { allowError: true }),
+          ]);
 
           if (sumRes.ok) state.accountingSummary = sumRes.summary || null;
           else state.accountingSummary = null;
@@ -1305,6 +1314,18 @@
 
           if (membersRes.ok) state.members = membersRes.members || [];
           else state.members = [];
+
+          if (lineRes && lineRes.ok) {
+            const c = lineRes.config || {};
+            state.lineConfig = {
+              main_group_id: c.main_group_id || '',
+              main_group_name: c.main_group_name || '',
+              auto_registered_at: c.auto_registered_at || '',
+              updated_at: c.updated_at || '',
+            };
+          } else {
+            state.lineConfig = null;
+          }
 
           renderAdmin();
         } catch (err) {
@@ -1335,6 +1356,8 @@
           viewHtml = buildFeesViewHtml();
         } else if (view === 'roles') {
           viewHtml = buildRolesViewHtml();
+        } else if (view === 'line') {
+          viewHtml = buildLineViewHtml();
         }
 
         bodyEl.innerHTML = `
@@ -1348,12 +1371,14 @@
             <button class="admin-view-btn ${
               view === 'roles' ? 'active' : ''
             }" data-view="roles">メンバー権限</button>
+            <button class="admin-view-btn ${
+              view === 'line' ? 'active' : ''
+            }" data-view="line">LINE連携</button>
           </div>
           <div id="adminViewContainer">
             ${viewHtml}
           </div>
         `;
-
         setupAdminMenuHandlers();
         if (view === 'accounting') {
           setupAccountingHandlers();
@@ -1361,6 +1386,8 @@
           setupFeesHandlers();
         } else if (view === 'roles') {
           setupRolesHandlers();
+        } else if (view === 'line') {
+          setupLineConfigHandlers();
         }
       }
 
@@ -1719,11 +1746,9 @@
                 params.tx_id = state.editingTxId;
               }
 
-              const res = await callApi(
-                'upsert_accounting',
-                params,
-                { method: 'POST' }
-              );
+              const res = await callApi('upsert_accounting', params, {
+                method: 'POST',
+              });
               if (!res.ok) {
                 alert(
                   '帳簿の保存に失敗しました: ' +
@@ -2025,6 +2050,225 @@
             }
           };
         });
+      }
+
+      // ===== LINE連携ビュー =====
+      function buildLineViewHtml() {
+        const cfg = state.lineConfig;
+        const hasId = cfg && cfg.main_group_id;
+        const groupIdText = hasId ? cfg.main_group_id : '未登録（value が空の状態）';
+        const groupNameText =
+          cfg && cfg.main_group_name ? cfg.main_group_name : '（未取得）';
+        const autoText =
+          cfg && cfg.auto_registered_at
+            ? cfg.auto_registered_at
+            : '（未登録）';
+        const updatedText =
+          cfg && cfg.updated_at ? cfg.updated_at : '（未更新）';
+
+        return `
+          <div>
+            <h3 style="font-size:1rem;margin:0 0 4px;">LINE グループ連携</h3>
+            <p class="muted" style="margin:0 0 8px;font-size:0.85rem;">
+              通知を送るメインの LINE グループの groupId を管理します。基本的には、
+              <strong>value を空のまま BOT をグループに招待すると、自動で groupId を登録</strong>する運用を想定しています。
+            </p>
+
+            <div class="card" style="padding:12px;margin:0 0 12px;">
+              <div class="small" style="margin-bottom:6px;">現在の登録状況</div>
+              <table>
+                <tbody>
+                  <tr>
+                    <th style="width:120px;">groupId</th>
+                    <td>${groupIdText}</td>
+                  </tr>
+                  <tr>
+                    <th>グループ名</th>
+                    <td>${groupNameText}</td>
+                  </tr>
+                  <tr>
+                    <th>自動登録日時</th>
+                    <td>${autoText}</td>
+                  </tr>
+                  <tr>
+                    <th>最終更新</th>
+                    <td>${updatedText}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div style="margin-bottom:12px;">
+              <h4 style="font-size:0.95rem;margin:0 0 4px;">手動で groupId を設定する</h4>
+              <p class="muted" style="margin:0 0 4px;font-size:0.8rem;">
+                通常は手動設定は不要です。テスト用グループに切り替えたいときなどだけ使ってください。
+              </p>
+              <label>groupId（手動設定用）</label>
+              <input type="text" id="lineMainGroupId" value="${
+                hasId ? cfg.main_group_id : ''
+              }" />
+
+              <div style="margin-top:8px;">
+                <button id="saveLineMainGroupIdButton">groupId を保存</button>
+                <button id="clearLineMainGroupIdButton" class="secondary">
+                  value を空にして自動登録待ちにする
+                </button>
+              </div>
+            </div>
+
+            <hr style="margin:12px 0;" />
+
+            <div style="margin-bottom:4px;">
+              <h4 style="font-size:0.95rem;margin:0 0 4px;">テストメッセージ送信</h4>
+              <p class="muted" style="margin:0 0 4px;font-size:0.8rem;">
+                設定されている groupId のグループ宛に、BOT からテストメッセージを送ります。事前に BOT をそのグループに招待しておいてください。
+              </p>
+              <button id="sendTestMessageButton" ${
+                hasId ? '' : 'disabled'
+              }>テストメッセージを送信</button>
+            </div>
+          </div>
+        `;
+      }
+
+      function setupLineConfigHandlers() {
+        const saveBtn = document.getElementById('saveLineMainGroupIdButton');
+        const clearBtn = document.getElementById('clearLineMainGroupIdButton');
+        const testBtn = document.getElementById('sendTestMessageButton');
+
+        if (saveBtn) {
+          saveBtn.onclick = async () => {
+            const input = document.getElementById('lineMainGroupId');
+            if (!input) return;
+            const value = input.value.trim();
+
+            if (!value) {
+              const ok = confirm(
+                'groupId を空にしてよいですか？\n\nvalue が空の状態で BOT をグループに招待すると、その groupId が自動で登録されます。'
+              );
+              if (!ok) return;
+            }
+
+            setBusy(true, 'LINE グループ設定を保存中です…');
+            try {
+              const res = await callApi(
+                'save_line_config',
+                { main_group_id: value },
+                { method: 'POST', allowError: true }
+              );
+              if (!res.ok) {
+                alert(
+                  '保存に失敗しました: ' +
+                    (res.error || res.message || 'unknown error')
+                );
+                return;
+              }
+
+              const c = res.config || {};
+              state.lineConfig = {
+                main_group_id: c.main_group_id || value || '',
+                main_group_name:
+                  c.main_group_name ||
+                  (state.lineConfig && state.lineConfig.main_group_name) ||
+                  '',
+                auto_registered_at:
+                  c.auto_registered_at ||
+                  (state.lineConfig && state.lineConfig.auto_registered_at) ||
+                  '',
+                updated_at: c.updated_at || '',
+              };
+
+              alert('LINE グループ設定を保存しました。');
+              renderAdmin();
+            } catch (err) {
+              console.error(err);
+              alert('LINE グループ設定の保存に失敗しました: ' + err.message);
+            } finally {
+              setBusy(false);
+            }
+          };
+        }
+
+        if (clearBtn) {
+          clearBtn.onclick = async () => {
+            const ok = confirm(
+              '現在の groupId をクリアしてよいですか？\n\nvalue が空の状態で BOT を任意のグループに招待すると、その groupId が自動で登録されます。'
+            );
+            if (!ok) return;
+
+            setBusy(true, 'groupId をクリアしています…');
+            try {
+              const res = await callApi(
+                'save_line_config',
+                { main_group_id: '' },
+                { method: 'POST', allowError: true }
+              );
+              if (!res.ok) {
+                alert(
+                  'クリアに失敗しました: ' +
+                    (res.error || res.message || 'unknown error')
+                );
+                return;
+              }
+
+              const c = res.config || {};
+              state.lineConfig = {
+                main_group_id: c.main_group_id || '',
+                main_group_name: c.main_group_name || '',
+                auto_registered_at: c.auto_registered_at || '',
+                updated_at: c.updated_at || '',
+              };
+
+              alert(
+                'groupId をクリアしました。BOT をグループに招待すると自動登録されます。'
+              );
+              renderAdmin();
+            } catch (err) {
+              console.error(err);
+              alert('groupId のクリアに失敗しました: ' + err.message);
+            } finally {
+              setBusy(false);
+            }
+          };
+        }
+
+        if (testBtn) {
+          testBtn.onclick = async () => {
+            if (!state.lineConfig || !state.lineConfig.main_group_id) {
+              alert(
+                'groupId が未設定のため、テストメッセージを送信できません。'
+              );
+              return;
+            }
+
+            const ok = confirm(
+              '設定されている groupId のグループにテストメッセージを送ります。よろしいですか？'
+            );
+            if (!ok) return;
+
+            setBusy(true, 'テストメッセージ送信中です…');
+            try {
+              const res = await callApi(
+                'send_test_message_to_main_group',
+                {},
+                { method: 'POST', allowError: true }
+              );
+              if (!res.ok) {
+                alert(
+                  'テストメッセージの送信に失敗しました: ' +
+                    (res.error || res.message || 'unknown error')
+                );
+                return;
+              }
+              alert('テストメッセージを送信しました。グループを確認してください。');
+            } catch (err) {
+              console.error(err);
+              alert('テストメッセージの送信に失敗しました: ' + err.message);
+            } finally {
+              setBusy(false);
+            }
+          };
+        }
       }
 
       // ===== 起動 =====
