@@ -2,56 +2,54 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <title>ゲヤマクラブ</title>
+  <title>ゲヤマクラブ(Debug)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <style>
     :root { --primary: #06c755; --bg: #f2f4f8; --card: #ffffff; --text: #333; --danger: #e53935; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; }
     .container { max-width: 600px; margin: 0 auto; padding: 15px; }
     
-    /* カード */
     .card { background: var(--card); padding: 16px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); margin-bottom: 16px; }
     h2 { font-size: 1.1rem; margin: 0 0 10px; border-bottom: 2px solid var(--primary); padding-bottom: 5px; display: inline-block; }
     h3 { font-size: 1rem; margin: 15px 0 8px; font-weight: bold; }
     .muted { color: #888; font-size: 0.85rem; }
     .small { font-size: 0.8rem; }
     
-    /* タブナビゲーション (下部固定) */
     .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid #ddd; padding-bottom: env(safe-area-inset-bottom); z-index: 100; }
     .nav-item { flex: 1; text-align: center; padding: 10px 0; font-size: 0.7rem; color: #888; cursor: pointer; }
     .nav-item.active { color: var(--primary); font-weight: bold; }
     .nav-icon { font-size: 1.5rem; display: block; margin-bottom: 2px; }
     
-    /* フォーム要素 */
     input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; margin-bottom: 8px; font-size: 1rem; }
     button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 8px; }
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-danger { background: var(--danger); color: #fff; }
     .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
     
-    /* ゲスト入力 */
     .guest-row { display: flex; gap: 8px; }
-    
-    /* ステータスバッジ */
     .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
     .bg-green { background: #e8f5e9; color: #2e7d32; }
-    .bg-red { background: #ffebee; color: #c62828; }
     .bg-gray { background: #eee; color: #666; }
-
-    /* PayPay */
     .paypay-box { background: #f0f0f0; padding: 12px; border-radius: 8px; margin-top: 10px; text-align: center; }
-    .copy-btn { font-size: 0.8rem; padding: 4px 8px; margin-left: 5px; width: auto; display: inline-block; }
-
-    /* ランキング */
-    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-    th, td { padding: 8px; border-bottom: 1px solid #eee; text-align: left; }
-    th { color: #888; font-weight: normal; }
-    .rank-1 { color: #d4af37; font-weight: bold; }
+    
+    /* デバッグ用ログ表示エリア */
+    #debugLog {
+        background: #333; color: #0f0; padding: 10px; font-family: monospace; font-size: 0.8rem;
+        margin-bottom: 20px; white-space: pre-wrap; word-break: break-all;
+        border-radius: 8px; display: none;
+    }
+    .log-error { color: #ff5555; }
+    .log-info { color: #00ffff; }
   </style>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
-  <div id="loading" style="text-align:center; padding:50px;">読み込み中...</div>
+  <div id="debugLog">Logs will appear here...</div>
+
+  <div id="loading" style="text-align:center; padding:50px;">
+    読み込み中...<br>
+    <span style="font-size:0.8rem; color:#888;">初期化処理を実行しています</span>
+  </div>
 
   <div id="app" style="display:none;">
     <div class="container">
@@ -65,201 +63,196 @@
           
           <div id="regFormArea" style="display:none; margin-top:15px;">
             <div id="regStatusBadge" class="badge bg-gray" style="display:inline-block; margin-bottom:10px;">未登録</div>
-            
             <form id="regForm">
-              <label>
-                <input type="checkbox" id="friendToggle" onchange="toggleGuests()"> 友達を連れていく
-              </label>
+              <label><input type="checkbox" id="friendToggle" onchange="toggleGuests()"> 友達を連れていく</label>
               <div id="guestSection" style="display:none; background:#f9f9f9; padding:10px; border-radius:8px;">
                 <label>人数: <input type="number" id="guestCount" min="0" max="5" value="0" onchange="renderGuestInputs()"></label>
                 <div id="guestInputs"></div>
               </div>
-              <div style="margin-top:15px; text-align:center; font-weight:bold; color:var(--primary);" id="feeDisplay">
-                支払予定: - 円
-              </div>
+              <div style="margin-top:15px; text-align:center; font-weight:bold; color:var(--primary);" id="feeDisplay">支払予定: - 円</div>
               <button type="button" id="btnRegister" class="btn-primary" onclick="submitRegistration()">参加登録する</button>
               <button type="button" id="btnCancel" class="btn-danger" style="display:none;" onclick="cancelRegistration()">キャンセル</button>
             </form>
-
             <div id="prePaySection" style="display:none; margin-top:20px; border-top:1px solid #eee; padding-top:15px;">
               <h3>事前PayPay支払い</h3>
-              <p class="small muted">事前に支払う場合は、以下のIDへ送金してください。</p>
               <div class="paypay-box">
-                ID: <span id="ppId" style="font-weight:bold;">-</span> <button class="btn-outline copy-btn" onclick="copyText('ppId')">コピー</button><br>
-                名義: <span id="ppName">-</span><br>
-                <input type="text" id="ppMsg" readonly style="margin-top:5px; font-size:0.8rem; color:#666; background:#fff;" value="練習日 氏名">
-                <button class="btn-outline copy-btn" onclick="copyText('ppMsg')">メモをコピー</button>
+                ID: <span id="ppId">-</span><br>名義: <span id="ppName">-</span><br>
+                <input type="text" id="ppMsg" readonly style="margin-top:5px; font-size:0.8rem;" value="">
               </div>
-              <label style="margin-top:10px; display:flex; align-items:center;">
-                <input type="checkbox" id="chkPaid" style="width:auto; margin-right:8px;"> PayPayで支払いました
-              </label>
+              <label style="margin-top:10px;"><input type="checkbox" id="chkPaid"> PayPayで支払いました</label>
               <button id="btnPayReport" class="btn-outline" onclick="reportPayment()">支払い完了を報告</button>
             </div>
           </div>
         </div>
-
-        <div class="card">
-          <h2>今後の予定</h2>
-          <div id="futureList" class="small">読み込み中...</div>
-        </div>
-
-        <div class="card">
-          <h2>過去の履歴</h2>
-          <div id="pastList" class="small">読み込み中...</div>
-        </div>
+        <div class="card"><h2>今後の予定</h2><div id="futureList" class="small">読み込み中...</div></div>
+        <div class="card"><h2>過去の履歴</h2><div id="pastList" class="small">読み込み中...</div></div>
       </div>
 
       <div id="tab-day" class="page" style="display:none;">
-        <div class="card">
-          <h2>本日の練習</h2>
-          <p class="small muted">抽選結果や支払いはここから確認します。</p>
-          <div id="dayLotteryResult">
-            <p>現在、抽選結果はありません。</p>
-          </div>
-        </div>
-
-        <div class="card">
-          <h2>当日支払い</h2>
-          <p class="small muted">現金またはPayPayで、集金担当者に支払ってください。</p>
-          <div class="paypay-box">
-            <p style="font-weight:bold; color:var(--danger);">⚠️ 支払ったら必ず担当者に画面を見せてください</p>
-            ID: <span id="ppIdDay">-</span> <button class="btn-outline copy-btn" onclick="copyText('ppIdDay')">コピー</button><br>
-            名義: <span id="ppNameDay">-</span>
-          </div>
-        </div>
+        <div class="card"><h2>本日の練習</h2><div id="dayLotteryResult"><p>現在、抽選結果はありません。</p></div></div>
+        <div class="card"><h2>当日支払い</h2><div class="paypay-box">ID: <span id="ppIdDay">-</span></div></div>
       </div>
 
       <div id="tab-ranking" class="page" style="display:none;">
-        <div class="card">
-          <h2>今月の参加数</h2>
-          <table id="rankMonth"></table>
-        </div>
-        <div class="card">
-          <h2>今年の参加数</h2>
-          <table id="rankYear"></table>
-        </div>
+        <div class="card"><h2>今月の参加数</h2><table id="rankMonth"></table></div>
+        <div class="card"><h2>今年の参加数</h2><table id="rankYear"></table></div>
       </div>
 
       <div id="tab-mypage" class="page" style="display:none;">
         <div class="card">
           <h2>メンバー設定</h2>
-          <label>表示名</label>
-          <input type="text" id="myName">
+          <label>表示名</label><input type="text" id="myName">
           <label>区分</label>
           <select id="myCat">
-            <option value="adult">社会人 (800円)</option>
-            <option value="college">大学生 (600円)</option>
-            <option value="student">高校生以下 (500円)</option>
+            <option value="adult">社会人</option><option value="college">大学生</option><option value="student">高校生以下</option>
           </select>
           <button class="btn-primary" onclick="saveProfile()">保存する</button>
         </div>
-        
         <div class="card" id="adminArea" style="display:none;">
           <h2 style="border-color:var(--danger);">管理メニュー</h2>
-          <p class="small">抽選を実行します。</p>
           <select id="adminCourts"><option value="2">2コート</option><option value="3" selected>3コート</option></select>
           <button class="btn-danger" onclick="runLottery()">抽選実行</button>
         </div>
       </div>
-
     </div>
 
     <div class="bottom-nav">
-      <div class="nav-item active" onclick="switchTab('register')" id="nav-register">
-        <span class="nav-icon">📅</span>参加登録
-      </div>
-      <div class="nav-item" onclick="switchTab('day')" id="nav-day">
-        <span class="nav-icon">🏸</span>当日用
-      </div>
-      <div class="nav-item" onclick="switchTab('ranking')" id="nav-ranking">
-        <span class="nav-icon">🏆</span>ランキング
-      </div>
-      <div class="nav-item" onclick="switchTab('mypage')" id="nav-mypage">
-        <span class="nav-icon">👤</span>マイページ
-      </div>
+      <div class="nav-item active" onclick="switchTab('register')" id="nav-register"><span class="nav-icon">📅</span>参加登録</div>
+      <div class="nav-item" onclick="switchTab('day')" id="nav-day"><span class="nav-icon">🏸</span>当日用</div>
+      <div class="nav-item" onclick="switchTab('ranking')" id="nav-ranking"><span class="nav-icon">🏆</span>ランキング</div>
+      <div class="nav-item" onclick="switchTab('mypage')" id="nav-mypage"><span class="nav-icon">👤</span>マイページ</div>
     </div>
   </div>
 
   <script>
-    // ▼ GAS URLを設定 ▼
+    // ▼▼ デバッグ用ログ出力機能 ▼▼
+    function log(msg, type='info') {
+      const box = document.getElementById('debugLog');
+      box.style.display = 'block';
+      const line = document.createElement('div');
+      line.className = type === 'error' ? 'log-error' : 'log-info';
+      line.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      box.appendChild(line);
+      console[type === 'error' ? 'error' : 'log'](msg);
+    }
+    window.onerror = function(msg, url, line) {
+      log(`Global Error: ${msg} (${line})`, 'error');
+      document.getElementById('loading').innerHTML = `<span style="color:red; font-weight:bold;">エラーが発生しました</span><br>${msg}`;
+    };
+
+    // ▼▼ 設定値 ▼▼
     const API_URL = 'https://script.google.com/macros/s/AKfycbx3QQMnnjQl-3bb77-HO9SVztNzaBpl8sXTHNBm7ydsLZMK50dlNqau-qHXU16HufrEBQ/exec';
     const LIFF_ID = '2008652596-Gew4K44V';
 
-    // GASから渡された初期ページ ('<?= initPage ?>' はGASテンプレートで展開される)
-    const INIT_PAGE = '<?= initPage ?>';
+    // GitHub Pages用のクエリパラメータ取得
+    const params = new URLSearchParams(window.location.search);
+    const INIT_PAGE = params.get('page') || 'register'; // GASテンプレート構文を廃止
 
-    let state = {
-      me: null,
-      paypay: null,
-      event: null,
-      reg: null
-    };
+    let state = { me: null, paypay: null, event: null, reg: null };
 
     window.onload = async () => {
-      await liff.init({ liffId: LIFF_ID });
-      if (!liff.isLoggedIn()) { liff.login(); return; }
-      
-      const profile = await liff.getProfile();
-      
-      // ユーザー取得
-      const res = await callApi('get_me', { lineUserId: profile.userId });
-      if (!res.exists) {
-        // 初回登録
-        await callApi('upsert_member', { lineUserId: profile.userId, display_name: profile.displayName });
-        const retry = await callApi('get_me', { lineUserId: profile.userId });
-        state.me = retry.member;
-      } else {
-        state.me = res.member;
+      log('Window loaded. Initializing LIFF...');
+      try {
+        await liff.init({ liffId: LIFF_ID });
+        if (!liff.isLoggedIn()) {
+          log('Not logged in. Redirecting to login...');
+          liff.login();
+          return;
+        }
+        
+        const profile = await liff.getProfile();
+        log(`LIFF Init success. User: ${profile.displayName}`);
+        
+        // ユーザー取得
+        log('Calling get_me API...');
+        const res = await callApi('get_me', { lineUserId: profile.userId });
+        
+        if (!res.ok) throw new Error(res.error || 'API Error in get_me');
+        
+        if (!res.exists) {
+          log('Member not found. Creating new member...');
+          await callApi('upsert_member', { lineUserId: profile.userId, display_name: profile.displayName }, true);
+          const retry = await callApi('get_me', { lineUserId: profile.userId });
+          state.me = retry.member;
+        } else {
+          state.me = res.member;
+        }
+        state.paypay = res.paypay_config;
+        log('User data loaded.');
+
+        // マイページ反映
+        if (state.me) {
+          document.getElementById('myName').value = state.me.display_name;
+          document.getElementById('myCat').value = state.me.category;
+          if(state.me.role === 'admin' || state.me.role === 'sub_admin') {
+            document.getElementById('adminArea').style.display = 'block';
+          }
+        }
+
+        // PayPay
+        if(state.paypay) {
+          ['ppId','ppIdDay'].forEach(id => document.getElementById(id).innerText = state.paypay.id);
+          ['ppName'].forEach(id => document.getElementById(id).innerText = state.paypay.receiver);
+        }
+
+        // データロード
+        log('Loading event data...');
+        await loadThisWeek();
+        loadFuture();
+        loadPast();
+        loadRankings();
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        log('App displayed.');
+
+        // タブ切り替え
+        switchTab(INIT_PAGE);
+
+      } catch (err) {
+        log(err.message, 'error');
+        document.getElementById('loading').innerHTML = `<span style="color:red;">起動エラー:</span><br>${err.message}`;
       }
-      state.paypay = res.paypay_config;
-
-      // マイページ反映
-      document.getElementById('myName').value = state.me.display_name;
-      document.getElementById('myCat').value = state.me.category;
-      if(state.me.role === 'admin' || state.me.role === 'sub_admin') {
-        document.getElementById('adminArea').style.display = 'block';
-      }
-
-      // PayPay表示
-      if(state.paypay) {
-        ['ppId','ppIdDay'].forEach(id => document.getElementById(id).innerText = state.paypay.id);
-        ['ppName','ppNameDay'].forEach(id => document.getElementById(id).innerText = state.paypay.receiver);
-      }
-
-      // データロード
-      await loadThisWeek();
-      loadFuture();
-      loadPast();
-      loadRankings();
-
-      document.getElementById('loading').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
-
-      // 初期タブ切り替え
-      if(INIT_PAGE === 'day') switchTab('day');
-      else if(INIT_PAGE === 'mypage') switchTab('mypage');
-      else switchTab('register');
     };
 
     // --- API ---
     async function callApi(action, data, isPost=false) {
       let url = `${API_URL}?action=${action}`;
       let opts = { method: isPost?'POST':'GET' };
-      if(isPost) opts.body = JSON.stringify(data);
-      else if(data) Object.keys(data).forEach(k=> url += `&${k}=${encodeURIComponent(data[k])}`);
-      const r = await fetch(url, opts);
-      return await r.json();
+      
+      // CORS対策: text/plainで送る
+      if(isPost) {
+        opts.body = JSON.stringify(data);
+        opts.headers = { 'Content-Type': 'text/plain' }; 
+      } else if(data) {
+        Object.keys(data).forEach(k=> url += `&${k}=${encodeURIComponent(data[k])}`);
+      }
+      
+      try {
+        const r = await fetch(url, opts);
+        const json = await r.json();
+        return json;
+      } catch(e) {
+        log(`API Call Failed: ${action} - ${e.message}`, 'error');
+        throw e;
+      }
     }
 
     // --- Tab ---
     window.switchTab = (page) => {
+      // マッピング補正
+      if(page === 'home') page = 'register';
+      
       document.querySelectorAll('.page').forEach(e => e.style.display='none');
       document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
-      document.getElementById('tab-'+page).style.display = 'block';
-      document.getElementById('nav-'+page).classList.add('active');
+      const targetTab = document.getElementById('tab-'+page);
+      const targetNav = document.getElementById('nav-'+page);
+      
+      if(targetTab) targetTab.style.display = 'block';
+      if(targetNav) targetNav.classList.add('active');
     };
 
-    // --- Logic: Register ---
+    // --- Logic ---
     async function loadThisWeek() {
       const res = await callApi('get_this_week');
       const box = document.getElementById('thisWeekInfo');
@@ -278,11 +271,8 @@
         <div class="small muted">定員: ${state.event.capacity_total}名</div>
       `;
       form.style.display = 'block';
-      
-      // メモ欄に日付と名前をセット
       document.getElementById('ppMsg').value = `${state.event.date_str} ${state.me.display_name}`;
 
-      // 自分の登録状況
       const myReg = await callApi('get_my_registration', { event_id: state.event.event_id, member_id: state.me.member_id });
       state.reg = myReg.registration;
       renderRegStatus();
@@ -301,7 +291,6 @@
         btnCancel.style.display = 'inline-block';
         prePay.style.display = 'block';
 
-        // 支払い済みチェック
         if(state.reg.payment_status === 'paid' || state.reg.payment_status === 'paid_advance') {
            document.getElementById('chkPaid').checked = true;
            document.getElementById('chkPaid').disabled = true;
@@ -309,7 +298,6 @@
            document.getElementById('btnPayReport').disabled = true;
         }
 
-        // ゲスト復元
         if(state.reg.guest_count > 0) {
           document.getElementById('friendToggle').checked = true;
           document.getElementById('guestSection').style.display = 'block';
@@ -319,7 +307,6 @@
           const guests = JSON.parse(state.reg.guest_info||'[]');
           guests.forEach((g,i) => container.appendChild(createGuestRow(i, g.name, g.category)));
         }
-
       } else {
         badge.innerText = '未登録';
         badge.className = 'badge bg-gray';
@@ -330,7 +317,6 @@
       calcTotal();
     }
 
-    // --- Logic: Guests & Fee ---
     window.toggleGuests = () => {
       const on = document.getElementById('friendToggle').checked;
       document.getElementById('guestSection').style.display = on?'block':'none';
@@ -371,7 +357,6 @@
     };
     function getFee(c){ return c=='adult'?800:c=='college'?600:500; }
 
-    // --- Logic: Actions ---
     window.submitRegistration = async () => {
       if(!state.event) return;
       const guests = [];
@@ -384,12 +369,14 @@
         }
       }
       if(!confirm('登録しますか？')) return;
-      await callApi('register', {
-        event_id: state.event.event_id, member_id: state.me.member_id,
-        status: 'reserved', guests: guests
-      }, true);
-      alert('登録しました');
-      location.reload();
+      try {
+        await callApi('register', {
+          event_id: state.event.event_id, member_id: state.me.member_id,
+          status: 'reserved', guests: guests
+        }, true);
+        alert('登録しました');
+        location.reload();
+      } catch(e) { log(e.message, 'error'); alert('エラー: ' + e.message); }
     };
 
     window.cancelRegistration = async () => {
@@ -416,7 +403,6 @@
       if(!name) return;
       await callApi('upsert_member', { lineUserId: state.me.line_user_id, display_name: name, category: cat }, true);
       alert('保存しました');
-      location.reload();
     };
 
     window.runLottery = async () => {
@@ -426,23 +412,18 @@
       alert('完了');
     };
 
-    // --- Logic: Lists ---
     async function loadFuture() {
       const res = await callApi('get_future_events');
       const box = document.getElementById('futureList');
-      if(!res.events.length) { box.innerText = '予定なし'; return; }
-      box.innerHTML = res.events.map(e => 
-        `<div style="border-bottom:1px solid #eee; padding:5px;">${e.date_str} ${e.start_time}-${e.end_time} (${e.status})</div>`
-      ).join('');
+      if(!res.events || !res.events.length) { box.innerText = '予定なし'; return; }
+      box.innerHTML = res.events.map(e => `<div style="border-bottom:1px solid #eee; padding:5px;">${e.date_str} ${e.start_time}-${e.end_time} (${e.status})</div>`).join('');
     }
 
     async function loadPast() {
       const res = await callApi('get_past_events');
       const box = document.getElementById('pastList');
-      if(!res.events.length) { box.innerText = '履歴なし'; return; }
-      box.innerHTML = res.events.map(e => 
-        `<div style="border-bottom:1px solid #eee; padding:5px;">${e.date_str}</div>`
-      ).join('');
+      if(!res.events || !res.events.length) { box.innerText = '履歴なし'; return; }
+      box.innerHTML = res.events.map(e => `<div style="border-bottom:1px solid #eee; padding:5px;">${e.date_str}</div>`).join('');
     }
 
     async function loadRankings() {
@@ -451,18 +432,8 @@
       renderTable('rankYear', res.data.year);
     }
     function renderTable(id, list) {
-      const t = document.getElementById(id);
-      t.innerHTML = list.map((r,i) => 
-        `<tr><td style="width:30px;">${i+1}</td><td class="${i==0?'rank-1':''}">${r.name}</td><td style="text-align:right;">${i==0?r.month||r.year:r.month||r.year}回</td></tr>`
-      ).join('');
+      document.getElementById(id).innerHTML = list.map((r,i) => `<tr><td style="width:30px;">${i+1}</td><td class="${i==0?'rank-1':''}">${r.name}</td><td style="text-align:right;">${i==0?r.month||r.year:r.month||r.year}回</td></tr>`).join('');
     }
-
-    // --- Util ---
-    window.copyText = (id) => {
-      const t = document.getElementById(id).tagName==='INPUT' ? document.getElementById(id).value : document.getElementById(id).innerText;
-      navigator.clipboard.writeText(t);
-      alert('コピーしました: ' + t);
-    };
   </script>
 </body>
 </html>
