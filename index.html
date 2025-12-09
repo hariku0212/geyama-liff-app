@@ -3,414 +3,465 @@
 <head>
   <meta charset="utf-8">
   <title>ゲヤマクラブ</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 10px; color: #333; }
-    .container { max-width: 600px; margin: 0 auto; }
-    .card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px; }
-    h1 { font-size: 1.2rem; margin: 0 0 10px; }
-    h2, h3 { font-size: 1rem; margin: 0 0 10px; }
-    .muted { color: #888; }
+    :root { --primary: #06c755; --bg: #f2f4f8; --card: #ffffff; --text: #333; --danger: #e53935; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; }
+    .container { max-width: 600px; margin: 0 auto; padding: 15px; }
+    
+    /* カード */
+    .card { background: var(--card); padding: 16px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); margin-bottom: 16px; }
+    h2 { font-size: 1.1rem; margin: 0 0 10px; border-bottom: 2px solid var(--primary); padding-bottom: 5px; display: inline-block; }
+    h3 { font-size: 1rem; margin: 15px 0 8px; font-weight: bold; }
+    .muted { color: #888; font-size: 0.85rem; }
     .small { font-size: 0.8rem; }
     
-    .tabs { display: flex; border-bottom: 1px solid #ddd; margin-bottom: 15px; }
-    .tab { padding: 10px 15px; cursor: pointer; border-bottom: 2px solid transparent; }
-    .tab.active { border-bottom-color: #06c755; color: #06c755; font-weight: bold; }
+    /* タブナビゲーション (下部固定) */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid #ddd; padding-bottom: env(safe-area-inset-bottom); z-index: 100; }
+    .nav-item { flex: 1; text-align: center; padding: 10px 0; font-size: 0.7rem; color: #888; cursor: pointer; }
+    .nav-item.active { color: var(--primary); font-weight: bold; }
+    .nav-icon { font-size: 1.5rem; display: block; margin-bottom: 2px; }
     
-    label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 0.9rem; }
-    input[type="text"], input[type="number"], select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 5px; }
+    /* フォーム要素 */
+    input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; margin-bottom: 8px; font-size: 1rem; }
+    button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 8px; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
     
-    .btn-primary { width: 100%; padding: 12px; background: #06c755; color: #fff; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; margin-bottom: 10px; cursor: pointer; }
-    .btn-danger { width: 100%; padding: 12px; background: #e53935; color: #fff; border: none; border-radius: 8px; font-size: 1rem; margin-bottom: 10px; cursor: pointer; }
+    /* ゲスト入力 */
+    .guest-row { display: flex; gap: 8px; }
     
-    .guest-row { display: flex; gap: 5px; margin-bottom: 8px; }
-    .guest-row input { flex: 2; }
-    .guest-row select { flex: 1; }
-    
-    .highlight-text { font-size: 1.1rem; color: #06c755; font-weight: bold; text-align: center; margin: 15px 0; }
-    .status-box { text-align: center; padding: 10px; background: #eee; border-radius: 6px; margin-bottom: 15px; font-weight: bold; }
-    .status-reserved { background: #e8f5e9; color: #2e7d32; }
-    .status-canceled { background: #ffebee; color: #c62828; }
-    
-    /* ローディング表示 */
-    #loading { text-align: center; padding: 20px; color: #666; }
+    /* ステータスバッジ */
+    .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+    .bg-green { background: #e8f5e9; color: #2e7d32; }
+    .bg-red { background: #ffebee; color: #c62828; }
+    .bg-gray { background: #eee; color: #666; }
+
+    /* PayPay */
+    .paypay-box { background: #f0f0f0; padding: 12px; border-radius: 8px; margin-top: 10px; text-align: center; }
+    .copy-btn { font-size: 0.8rem; padding: 4px 8px; margin-left: 5px; width: auto; display: inline-block; }
+
+    /* ランキング */
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th, td { padding: 8px; border-bottom: 1px solid #eee; text-align: left; }
+    th { color: #888; font-weight: normal; }
+    .rank-1 { color: #d4af37; font-weight: bold; }
   </style>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
-  <div id="loading">読み込み中...</div>
+  <div id="loading" style="text-align:center; padding:50px;">読み込み中...</div>
 
   <div id="app" style="display:none;">
     <div class="container">
-      <h1>ゲヤマクラブ</h1>
-      <div id="userInfo" class="small muted"></div>
       
-      <div class="tabs">
-        <div id="tab-btn-home" class="tab active" onclick="switchTab('home')">練習申込</div>
-        <div id="tab-btn-admin" class="tab" onclick="switchTab('admin')" style="display:none;">管理</div>
-      </div>
-
-      <div id="tab-home" class="tab-content">
+      <div id="tab-register" class="page">
         <div class="card">
-          <h2>次回の練習</h2>
-          <div id="eventInfo">読み込み中...</div>
+          <h2>今週の練習</h2>
+          <div id="thisWeekInfo">
+            <p class="muted">現在、募集中の練習はありません。</p>
+          </div>
           
-          <hr style="border:0; border-top:1px solid #eee; margin: 15px 0;">
-          
-          <form id="regForm">
-            <div class="status-box" id="regStatus">未登録</div>
+          <div id="regFormArea" style="display:none; margin-top:15px;">
+            <div id="regStatusBadge" class="badge bg-gray" style="display:inline-block; margin-bottom:10px;">未登録</div>
             
-            <label>
-              <input type="checkbox" id="friendToggle" onchange="toggleGuests()"> 友達を連れていく
-            </label>
-            
-            <div id="guestSection" style="display:none; margin-top:10px; padding:10px; background:#f9f9f9; border-radius:8px;">
-              <label>人数: <input type="number" id="guestCount" min="0" max="5" value="0" onchange="renderGuestInputs()"></label>
-              <div id="guestInputs"></div>
-            </div>
-            
-            <div style="margin-top:20px;">
-              <p id="feeTotal" class="highlight-text">支払予定額: - 円</p>
+            <form id="regForm">
+              <label>
+                <input type="checkbox" id="friendToggle" onchange="toggleGuests()"> 友達を連れていく
+              </label>
+              <div id="guestSection" style="display:none; background:#f9f9f9; padding:10px; border-radius:8px;">
+                <label>人数: <input type="number" id="guestCount" min="0" max="5" value="0" onchange="renderGuestInputs()"></label>
+                <div id="guestInputs"></div>
+              </div>
+              <div style="margin-top:15px; text-align:center; font-weight:bold; color:var(--primary);" id="feeDisplay">
+                支払予定: - 円
+              </div>
               <button type="button" id="btnRegister" class="btn-primary" onclick="submitRegistration()">参加登録する</button>
-              <button type="button" id="btnCancel" class="btn-danger" onclick="cancelRegistration()" style="display:none;">キャンセル</button>
+              <button type="button" id="btnCancel" class="btn-danger" style="display:none;" onclick="cancelRegistration()">キャンセル</button>
+            </form>
+
+            <div id="prePaySection" style="display:none; margin-top:20px; border-top:1px solid #eee; padding-top:15px;">
+              <h3>事前PayPay支払い</h3>
+              <p class="small muted">事前に支払う場合は、以下のIDへ送金してください。</p>
+              <div class="paypay-box">
+                ID: <span id="ppId" style="font-weight:bold;">-</span> <button class="btn-outline copy-btn" onclick="copyText('ppId')">コピー</button><br>
+                名義: <span id="ppName">-</span><br>
+                <input type="text" id="ppMsg" readonly style="margin-top:5px; font-size:0.8rem; color:#666; background:#fff;" value="練習日 氏名">
+                <button class="btn-outline copy-btn" onclick="copyText('ppMsg')">メモをコピー</button>
+              </div>
+              <label style="margin-top:10px; display:flex; align-items:center;">
+                <input type="checkbox" id="chkPaid" style="width:auto; margin-right:8px;"> PayPayで支払いました
+              </label>
+              <button id="btnPayReport" class="btn-outline" onclick="reportPayment()">支払い完了を報告</button>
             </div>
-          </form>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>今後の予定</h2>
+          <div id="futureList" class="small">読み込み中...</div>
+        </div>
+
+        <div class="card">
+          <h2>過去の履歴</h2>
+          <div id="pastList" class="small">読み込み中...</div>
         </div>
       </div>
 
-      <div id="tab-admin" class="tab-content" style="display:none;">
+      <div id="tab-day" class="page" style="display:none;">
         <div class="card">
-          <h3>試合運営</h3>
-          <label>コート数: <select id="adminCourts"><option value="2">2</option><option value="3" selected>3</option></select></label>
-          <button class="btn-primary" onclick="runLottery()">抽選実行</button>
-          <div id="lotteryResult" class="small" style="margin-top:10px; white-space: pre-wrap;"></div>
+          <h2>本日の練習</h2>
+          <p class="small muted">抽選結果や支払いはここから確認します。</p>
+          <div id="dayLotteryResult">
+            <p>現在、抽選結果はありません。</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>当日支払い</h2>
+          <p class="small muted">現金またはPayPayで、集金担当者に支払ってください。</p>
+          <div class="paypay-box">
+            <p style="font-weight:bold; color:var(--danger);">⚠️ 支払ったら必ず担当者に画面を見せてください</p>
+            ID: <span id="ppIdDay">-</span> <button class="btn-outline copy-btn" onclick="copyText('ppIdDay')">コピー</button><br>
+            名義: <span id="ppNameDay">-</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-ranking" class="page" style="display:none;">
+        <div class="card">
+          <h2>今月の参加数</h2>
+          <table id="rankMonth"></table>
+        </div>
+        <div class="card">
+          <h2>今年の参加数</h2>
+          <table id="rankYear"></table>
+        </div>
+      </div>
+
+      <div id="tab-mypage" class="page" style="display:none;">
+        <div class="card">
+          <h2>メンバー設定</h2>
+          <label>表示名</label>
+          <input type="text" id="myName">
+          <label>区分</label>
+          <select id="myCat">
+            <option value="adult">社会人 (800円)</option>
+            <option value="college">大学生 (600円)</option>
+            <option value="student">高校生以下 (500円)</option>
+          </select>
+          <button class="btn-primary" onclick="saveProfile()">保存する</button>
+        </div>
+        
+        <div class="card" id="adminArea" style="display:none;">
+          <h2 style="border-color:var(--danger);">管理メニュー</h2>
+          <p class="small">抽選を実行します。</p>
+          <select id="adminCourts"><option value="2">2コート</option><option value="3" selected>3コート</option></select>
+          <button class="btn-danger" onclick="runLottery()">抽選実行</button>
         </div>
       </div>
 
     </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item active" onclick="switchTab('register')" id="nav-register">
+        <span class="nav-icon">📅</span>参加登録
+      </div>
+      <div class="nav-item" onclick="switchTab('day')" id="nav-day">
+        <span class="nav-icon">🏸</span>当日用
+      </div>
+      <div class="nav-item" onclick="switchTab('ranking')" id="nav-ranking">
+        <span class="nav-icon">🏆</span>ランキング
+      </div>
+      <div class="nav-item" onclick="switchTab('mypage')" id="nav-mypage">
+        <span class="nav-icon">👤</span>マイページ
+      </div>
+    </div>
   </div>
 
   <script>
-    // ▼▼ ここにあなたのGASのURLを入れてください（末尾の/execまで） ▼▼
+    // ▼ GAS URLを設定 ▼
     const API_URL = 'https://script.google.com/macros/s/AKfycbx3QQMnnjQl-3bb77-HO9SVztNzaBpl8sXTHNBm7ydsLZMK50dlNqau-qHXU16HufrEBQ/exec';
-    
-    // ▼▼ LIFF ID ▼▼
-    const MY_LIFF_ID = '2008652596-Gew4K44V';
+    const LIFF_ID = '2008652596-Gew4K44V';
 
-    let currentUser = null;
-    let currentEvent = null;
-    let myRegistration = null;
+    // GASから渡された初期ページ ('<?= initPage ?>' はGASテンプレートで展開される)
+    const INIT_PAGE = '<?= initPage ?>';
 
-    // 初期化
-    window.onload = async () => {
-      try {
-        await liff.init({ liffId: MY_LIFF_ID });
-        if (!liff.isLoggedIn()) {
-          liff.login();
-          return;
-        }
-        const profile = await liff.getProfile();
-        
-        // ユーザー情報取得 (API呼び出し)
-        const userRes = await callApi('get_me', { lineUserId: profile.userId });
-        
-        // メンバー未登録なら自動登録
-        if(!userRes.exists) {
-            // 初回登録 (upsert_member)
-            await callApi('upsert_member', { 
-                lineUserId: profile.userId,
-                display_name: profile.displayName 
-            }, true); // POST
-            // 再取得
-            const retryRes = await callApi('get_me', { lineUserId: profile.userId });
-            currentUser = retryRes.member;
-        } else {
-            currentUser = userRes.member;
-        }
-        
-        if(!currentUser) {
-            alert('メンバー情報の取得に失敗しました。');
-            return;
-        }
-
-        // 表示更新
-        document.getElementById('userInfo').innerText = `${currentUser.display_name} (${formatCat(currentUser.category)})`;
-        if(currentUser.role === 'admin' || currentUser.role === 'sub_admin') {
-          document.getElementById('tab-btn-admin').style.display = 'block';
-        }
-        
-        // イベント取得
-        await loadEvent();
-        
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('app').style.display = 'block';
-
-      } catch (err) {
-        document.getElementById('loading').innerText = 'エラーが発生しました: ' + err.message;
-        console.error(err);
-      }
+    let state = {
+      me: null,
+      paypay: null,
+      event: null,
+      reg: null
     };
 
-    // API呼び出しヘルパー (fetchを使用)
-    // GASのWeb Appはリダイレクトするため redirect: 'follow' が重要
-    async function callApi(action, data, isPost = false) {
-      let url = `${API_URL}?action=${action}`;
-      let options = {
-        method: isPost ? 'POST' : 'GET',
-      };
+    window.onload = async () => {
+      await liff.init({ liffId: LIFF_ID });
+      if (!liff.isLoggedIn()) { liff.login(); return; }
       
-      if (isPost) {
-        // GASのdoPostはパラメータをpostData.contentsで受け取る形式に合わせる
-        options.body = JSON.stringify(data);
-        options.headers = { 'Content-Type': 'text/plain;charset=utf-8' }; // CORS対策でtext/plain推奨
-      } else if (data) {
-        Object.keys(data).forEach(k => url += `&${k}=${encodeURIComponent(data[k])}`);
+      const profile = await liff.getProfile();
+      
+      // ユーザー取得
+      const res = await callApi('get_me', { lineUserId: profile.userId });
+      if (!res.exists) {
+        // 初回登録
+        await callApi('upsert_member', { lineUserId: profile.userId, display_name: profile.displayName });
+        const retry = await callApi('get_me', { lineUserId: profile.userId });
+        state.me = retry.member;
+      } else {
+        state.me = res.member;
       }
-      
-      const res = await fetch(url, options);
-      const json = await res.json();
-      return json;
+      state.paypay = res.paypay_config;
+
+      // マイページ反映
+      document.getElementById('myName').value = state.me.display_name;
+      document.getElementById('myCat').value = state.me.category;
+      if(state.me.role === 'admin' || state.me.role === 'sub_admin') {
+        document.getElementById('adminArea').style.display = 'block';
+      }
+
+      // PayPay表示
+      if(state.paypay) {
+        ['ppId','ppIdDay'].forEach(id => document.getElementById(id).innerText = state.paypay.id);
+        ['ppName','ppNameDay'].forEach(id => document.getElementById(id).innerText = state.paypay.receiver);
+      }
+
+      // データロード
+      await loadThisWeek();
+      loadFuture();
+      loadPast();
+      loadRankings();
+
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+
+      // 初期タブ切り替え
+      if(INIT_PAGE === 'day') switchTab('day');
+      else if(INIT_PAGE === 'mypage') switchTab('mypage');
+      else switchTab('register');
+    };
+
+    // --- API ---
+    async function callApi(action, data, isPost=false) {
+      let url = `${API_URL}?action=${action}`;
+      let opts = { method: isPost?'POST':'GET' };
+      if(isPost) opts.body = JSON.stringify(data);
+      else if(data) Object.keys(data).forEach(k=> url += `&${k}=${encodeURIComponent(data[k])}`);
+      const r = await fetch(url, opts);
+      return await r.json();
     }
 
-    // イベント読み込み
-    async function loadEvent() {
-      const res = await callApi('get_upcoming');
+    // --- Tab ---
+    window.switchTab = (page) => {
+      document.querySelectorAll('.page').forEach(e => e.style.display='none');
+      document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+      document.getElementById('tab-'+page).style.display = 'block';
+      document.getElementById('nav-'+page).classList.add('active');
+    };
+
+    // --- Logic: Register ---
+    async function loadThisWeek() {
+      const res = await callApi('get_this_week');
+      const box = document.getElementById('thisWeekInfo');
+      const form = document.getElementById('regFormArea');
+      
       if(!res.event) {
-        document.getElementById('eventInfo').innerText = '現在予定されている練習はありません';
-        document.getElementById('btnRegister').disabled = true;
+        box.innerHTML = '<p class="muted">現在、募集中の練習はありません。</p>';
+        form.style.display = 'none';
         return;
       }
-      currentEvent = res.event;
-      const d = new Date(currentEvent.date);
-      const w = ['日','月','火','水','木','金','土'][d.getDay()];
-      
-      // 時間の整形 (HH:mm:ss -> HH:mm)
-      const start = (currentEvent.start_time || '').slice(0,5);
-      const end = (currentEvent.end_time || '').slice(0,5);
 
-      document.getElementById('eventInfo').innerText = 
-        `${d.getMonth()+1}/${d.getDate()}(${w}) ${start} - ${end}`;
-        
-      // 自分の登録状況確認
-      const regRes = await callApi('get_my_registration', {
-          event_id: currentEvent.event_id,
-          member_id: currentUser.member_id
-      });
+      state.event = res.event;
+      box.innerHTML = `
+        <div style="font-weight:bold; font-size:1.1rem;">${state.event.date_str}</div>
+        <div>${state.event.start_time} - ${state.event.end_time}</div>
+        <div class="small muted">定員: ${state.event.capacity_total}名</div>
+      `;
+      form.style.display = 'block';
       
-      if(regRes.exists) {
-          myRegistration = regRes.registration;
-          updateRegStatusUI(myRegistration);
+      // メモ欄に日付と名前をセット
+      document.getElementById('ppMsg').value = `${state.event.date_str} ${state.me.display_name}`;
+
+      // 自分の登録状況
+      const myReg = await callApi('get_my_registration', { event_id: state.event.event_id, member_id: state.me.member_id });
+      state.reg = myReg.registration;
+      renderRegStatus();
+    }
+
+    function renderRegStatus() {
+      const badge = document.getElementById('regStatusBadge');
+      const btnReg = document.getElementById('btnRegister');
+      const btnCancel = document.getElementById('btnCancel');
+      const prePay = document.getElementById('prePaySection');
+
+      if(state.reg && state.reg.status === 'reserved') {
+        badge.innerText = '参加登録済';
+        badge.className = 'badge bg-green';
+        btnReg.innerText = '登録内容を更新';
+        btnCancel.style.display = 'inline-block';
+        prePay.style.display = 'block';
+
+        // 支払い済みチェック
+        if(state.reg.payment_status === 'paid' || state.reg.payment_status === 'paid_advance') {
+           document.getElementById('chkPaid').checked = true;
+           document.getElementById('chkPaid').disabled = true;
+           document.getElementById('btnPayReport').innerText = '支払い報告済み';
+           document.getElementById('btnPayReport').disabled = true;
+        }
+
+        // ゲスト復元
+        if(state.reg.guest_count > 0) {
+          document.getElementById('friendToggle').checked = true;
+          document.getElementById('guestSection').style.display = 'block';
+          document.getElementById('guestCount').value = state.reg.guest_count;
+          const container = document.getElementById('guestInputs');
+          container.innerHTML = '';
+          const guests = JSON.parse(state.reg.guest_info||'[]');
+          guests.forEach((g,i) => container.appendChild(createGuestRow(i, g.name, g.category)));
+        }
+
       } else {
-          myRegistration = null;
-          updateRegStatusUI(null);
+        badge.innerText = '未登録';
+        badge.className = 'badge bg-gray';
+        btnReg.innerText = '参加登録する';
+        btnCancel.style.display = 'none';
+        prePay.style.display = 'none';
       }
       calcTotal();
     }
 
-    // 登録状況のUI反映
-    function updateRegStatusUI(reg) {
-        const statusBox = document.getElementById('regStatus');
-        const btnReg = document.getElementById('btnRegister');
-        const btnCancel = document.getElementById('btnCancel');
-        
-        if(reg && reg.status === 'reserved') {
-            statusBox.innerText = '参加登録済み';
-            statusBox.className = 'status-box status-reserved';
-            btnReg.innerText = '登録内容を更新';
-            btnCancel.style.display = 'inline-block';
-            
-            // ゲスト情報の復元
-            if(reg.guest_count > 0) {
-                document.getElementById('friendToggle').checked = true;
-                document.getElementById('guestSection').style.display = 'block';
-                document.getElementById('guestCount').value = reg.guest_count;
-                
-                // ゲスト入力欄生成
-                const container = document.getElementById('guestInputs');
-                container.innerHTML = '';
-                const guests = JSON.parse(reg.guest_info || '[]');
-                
-                for(let i=0; i<reg.guest_count; i++) {
-                    const g = guests[i] || {name:'', category:'adult'};
-                    const div = createGuestInputRow(i, g.name, g.category);
-                    container.appendChild(div);
-                }
-            } else {
-                document.getElementById('friendToggle').checked = false;
-                document.getElementById('guestSection').style.display = 'none';
-            }
-            
-        } else if(reg && reg.status === 'canceled') {
-            statusBox.innerText = 'キャンセル済み';
-            statusBox.className = 'status-box status-canceled';
-            btnReg.innerText = '再登録する';
-            btnCancel.style.display = 'none';
-        } else {
-            statusBox.innerText = '未登録';
-            statusBox.className = 'status-box';
-            btnReg.innerText = '参加登録する';
-            btnCancel.style.display = 'none';
-        }
-    }
-
-    // ゲスト入力欄の制御
-    function toggleGuests() {
+    // --- Logic: Guests & Fee ---
+    window.toggleGuests = () => {
       const on = document.getElementById('friendToggle').checked;
-      document.getElementById('guestSection').style.display = on ? 'block' : 'none';
-      if(on && document.getElementById('guestCount').value == 0) {
-        document.getElementById('guestCount').value = 1;
-        renderGuestInputs();
+      document.getElementById('guestSection').style.display = on?'block':'none';
+      if(on && document.getElementById('guestCount').value==0) {
+        document.getElementById('guestCount').value=1; renderGuestInputs();
       }
       calcTotal();
-    }
-
-    function renderGuestInputs() {
-      const count = document.getElementById('guestCount').value;
-      const container = document.getElementById('guestInputs');
-      // 既存の入力値を保持したいが、今回は簡易的にリセット
-      container.innerHTML = '';
-      
-      for(let i=0; i<count; i++) {
-        const div = createGuestInputRow(i, '', 'adult');
-        container.appendChild(div);
-      }
-      calcTotal();
-    }
-    
-    function createGuestInputRow(idx, nameVal, catVal) {
-        const div = document.createElement('div');
-        div.className = 'guest-row';
-        div.innerHTML = `
-          <input type="text" placeholder="友達${idx+1}の名前" class="guest-name" value="${nameVal}" required>
-          <select class="guest-cat" onchange="calcTotal()">
-            <option value="adult" ${catVal==='adult'?'selected':''}>社会人</option>
-            <option value="college" ${catVal==='college'?'selected':''}>大学生</option>
-            <option value="student" ${catVal==='student'?'selected':''}>高校生以下</option>
-          </select>
-        `;
-        return div;
-    }
-
-    function calcTotal() {
-      if(!currentUser) return;
-      let total = getFee(currentUser.category); // 本人
-      
-      if(document.getElementById('friendToggle').checked) {
-        const cats = document.querySelectorAll('.guest-cat');
-        cats.forEach(c => {
-          total += getFee(c.value);
-        });
-      }
-      document.getElementById('feeTotal').innerText = `支払予定額: ${total} 円`;
-    }
-
-    function getFee(cat) {
-      if(cat === 'college') return 600;
-      if(cat === 'student') return 500;
-      return 800; // default adult
-    }
-
-    function formatCat(c) {
-      if(c==='adult') return '社会人';
-      if(c==='college') return '大学生';
-      if(c==='student') return '高校生以下';
-      return c;
-    }
-
-    // 登録送信
-    async function submitRegistration() {
-      if(!currentEvent) return;
-      
-      const guests = [];
-      if(document.getElementById('friendToggle').checked) {
-        const names = document.querySelectorAll('.guest-name');
-        const cats = document.querySelectorAll('.guest-cat');
-        for(let i=0; i<names.length; i++) {
-          if(!names[i].value) {
-            alert('友達の名前を入力してください');
-            return;
-          }
-          guests.push({
-            name: names[i].value,
-            category: cats[i].value
-          });
-        }
-      }
-      
-      const confMsg = myRegistration && myRegistration.status === 'reserved' 
-        ? '登録内容を更新しますか？' 
-        : `参加登録しますか？\n支払予定: ${document.getElementById('feeTotal').innerText}`;
-
-      if(!confirm(confMsg)) return;
-      
-      document.getElementById('btnRegister').disabled = true;
-      document.getElementById('btnRegister').innerText = '送信中...';
-      
-      try {
-          await callApi('register', {
-            event_id: currentEvent.event_id,
-            member_id: currentUser.member_id,
-            status: 'reserved',
-            guests: guests
-          }, true); // POST
-          
-          alert('登録しました！');
-          location.reload(); // リロードして最新状態を取得
-      } catch(e) {
-          alert('エラー: ' + e.message);
-          document.getElementById('btnRegister').disabled = false;
-          document.getElementById('btnRegister').innerText = '再試行';
-      }
-    }
-    
-    // キャンセル処理
-    async function cancelRegistration() {
-        if(!confirm('本当にキャンセルしますか？')) return;
-        
-        try {
-            await callApi('register', {
-                event_id: currentEvent.event_id,
-                member_id: currentUser.member_id,
-                status: 'canceled',
-                guests: []
-            }, true);
-            
-            alert('キャンセルしました');
-            location.reload();
-        } catch(e) {
-            alert('エラー: ' + e.message);
-        }
-    }
-
-    // タブ切り替え
-    window.switchTab = function(t) {
-      document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
-      document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-      document.getElementById('tab-'+t).style.display = 'block';
-      document.getElementById('tab-btn-'+t).classList.add('active');
     };
 
-    // 管理: 抽選実行
-    window.runLottery = async function() {
-      if(!confirm('抽選を実行しますか？（参加者に通知が飛びます）')) return;
-      const courts = document.getElementById('adminCourts').value;
-      
-      try {
-          const res = await callApi('run_lottery', {
-            event_id: currentEvent.event_id,
-            courts: courts
-          }, true);
-          
-          if(res.ok) {
-            alert('抽選完了！ 第' + res.data.round + 'ラウンド');
-            // 結果表示
-            document.getElementById('lotteryResult').innerText = JSON.stringify(res.data.result, null, 2);
-          } else {
-              alert('エラー: ' + res.error);
-          }
-      } catch(e) {
-          alert('通信エラー: ' + e.message);
+    window.renderGuestInputs = () => {
+      const cnt = document.getElementById('guestCount').value;
+      const box = document.getElementById('guestInputs');
+      box.innerHTML = '';
+      for(let i=0; i<cnt; i++) box.appendChild(createGuestRow(i));
+      calcTotal();
+    };
+
+    function createGuestRow(i, name='', cat='adult') {
+      const d = document.createElement('div');
+      d.className = 'guest-row';
+      d.innerHTML = `
+        <input type="text" class="g-name" placeholder="名前" value="${name}">
+        <select class="g-cat" onchange="calcTotal()">
+          <option value="adult" ${cat=='adult'?'selected':''}>社会人</option>
+          <option value="college" ${cat=='college'?'selected':''}>大学生</option>
+          <option value="student" ${cat=='student'?'selected':''}>高校生</option>
+        </select>
+      `;
+      return d;
+    }
+
+    window.calcTotal = () => {
+      let sum = getFee(state.me.category);
+      if(document.getElementById('friendToggle').checked) {
+        document.querySelectorAll('.g-cat').forEach(e => sum += getFee(e.value));
       }
+      document.getElementById('feeDisplay').innerText = `支払予定: ${sum} 円`;
+    };
+    function getFee(c){ return c=='adult'?800:c=='college'?600:500; }
+
+    // --- Logic: Actions ---
+    window.submitRegistration = async () => {
+      if(!state.event) return;
+      const guests = [];
+      if(document.getElementById('friendToggle').checked) {
+        const names = document.querySelectorAll('.g-name');
+        const cats = document.querySelectorAll('.g-cat');
+        for(let i=0; i<names.length; i++) {
+          if(!names[i].value) { alert('ゲスト名を入力してください'); return; }
+          guests.push({name:names[i].value, category:cats[i].value});
+        }
+      }
+      if(!confirm('登録しますか？')) return;
+      await callApi('register', {
+        event_id: state.event.event_id, member_id: state.me.member_id,
+        status: 'reserved', guests: guests
+      }, true);
+      alert('登録しました');
+      location.reload();
+    };
+
+    window.cancelRegistration = async () => {
+      if(!confirm('キャンセルしますか？')) return;
+      await callApi('register', {
+        event_id: state.event.event_id, member_id: state.me.member_id,
+        status: 'canceled', guests: []
+      }, true);
+      alert('キャンセルしました');
+      location.reload();
+    };
+
+    window.reportPayment = async () => {
+      if(!document.getElementById('chkPaid').checked) { alert('チェックを入れてください'); return; }
+      if(!confirm('PayPayでの支払いを報告しますか？')) return;
+      await callApi('pay_advance', { event_id: state.event.event_id, member_id: state.me.member_id }, true);
+      alert('報告しました');
+      location.reload();
+    };
+
+    window.saveProfile = async () => {
+      const name = document.getElementById('myName').value;
+      const cat = document.getElementById('myCat').value;
+      if(!name) return;
+      await callApi('upsert_member', { lineUserId: state.me.line_user_id, display_name: name, category: cat }, true);
+      alert('保存しました');
+      location.reload();
+    };
+
+    window.runLottery = async () => {
+      if(!confirm('抽選実行？')) return;
+      const c = document.getElementById('adminCourts').value;
+      await callApi('run_lottery', { event_id: state.event.event_id, courts: c }, true);
+      alert('完了');
+    };
+
+    // --- Logic: Lists ---
+    async function loadFuture() {
+      const res = await callApi('get_future_events');
+      const box = document.getElementById('futureList');
+      if(!res.events.length) { box.innerText = '予定なし'; return; }
+      box.innerHTML = res.events.map(e => 
+        `<div style="border-bottom:1px solid #eee; padding:5px;">${e.date_str} ${e.start_time}-${e.end_time} (${e.status})</div>`
+      ).join('');
+    }
+
+    async function loadPast() {
+      const res = await callApi('get_past_events');
+      const box = document.getElementById('pastList');
+      if(!res.events.length) { box.innerText = '履歴なし'; return; }
+      box.innerHTML = res.events.map(e => 
+        `<div style="border-bottom:1px solid #eee; padding:5px;">${e.date_str}</div>`
+      ).join('');
+    }
+
+    async function loadRankings() {
+      const res = await callApi('get_rankings');
+      renderTable('rankMonth', res.data.month);
+      renderTable('rankYear', res.data.year);
+    }
+    function renderTable(id, list) {
+      const t = document.getElementById(id);
+      t.innerHTML = list.map((r,i) => 
+        `<tr><td style="width:30px;">${i+1}</td><td class="${i==0?'rank-1':''}">${r.name}</td><td style="text-align:right;">${i==0?r.month||r.year:r.month||r.year}回</td></tr>`
+      ).join('');
+    }
+
+    // --- Util ---
+    window.copyText = (id) => {
+      const t = document.getElementById(id).tagName==='INPUT' ? document.getElementById(id).value : document.getElementById(id).innerText;
+      navigator.clipboard.writeText(t);
+      alert('コピーしました: ' + t);
     };
   </script>
 </body>
