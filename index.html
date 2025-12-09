@@ -8,18 +8,26 @@
     :root { --primary: #06c755; --bg: #f2f4f8; --card: #ffffff; --text: #333; --danger: #e53935; --gray: #888; --accent: #ff9800; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; }
     .container { max-width: 600px; margin: 0 auto; padding: 15px; }
+    
+    /* カード */
     .card { background: var(--card); padding: 16px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); margin-bottom: 16px; }
     h2 { font-size: 1.1rem; margin: 0 0 10px; border-bottom: 2px solid var(--primary); padding-bottom: 5px; display: inline-block; }
-    h3 { font-size: 1rem; margin: 10px 0 8px; font-weight: bold; color: #444; }
+    h3 { font-size: 1rem; margin: 15px 0 8px; font-weight: bold; color: #444; }
     .muted { color: var(--gray); font-size: 0.85rem; line-height: 1.4; }
     .small { font-size: 0.8rem; }
+    
+    /* Loading */
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(255,255,255,0.95); z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     .shuttle-img { width: 80px; height: auto; animation: bounce 1s infinite alternate ease-in-out; }
     @keyframes bounce { 0% { transform: translateY(0); } 100% { transform: translateY(-30px); } }
+    
+    /* Nav */
     .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid #ddd; padding-bottom: env(safe-area-inset-bottom); z-index: 1000; }
-    .nav-item { flex: 1; text-align: center; padding: 10px 0; font-size: 0.7rem; color: var(--gray); cursor: pointer; }
+    .nav-item { flex: 1; text-align: center; padding: 8px 0; font-size: 0.65rem; color: var(--gray); cursor: pointer; }
     .nav-item.active { color: var(--primary); font-weight: bold; }
-    .nav-icon { font-size: 1.5rem; display: block; margin-bottom: 2px; }
+    .nav-icon { font-size: 1.4rem; display: block; margin-bottom: 2px; }
+    
+    /* Elements */
     input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; margin-bottom: 8px; font-size: 1rem; }
     button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 8px; }
     .btn-primary { background: var(--primary); color: #fff; }
@@ -27,23 +35,37 @@
     .btn-accent { background: var(--accent); color: #fff; }
     .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 6px 12px; font-size: 0.9rem; }
     .btn-copy { padding: 4px 8px; font-size: 0.8rem; width: auto; margin: 0 0 0 8px; display: inline-block; }
+    .btn-sm { width: auto; padding: 4px 8px; font-size: 0.8rem; margin: 0; border-radius: 4px; }
+    
+    /* 運営UI */
+    .admin-list-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 10px 0; }
+    .pay-icon { font-size: 0.7rem; padding: 2px 4px; border-radius: 3px; margin-right: 5px; font-weight: bold; }
+    .pay-icon.pp { background: #ffeb3b; color: #333; }
+    .pay-icon.cash { background: #e0e0e0; color: #555; }
+    .pay-status { font-size: 0.75rem; color: #666; margin-left: 5px; white-space: nowrap; }
+    
+    /* 管理メニューグリッド */
+    .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+    .admin-menu-btn { background: #fff; border: 1px solid #ddd; padding: 15px; text-align: center; border-radius: 8px; cursor: pointer; }
+    .admin-menu-btn:active { background: #f0f0f0; }
+    .admin-icon { font-size: 1.5rem; display: block; margin-bottom: 5px; }
+    
+    /* その他 */
+    .guest-row { display: flex; gap: 8px; }
     .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
     .bg-green { background: #e8f5e9; color: #2e7d32; }
     .bg-gray { background: #eee; color: #666; }
     .paypay-box { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-top: 10px; font-size: 0.9rem; border: 1px solid #eee; }
     .step-list { padding-left: 20px; font-size: 0.85rem; color: #444; line-height: 1.6; margin-bottom: 10px; }
-    .pay-icon { font-size: 0.7rem; padding: 2px 4px; border-radius: 3px; margin-right: 5px; font-weight: bold; }
-    .pay-icon.pp { background: #ffeb3b; color: #333; }
-    .pay-icon.cash { background: #bdbdbd; color: #333; }
-    .pay-status { font-size: 0.75rem; color: #666; margin-left: 5px; white-space: nowrap; }
     .member-list-chip { display: inline-block; background: #e0f2f1; color: #00695c; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; margin: 2px; }
-    .admin-list-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 8px 0; }
+    .paid-row { opacity: 0.5; }
     table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     th, td { padding: 8px; border-bottom: 1px solid #eee; text-align: left; }
+    
     #restrictedMsg { text-align: center; padding: 40px 0; color: #888; }
     #debugLog { background: #333; color: #0f0; padding: 10px; font-family: monospace; font-size: 0.8rem; margin-bottom: 20px; border-radius: 8px; display: none; }
     .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1500; display:none; justify-content:center; align-items:center; }
-    .modal { background:#fff; padding:20px; border-radius:12px; width:85%; max-width:400px; max-height:80%; overflow-y:auto; }
+    .modal { background:#fff; padding:20px; border-radius:12px; width:90%; max-width:400px; max-height:85%; overflow-y:auto; }
   </style>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
@@ -70,6 +92,7 @@
               <span class="muted">現在の参加者:</span> <span id="currentParticipantsCount">0</span>名<br>
               <div id="regMembersList" style="margin-top:5px;"></div>
             </div>
+            
             <form id="regForm">
               <label><input type="checkbox" id="friendToggle" onchange="toggleGuests()"> 友達を連れていく</label>
               <div id="guestSection" style="display:none; background:#f9f9f9; padding:10px; border-radius:8px;">
@@ -77,6 +100,7 @@
                 <div id="guestInputs"></div>
               </div>
               <div id="feeDisplay" style="text-align:center; font-weight:bold; color:var(--primary); margin:15px 0;">支払予定: - 円</div>
+
               <div style="background:#f9f9f9; padding:15px; border-radius:8px; margin-bottom:15px;">
                 <h3 style="margin-top:0;">お支払い方法</h3>
                 <label style="margin-top:10px; display:flex; align-items:start;"><input type="radio" name="payMethod" value="advance" onchange="togglePayMethod()" style="width:auto; margin-top:4px; margin-right:8px;"><div><span style="font-weight:bold;">事前PayPay決済</span></div></label>
@@ -95,6 +119,9 @@
               <button type="button" id="btnCancel" class="btn-danger" style="display:none;" onclick="cancelRegistration()">キャンセル</button>
             </form>
           </div>
+          <div id="cancelEventArea" style="display:none; margin-top:10px; text-align:right;">
+            <button class="btn-outline btn-sm" style="color:var(--danger); border-color:var(--danger);" onclick="cancelEvent()">練習を中止にする</button>
+          </div>
         </div>
         <div id="lazyRegister" style="display:none;">
           <div class="card"><h2>今後の予定</h2><div id="futureList" class="small">読み込み中...</div></div>
@@ -106,13 +133,15 @@
         <div id="dayContent" style="display:none;">
           <div id="subAdminArea" style="display:none;">
             <div class="card" style="border-left: 5px solid var(--danger);">
-              <h3 style="color:var(--danger); display:flex; justify-content:space-between;">運営: 抽選 <span class="small muted">自動コート割</span></h3>
-              <div id="adminLotteryList"></div>
-              <div style="margin-top:10px; display:flex; gap:10px;">
-                <button class="btn-outline" style="font-size:0.8rem;" onclick="manualAddUser()">+ 追加</button>
-                <button class="btn-danger" style="flex:1;" onclick="executeLottery()">抽選実行</button>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="color:var(--danger); margin:0;">運営: 抽選</h3>
+                <button class="btn-outline btn-sm" onclick="manualAddUser()">+ 追加</button>
               </div>
-              <div style="text-align:right; margin-top:5px;"><button class="btn-outline" style="font-size:0.8rem; color:#888; border-color:#ccc;" onclick="deleteLastRound()">直前の回を取消</button></div>
+              <div id="adminLotteryList"></div>
+              <div style="display:flex; gap:10px; margin-top:15px;">
+                <button class="btn-outline btn-sm" style="color:#888; border-color:#ccc;" onclick="deleteLastRound()">直前取消</button>
+                <button class="btn-danger" style="flex:1; margin:0;" onclick="executeLottery()">抽選実行</button>
+              </div>
             </div>
           </div>
 
@@ -138,7 +167,7 @@
             </div>
           </div>
         </div>
-        <div id="restrictedMsg"><h3>時間外です</h3><p>当日メニューは 17:30〜22:00 のみ利用可能です。</p></div>
+        <div id="restrictedMsg"><h3>時間外です</h3><p>当日用メニューは、練習日の<br>17:30 〜 22:00 の間のみ利用可能です。</p></div>
       </div>
 
       <div id="tab-ranking" class="page" style="display:none;">
@@ -150,7 +179,7 @@
         <div class="card">
           <h2>設定</h2>
           <label>表示名</label><input type="text" id="myName">
-          <label>区分</label><select id="myCat"><option value="adult">社会人</option><option value="college">大学生</option><option value="student">高校生</option></select>
+          <label>区分</label><select id="myCat"><option value="adult">社会人</option><option value="college">大学生</option><option value="student">高校生以下</option></select>
           <button class="btn-primary" onclick="saveProfile()">保存</button>
         </div>
         <div id="debugAdminArea" class="card" style="display:none; border:2px dashed red;">
@@ -160,38 +189,85 @@
       </div>
 
       <div id="tab-admin" class="page" style="display:none;">
-        <div class="card">
-          <h2>帳簿</h2>
-          <div id="adminAccList" class="small" style="max-height:200px; overflow-y:auto;"></div>
-          <hr>
-          <h3>記帳</h3>
-          <select id="accType"><option value="expense">支出</option><option value="income">収入</option></select>
-          <select id="accWallet"><option value="cash">現金</option><option value="paypay">PayPay</option></select>
-          <input type="number" id="accAmount" placeholder="金額">
-          <input type="text" id="accDesc" placeholder="内容 (例: シャトル代)">
-          <button class="btn-primary" onclick="saveAccounting()">記帳する</button>
-        </div>
-        <div class="card">
-          <h2>設定変更</h2>
-          <h3>会費</h3>
-          <div style="display:flex; gap:5px;">
-            <input type="number" id="cfgAdult" placeholder="社会人">
-            <input type="number" id="cfgCollege" placeholder="大学生">
-            <input type="number" id="cfgStudent" placeholder="高校生">
+        <div id="adminMenu">
+          <div class="admin-grid">
+            <div class="admin-menu-btn" onclick="showAdminView('acc')"><span class="admin-icon">💰</span>帳簿</div>
+            <div class="admin-menu-btn" onclick="showAdminView('sched')"><span class="admin-icon">📅</span>日程登録</div>
+            <div class="admin-menu-btn" onclick="showAdminView('fees')"><span class="admin-icon">🏷️</span>会費設定</div>
+            <div class="admin-menu-btn" onclick="showAdminView('roles')"><span class="admin-icon">🔑</span>権限設定</div>
           </div>
-          <button class="btn-outline" onclick="saveFees()">会費保存</button>
-          
-          <h3 style="margin-top:15px;">メンバー権限</h3>
-          <div id="adminMemberList" style="max-height:200px; overflow-y:auto;"></div>
+        </div>
+
+        <div id="adminView-acc" style="display:none;">
+          <button class="btn-outline btn-sm" onclick="showAdminView('menu')">← 戻る</button>
+          <div class="card" style="margin-top:10px;">
+            <h2>帳簿サマリ</h2>
+            <div id="accSummary" style="margin-bottom:15px; font-weight:bold;">Loading...</div>
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+              <button class="btn-outline" onclick="document.getElementById('accListArea').style.display='block';document.getElementById('accEntryArea').style.display='none';">確認</button>
+              <button class="btn-outline" id="btnAccEntry" onclick="document.getElementById('accListArea').style.display='none';document.getElementById('accEntryArea').style.display='block';">記帳</button>
+            </div>
+            
+            <div id="accListArea">
+              <div id="adminAccList" class="small" style="max-height:300px; overflow-y:auto;"></div>
+            </div>
+            
+            <div id="accEntryArea" style="display:none;">
+              <h3>収支入力</h3>
+              <select id="accType"><option value="expense">支出</option><option value="income">収入</option></select>
+              <select id="accWallet"><option value="cash">現金</option><option value="paypay">PayPay</option><option value="bank">口座</option></select>
+              <input type="number" id="accAmount" placeholder="金額">
+              <input type="text" id="accDesc" placeholder="内容 (例: シャトル代)">
+              <button class="btn-primary" onclick="saveAccounting()">保存</button>
+              
+              <h3 style="margin-top:20px;">資金移動</h3>
+              <div style="display:flex; align-items:center; gap:5px;">
+                <select id="trFrom" style="flex:1;"><option value="paypay">PayPay</option><option value="bank">口座</option><option value="cash">現金</option></select>
+                <span>→</span>
+                <select id="trTo" style="flex:1;"><option value="bank">口座</option><option value="cash">現金</option><option value="paypay">PayPay</option></select>
+              </div>
+              <input type="number" id="trAmount" placeholder="金額">
+              <button class="btn-accent" onclick="saveTransfer()">移動を記録</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="adminView-sched" style="display:none;">
+          <button class="btn-outline btn-sm" onclick="showAdminView('menu')">← 戻る</button>
+          <div class="card" style="margin-top:10px;">
+            <h2>日程登録</h2>
+            <p class="small muted">今後の日曜日を一覧表示します。開催する日にチェック。</p>
+            <div id="schedList" style="max-height:300px; overflow-y:auto;"></div>
+            <button class="btn-primary" onclick="saveSchedule()">保存</button>
+          </div>
+        </div>
+
+        <div id="adminView-fees" style="display:none;">
+          <button class="btn-outline btn-sm" onclick="showAdminView('menu')">← 戻る</button>
+          <div class="card" style="margin-top:10px;">
+            <h2>会費設定</h2>
+            <label>社会人</label><input type="number" id="cfgAdult">
+            <label>大学生</label><input type="number" id="cfgCollege">
+            <label>高校生以下</label><input type="number" id="cfgStudent">
+            <button class="btn-primary" onclick="saveFees()">保存</button>
+          </div>
+        </div>
+
+        <div id="adminView-roles" style="display:none;">
+          <button class="btn-outline btn-sm" onclick="showAdminView('menu')">← 戻る</button>
+          <div class="card" style="margin-top:10px;">
+            <h2>権限設定</h2>
+            <div id="adminMemberList" style="max-height:400px; overflow-y:auto;"></div>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="bottom-nav">
-      <div class="nav-item active" onclick="switchTab('register')" id="nav-register"><span class="nav-icon">📅</span>登録</div>
-      <div class="nav-item" onclick="switchTab('day')" id="nav-day"><span class="nav-icon">🏸</span>当日</div>
-      <div class="nav-item" onclick="switchTab('ranking')" id="nav-ranking"><span class="nav-icon">🏆</span>順位</div>
-      <div class="nav-item" onclick="switchTab('mypage')" id="nav-mypage"><span class="nav-icon">👤</span>設定</div>
+      <div class="nav-item active" onclick="switchTab('register')" id="nav-register"><span class="nav-icon">📅</span>参加登録</div>
+      <div class="nav-item" onclick="switchTab('day')" id="nav-day"><span class="nav-icon">🏸</span>当日用</div>
+      <div class="nav-item" onclick="switchTab('ranking')" id="nav-ranking"><span class="nav-icon">🏆</span>ランキング</div>
+      <div class="nav-item" onclick="switchTab('mypage')" id="nav-mypage"><span class="nav-icon">👤</span>マイページ</div>
       <div class="nav-item" onclick="switchTab('admin')" id="nav-admin" style="display:none;"><span class="nav-icon">⚙️</span>管理</div>
     </div>
   </div>
@@ -247,8 +323,12 @@
         if(isAdmin) {
           document.getElementById('subAdminArea').style.display = 'block';
           document.getElementById('subAdminCollection').style.display = 'block';
+          document.getElementById('nav-admin').style.display = 'block';
+          if(['admin','sub_admin'].includes(state.me.role)) {
+             document.getElementById('cancelEventArea').style.display = 'block';
+          }
         }
-        if(state.me.role === 'admin') document.getElementById('nav-admin').style.display = 'block';
+        // SubAdmin restriction handled in loadAdminData
       }
       if(state.paypay) {
         const setT = (s,t) => document.querySelectorAll(s).forEach(e => e.innerText=t);
@@ -299,7 +379,7 @@
       const res = await callApi('get_participants_detail', { event_id: state.event.event_id });
       setBusy(false);
       state.participants = res.data.participants || [];
-      const rounds = res.data.allRounds || []; // 全ラウンド取得
+      const rounds = res.data.allRounds || []; 
       
       const box = document.getElementById('dayLotteryResult');
       if(rounds.length > 0) {
@@ -342,43 +422,86 @@
       }).join('');
     }
 
-    // Admin Tab Logic
+    // Admin Tabs Logic
+    window.showAdminView = (view) => {
+      ['menu','acc','sched','fees','roles'].forEach(v => document.getElementById('adminView-'+v).style.display = 'none');
+      document.getElementById('adminMenu').style.display = (view==='menu')?'block':'none';
+      if(view!=='menu') document.getElementById('adminView-'+view).style.display = 'block';
+    }
+    
     async function loadAdminData() {
       setBusy(true);
-      const res = await callApi('get_admin_data');
+      const res = await callApi('get_admin_init');
       setBusy(false);
-      // Accounting
-      document.getElementById('adminAccList').innerHTML = res.accounting.map(a => `<div style="border-bottom:1px solid #eee; padding:4px;">${a.date} [${a.type}] ${a.amount}円 (${a.wallet}) ${a.desc}</div>`).join('');
+      // Summary
+      const s = res.summary;
+      document.getElementById('accSummary').innerText = `合計: ${s.total}円 (現:${s.cash}/P:${s.paypay}/口:${s.bank})`;
       // Fees
       document.getElementById('cfgAdult').value = res.fees.adult;
       document.getElementById('cfgCollege').value = res.fees.college;
       document.getElementById('cfgStudent').value = res.fees.student;
-      // Members
+      // Members (Roles)
+      const roleName = {admin:'管理者', sub_admin:'準管理者', member:'メンバー'};
       document.getElementById('adminMemberList').innerHTML = res.members.map(m => `
-        <div style="display:flex; justify-content:space-between; padding:5px 0;">
+        <div class="admin-list-item">
           <div>${m.display_name}</div>
-          <select onchange="updateRole('${m.member_id}', this.value)" style="width:auto; padding:2px;">
-            <option value="member" ${m.role=='member'?'selected':''}>Member</option>
-            <option value="sub_admin" ${m.role=='sub_admin'?'selected':''}>Sub</option>
-            <option value="admin" ${m.role=='admin'?'selected':''}>Admin</option>
+          <select onchange="updateRole('${m.member_id}', this.value)" style="width:auto; padding:4px;">
+            <option value="admin" ${m.role=='admin'?'selected':''}>管理者</option>
+            <option value="sub_admin" ${m.role=='sub_admin'?'selected':''}>準管理者</option>
+            <option value="member" ${m.role=='member'?'selected':''}>メンバー</option>
           </select>
         </div>`).join('');
+      // SubAdmin Limits
+      if(state.me.role === 'sub_admin') {
+        document.getElementById('btnAccEntry').style.display = 'none'; // No entry
+      }
+      
+      // Acc List
+      const accRes = await callApi('get_accounting_list');
+      document.getElementById('adminAccList').innerHTML = accRes.list.map(a => `<div style="border-bottom:1px solid #eee; padding:4px;">${a.date} [${a.type==='income'?'収':'支'}] ${a.amount}円 (${a.wallet}) ${a.desc}</div>`).join('');
+      
+      // Schedule Gen
+      renderScheduleGen();
     }
+    
+    function renderScheduleGen() {
+      const list = document.getElementById('schedList');
+      list.innerHTML = '';
+      const today = new Date();
+      // Next 20 Sundays
+      for(let i=0; i<20; i++) {
+        const d = new Date();
+        d.setDate(today.getDate() + (7 - today.getDay()) + (i*7)); // Next Sunday
+        const dStr = `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
+        list.innerHTML += `<label style="display:block; padding:5px;"><input type="checkbox" class="sch-chk" value="${dStr}"> ${dStr} (日)</label>`;
+      }
+    }
+    
     window.saveAccounting = async () => {
       const amt = document.getElementById('accAmount').value;
       if(!amt) return;
       await callApi('save_accounting', { type:document.getElementById('accType').value, wallet:document.getElementById('accWallet').value, amount:amt, desc:document.getElementById('accDesc').value }, true);
       alert('保存しました'); loadAdminData();
     };
+    window.saveTransfer = async () => {
+      const amt = document.getElementById('trAmount').value;
+      if(!amt) return;
+      await callApi('save_transfer', { amount:amt, from_wallet:document.getElementById('trFrom').value, to_wallet:document.getElementById('trTo').value }, true);
+      alert('移動しました'); loadAdminData();
+    };
     window.saveFees = async () => {
       await callApi('save_fee_config', { adult:document.getElementById('cfgAdult').value, college:document.getElementById('cfgCollege').value, student:document.getElementById('cfgStudent').value }, true);
       alert('保存しました');
     };
-    window.updateRole = async (mid, role) => {
-      await callApi('update_role', { member_id: mid, role: role }, true);
+    window.updateRole = async (mid, role) => { await callApi('update_role', { member_id: mid, role: role }, true); };
+    window.saveSchedule = async () => {
+      const dates = []; document.querySelectorAll('.sch-chk:checked').forEach(c => dates.push(c.value));
+      if(!dates.length) return alert('選択してください');
+      if(confirm('登録しますか？')) { setBusy(true); await callApi('save_schedule', { dates:dates }, true); alert('登録しました'); setBusy(false); }
     };
+    window.cancelEvent = async () => { if(confirm('本当に中止にしますか？\n過去ログには残りますが、参加登録はできなくなります。')) { setBusy(true); await callApi('cancel_event', { event_id: state.event.event_id }, true); alert('中止しました'); location.reload(); } };
 
-    // Actions (unchanged logic, just calls)
+    // Common Actions
     window.executeLottery = async () => {
       const stats = {}; state.participants.forEach(p => { const v=document.getElementById(`stat-${p.participant_id}`).value; if(v!==p.status) stats[p.participant_id]=v; });
       if(confirm('抽選実行？')) { setBusy(true); await callApi('run_lottery', { event_id: state.event.event_id, statuses: stats }, true); alert('完了'); loadDayData(); setBusy(false); }
