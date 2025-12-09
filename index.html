@@ -5,61 +5,70 @@
   <title>ゲヤマクラブ</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <style>
-    :root { --primary: #06c755; --bg: #f2f4f8; --card: #ffffff; --text: #333; --danger: #e53935; }
+    :root { --primary: #06c755; --bg: #f2f4f8; --card: #ffffff; --text: #333; --danger: #e53935; --gray: #888; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; }
     .container { max-width: 600px; margin: 0 auto; padding: 15px; }
     
-    /* カード */
     .card { background: var(--card); padding: 16px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); margin-bottom: 16px; }
     h2 { font-size: 1.1rem; margin: 0 0 10px; border-bottom: 2px solid var(--primary); padding-bottom: 5px; display: inline-block; }
     h3 { font-size: 1rem; margin: 15px 0 8px; font-weight: bold; }
-    .muted { color: #888; font-size: 0.85rem; line-height: 1.4; }
+    .muted { color: var(--gray); font-size: 0.85rem; line-height: 1.4; }
     .small { font-size: 0.8rem; }
     
-    /* ローディングアニメーション */
-    #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: #fff; z-index: 999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-    .shuttle { width: 40px; height: 40px; background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%2306c755" d="M473.7 73.8l-55.4-66.9c-15-18-42.3-20.5-60.3-5.5l-63.6 52.7c-2.5 2.1-4.7 4.5-6.5 7.1l-42.9 65.5c-7.9 12-4.5 28.1 7.5 36l66.9 44.1c12 7.9 28.1 4.5 36-7.5l42.9-65.5c2.6-4 6.2-7.1 10.4-8.9l77.4-32.1c21.8-9 32.2-34.5 23.2-56.3zM238.5 292.5L25.9 487.8c-15.3 14.1-3.6 39.5 17 37l199.1-23.7c9-1.1 16.9-6.6 20.8-14.8l77.7-160.8-102 33z"/></svg>') no-repeat center center; background-size: contain; animation: bounce 1s infinite alternate; }
-    @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-50px) rotate(10deg); } }
-    .loading-text { margin-top: 20px; font-weight: bold; color: #666; font-size: 0.9rem; }
-    
-    /* タブナビゲーション */
-    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid #ddd; padding-bottom: env(safe-area-inset-bottom); z-index: 100; }
-    .nav-item { flex: 1; text-align: center; padding: 10px 0; font-size: 0.7rem; color: #888; cursor: pointer; }
+    /* ローディングオーバーレイ */
+    #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(255,255,255,0.9); z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    .shuttle-anim {
+      width: 50px; height: 50px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2306c755'%3E%3Cpath d='M12 2C10.9 2 10 2.9 10 4V7H14V4C14 2.9 13.1 2 12 2M10.5 8H13.5L15 20H9L10.5 8M7 20H17L18 22H6L7 20Z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: center;
+      animation: shuttle-bounce 0.8s infinite alternate ease-in-out;
+    }
+    @keyframes shuttle-bounce {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(-30px) rotate(10deg); opacity: 0.8; }
+    }
+    .loading-text { margin-top: 15px; font-weight: bold; color: var(--primary); }
+
+    /* UI Parts */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid #ddd; padding-bottom: env(safe-area-inset-bottom); z-index: 1000; }
+    .nav-item { flex: 1; text-align: center; padding: 10px 0; font-size: 0.7rem; color: var(--gray); cursor: pointer; }
     .nav-item.active { color: var(--primary); font-weight: bold; }
     .nav-icon { font-size: 1.5rem; display: block; margin-bottom: 2px; }
     
-    /* フォーム要素 */
     input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; margin-bottom: 8px; font-size: 1rem; }
     button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 8px; }
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-danger { background: var(--danger); color: #fff; }
     .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
-    .btn-copy { padding: 4px 8px; font-size: 0.8rem; width: auto; margin: 0 0 0 8px; }
+    .btn-copy { padding: 4px 8px; font-size: 0.8rem; width: auto; margin: 0 0 0 8px; display: inline-block; }
     
-    /* その他 */
     .guest-row { display: flex; gap: 8px; }
     .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
     .bg-green { background: #e8f5e9; color: #2e7d32; }
     .bg-gray { background: #eee; color: #666; }
+    
     .paypay-box { background: #f0f0f0; padding: 15px; border-radius: 8px; margin-top: 10px; font-size: 0.9rem; }
-    .highlight-text { font-size: 1.1rem; color: var(--primary); font-weight: bold; text-align: center; margin: 15px 0; }
+    .step-list { padding-left: 20px; font-size: 0.85rem; color: #444; line-height: 1.6; margin-bottom: 10px; }
     
     table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     th, td { padding: 8px; border-bottom: 1px solid #eee; text-align: left; }
     .rank-1 { color: #d4af37; font-weight: bold; }
-
-    /* デバッグ用ログ */
-    #debugLog { background: #333; color: #0f0; padding: 10px; font-family: monospace; font-size: 0.8rem; margin-bottom: 20px; border-radius: 8px; display: none; }
+    
+    .member-list-chip { display: inline-block; background: #e0f2f1; color: #00695c; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; margin: 2px; }
+    
+    /* 運営用テーブル */
+    .admin-table th { background: #f9f9f9; }
+    .status-select { padding: 4px; margin: 0; font-size: 0.85rem; }
+    .paid-row { opacity: 0.5; }
   </style>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
   <div id="loading">
-    <div class="shuttle"></div>
+    <div class="shuttle-anim"></div>
     <div class="loading-text">Loading...</div>
   </div>
-
-  <div id="debugLog"></div>
 
   <div id="app" style="display:none;">
     <div class="container">
@@ -67,47 +76,49 @@
       <div id="tab-register" class="page">
         <div class="card">
           <h2>今週の練習</h2>
-          <div id="thisWeekInfo"><p class="muted">現在、募集中の練習はありません。</p></div>
+          <div id="thisWeekInfo"><p class="muted">募集中の練習はありません。</p></div>
           
           <div id="regFormArea" style="display:none; margin-top:15px;">
             <div id="regStatusBadge" class="badge bg-gray" style="display:inline-block; margin-bottom:10px;">未登録</div>
             
+            <div style="margin-bottom:15px;">
+              <span class="small muted">現在の参加予定:</span><br>
+              <div id="regMembersList"></div>
+            </div>
+
             <form id="regForm">
               <label><input type="checkbox" id="friendToggle" onchange="toggleGuests()"> 友達を連れていく</label>
               <div id="guestSection" style="display:none; background:#f9f9f9; padding:10px; border-radius:8px;">
                 <label>人数: <input type="number" id="guestCount" min="0" max="5" value="0" onchange="renderGuestInputs()"></label>
                 <div id="guestInputs"></div>
               </div>
-              <div id="feeDisplay" class="highlight-text">支払予定: - 円</div>
+              <div id="feeDisplay" style="text-align:center; font-weight:bold; color:var(--primary); margin:15px 0;">支払予定: - 円</div>
 
               <div style="background:#f9f9f9; padding:15px; border-radius:8px; margin-bottom:15px;">
                 <h3 style="margin-top:0;">お支払い方法</h3>
-                <p class="muted" style="font-size:0.8rem;">
-                  運営からのお願い: 小銭管理の負担軽減のため、可能な限りPayPayでの事前決済にご協力ください。<br>
-                  ※事前決済後のキャンセル時は、PayPayにて返金対応いたします。
-                </p>
+                <p class="muted small">運営上の理由により、PayPay事前決済にご協力ください。</p>
 
                 <label style="margin-top:10px; display:flex; align-items:start;">
                   <input type="radio" name="payMethod" value="advance" onchange="togglePayMethod()" style="width:auto; margin-top:4px; margin-right:8px;">
-                  <div>
-                    <span style="font-weight:bold;">事前PayPay決済 (推奨)</span><br>
-                    <span class="muted small">今すぐPayPayアプリで送金し、完了チェックを入れて登録します。</span>
-                  </div>
+                  <div><span style="font-weight:bold;">事前PayPay決済</span><br><span class="muted small">今すぐ送金し、完了チェックを入れます。</span></div>
                 </label>
                 
                 <div id="advancePayDetail" style="display:none; margin-left:25px; margin-top:5px;">
                    <div class="paypay-box">
-                     <div>送金先: <span id="ppName" style="font-weight:bold;">-</span></div>
-                     <div style="margin-top:5px;">
-                       ID: <span id="ppId" style="font-weight:bold;">-</span>
-                       <button type="button" class="btn-outline btn-copy" onclick="copyText('ppId')">IDコピー</button>
-                     </div>
-                     <div style="margin-top:10px;">
-                       <span class="small">▼ 送金時のメッセージに貼り付けてください</span>
-                       <div style="display:flex;">
-                         <input type="text" id="ppMsg" readonly style="margin:0; font-size:0.8rem; background:#fff;">
-                         <button type="button" class="btn-outline btn-copy" onclick="copyText('ppMsg')">コピー</button>
-                       </div>
+                     <strong>&lt;手順&gt;</strong>
+                     <ol class="step-list">
+                       <li>下記の <strong>PayPay ID</strong> をコピー</li>
+                       <li>PayPayアプリを開き「送る」を選択</li>
+                       <li>「PayPay IDや電話番号で送る」へ</li>
+                       <li>IDを貼り付けて検索</li>
+                       <li>名義が <strong id="ppNameTarget">-</strong> であることを確認</li>
+                       <li>金額を入力 (<strong>メモもコピペ推奨</strong>)</li>
+                       <li>送金完了後、下記のチェックを入れる</li>
+                     </ol>
+                     <div>ID: <span id="ppId" style="font-weight:bold;">-</span> <button type="button" class="btn-outline btn-copy" onclick="copyText('ppId')">コピー</button></div>
+                     <div style="margin-top:5px; display:flex; align-items:center;">
+                       <input type="text" id="ppMsg" readonly style="margin:0; font-size:0.8rem; background:#fff; flex:1;">
+                       <button type="button" class="btn-outline btn-copy" onclick="copyText('ppMsg')">メモコピー</button>
                      </div>
                    </div>
                    <label style="margin-top:10px; color:var(--primary); font-weight:bold;">
@@ -117,18 +128,12 @@
 
                 <label style="margin-top:15px; display:flex; align-items:start;">
                   <input type="radio" name="payMethod" value="day_paypay" onchange="togglePayMethod()" style="width:auto; margin-top:4px; margin-right:8px;">
-                  <div>
-                    <span style="font-weight:bold;">当日PayPay支払い</span><br>
-                    <span class="muted small">練習当日に送金し、集金担当者に画面を見せて報告します。</span>
-                  </div>
+                  <div><span style="font-weight:bold;">当日PayPay支払い</span><br><span class="muted small">当日送金し、担当者に報告します。</span></div>
                 </label>
 
                 <label style="margin-top:15px; display:flex; align-items:start;">
                   <input type="radio" name="payMethod" value="day_cash" onchange="togglePayMethod()" style="width:auto; margin-top:4px; margin-right:8px;">
-                  <div>
-                    <span style="font-weight:bold;">当日現金支払い</span><br>
-                    <span class="muted small">練習当日に集金担当者に現金で支払います。</span>
-                  </div>
+                  <div><span style="font-weight:bold;">当日現金支払い</span><br><span class="muted small">当日現金で支払います。</span></div>
                 </label>
               </div>
 
@@ -137,7 +142,6 @@
             </form>
           </div>
         </div>
-
         <div id="lazyRegister" style="display:none;">
           <div class="card"><h2>今後の予定</h2><div id="futureList" class="small">読み込み中...</div></div>
           <div class="card"><h2>過去の履歴</h2><div id="pastList" class="small">読み込み中...</div></div>
@@ -145,13 +149,35 @@
       </div>
 
       <div id="tab-day" class="page" style="display:none;">
+        <div id="subAdminArea" style="display:none;">
+          <div class="card" style="border: 2px solid var(--primary);">
+            <h2 style="color:var(--primary);">運営メニュー (準管理)</h2>
+            
+            <h3>1. 抽選実行</h3>
+            <p class="small muted">ステータスを確認して抽選を実行してください。<br>人数に応じて自動でコート数が決まります。</p>
+            <div id="adminParticipantsList"></div>
+            <button class="btn-outline small" onclick="manualAddUser()">+ 手動で人追加</button>
+            <button class="btn-danger" onclick="executeLottery()">抽選を実行する</button>
+            
+            <hr style="margin:15px 0;">
+            <h3>2. 履歴削除</h3>
+            <p class="small muted">直前の抽選結果を取り消します。</p>
+            <button class="btn-outline" onclick="deleteLastRound()">直前の回を削除</button>
+
+            <hr style="margin:15px 0;">
+            <h3>3. 集金チェック</h3>
+            <p class="small muted">お金を受け取ったらチェックして保存してください。</p>
+            <div id="collectionList"></div>
+            <button class="btn-primary" onclick="saveCollection()">集金状況を保存</button>
+          </div>
+        </div>
+
         <div class="card">
           <h2>本日の練習</h2>
           <div id="dayLotteryResult"><p>現在、抽選結果はありません。</p></div>
         </div>
         <div class="card">
           <h2>当日支払い</h2>
-          <p class="small muted">現金またはPayPayで、集金担当者に支払ってください。</p>
           <div class="paypay-box">
             <p style="font-weight:bold; color:var(--danger);">⚠️ 支払ったら必ず担当者に画面を見せてください</p>
             ID: <span id="ppIdDay">-</span> <button class="btn-outline btn-copy" onclick="copyText('ppIdDay')">コピー</button><br>
@@ -175,11 +201,6 @@
           </select>
           <button class="btn-primary" onclick="saveProfile()">保存する</button>
         </div>
-        <div class="card" id="adminArea" style="display:none;">
-          <h2 style="border-color:var(--danger);">管理メニュー</h2>
-          <select id="adminCourts"><option value="2">2コート</option><option value="3" selected>3コート</option></select>
-          <button class="btn-danger" onclick="runLottery()">抽選実行</button>
-        </div>
       </div>
     </div>
 
@@ -197,8 +218,12 @@
     const params = new URLSearchParams(window.location.search);
     const INIT_PAGE = params.get('page') || 'register';
 
-    let state = { me: null, paypay: null, event: null, reg: null };
-    let loadedTabs = { ranking: false, future: false }; // 遅延読み込みフラグ
+    let state = { me: null, paypay: null, event: null, reg: null, participants: [] };
+    let loadedTabs = { ranking: false, future: false, day: false };
+
+    function setBusy(isBusy) {
+      document.getElementById('loading').style.display = isBusy ? 'flex' : 'none';
+    }
 
     window.onload = async () => {
       try {
@@ -207,13 +232,12 @@
         
         const profile = await liff.getProfile();
         
-        // ★高速化: ユーザー情報と今週のイベントだけ並列で取得
+        // Load User & Week
         const [userRes, weekRes] = await Promise.all([
           callApi('get_me', { lineUserId: profile.userId }),
           callApi('get_this_week')
         ]);
 
-        // ユーザー処理
         if (!userRes.exists) {
           await callApi('upsert_member', { lineUserId: profile.userId, display_name: profile.displayName }, true);
           const retry = await callApi('get_me', { lineUserId: profile.userId });
@@ -223,22 +247,22 @@
         }
         state.paypay = userRes.paypay_config;
 
-        // 初期設定反映
+        // Init UI
         if(state.me) {
           document.getElementById('myName').value = state.me.display_name;
           document.getElementById('myCat').value = state.me.category;
-          if(['admin','sub_admin'].includes(state.me.role)) document.getElementById('adminArea').style.display='block';
+          if(['admin','sub_admin'].includes(state.me.role)) {
+            document.getElementById('subAdminArea').style.display = 'block';
+          }
         }
         if(state.paypay) {
           ['ppId','ppIdDay'].forEach(id => document.getElementById(id).innerText = state.paypay.id);
-          ['ppName','ppNameDay'].forEach(id => document.getElementById(id).innerText = state.paypay.receiver);
+          ['ppName','ppNameDay','ppNameTarget'].forEach(id => document.getElementById(id).innerText = state.paypay.receiver);
         }
 
-        // 今週のイベント反映
         if(weekRes.event) {
           state.event = weekRes.event;
-          const box = document.getElementById('thisWeekInfo');
-          box.innerHTML = `
+          document.getElementById('thisWeekInfo').innerHTML = `
             <div style="font-weight:bold; font-size:1.1rem;">${state.event.date_str}</div>
             <div>${state.event.start_time} - ${state.event.end_time}</div>
             <div class="small muted">定員: ${state.event.capacity_total}名</div>
@@ -246,37 +270,37 @@
           document.getElementById('regFormArea').style.display = 'block';
           document.getElementById('ppMsg').value = `${state.event.date_str} ${state.me.display_name}`;
           
-          // 自分の登録情報を取得
+          // Member List
+          const mems = weekRes.registrations || [];
+          document.getElementById('regMembersList').innerHTML = mems.map(m => 
+            `<span class="member-list-chip">${m.name}${m.guests>0?'+'+m.guests:''}</span>`
+          ).join('');
+
+          // My Reg
           const myReg = await callApi('get_my_registration', { event_id: state.event.event_id, member_id: state.me.member_id });
           state.reg = myReg.registration;
           renderRegStatus();
         }
 
-        document.getElementById('loading').style.display = 'none';
+        setBusy(false);
         document.getElementById('app').style.display = 'block';
         switchTab(INIT_PAGE);
 
       } catch (err) {
-        document.getElementById('debugLog').innerText = err.message;
-        document.getElementById('loading').innerHTML = 'エラーが発生しました';
+        setBusy(false);
+        alert('起動エラー: ' + err.message);
       }
     };
 
-    // --- API ---
     async function callApi(action, data, isPost=false) {
       let url = `${API_URL}?action=${action}`;
       let opts = { method: isPost?'POST':'GET' };
-      if(isPost) {
-        opts.body = JSON.stringify(data);
-        opts.headers = { 'Content-Type': 'text/plain' }; 
-      } else if(data) {
-        Object.keys(data).forEach(k=> url += `&${k}=${encodeURIComponent(data[k])}`);
-      }
+      if(isPost) { opts.body = JSON.stringify(data); opts.headers = { 'Content-Type': 'text/plain' }; }
+      else if(data) { Object.keys(data).forEach(k=> url += `&${k}=${encodeURIComponent(data[k])}`); }
       const r = await fetch(url, opts);
       return await r.json();
     }
 
-    // --- Tab Switching (Lazy Load) ---
     window.switchTab = (page) => {
       if(page === 'home') page = 'register';
       document.querySelectorAll('.page').forEach(e => e.style.display='none');
@@ -284,7 +308,6 @@
       document.getElementById('tab-'+page).style.display = 'block';
       document.getElementById('nav-'+page).classList.add('active');
 
-      // 遅延読み込みロジック
       if(page === 'register' && !loadedTabs.future) {
         loadedTabs.future = true;
         document.getElementById('lazyRegister').style.display = 'block';
@@ -294,9 +317,11 @@
         loadedTabs.ranking = true;
         loadRankings();
       }
+      if(page === 'day' && state.event) {
+        loadDayData();
+      }
     };
 
-    // --- Logic ---
     function renderRegStatus() {
       const badge = document.getElementById('regStatusBadge');
       const btnReg = document.getElementById('btnRegister');
@@ -308,14 +333,16 @@
         btnReg.innerText = '登録内容を更新';
         btnCancel.style.display = 'inline-block';
 
-        // 支払いステータス復元
+        // Payment Method Restore
         if(state.reg.payment_status === 'paid_advance') {
            document.querySelector('input[name="payMethod"][value="advance"]').checked = true;
            document.getElementById('chkPaidAdvance').checked = true;
            document.getElementById('chkPaidAdvance').disabled = true;
+        } else {
+           // Default selection based on current logic? 
+           // If unpaid, select nothing or default.
         }
 
-        // ゲスト復元
         if(state.reg.guest_count > 0) {
           document.getElementById('friendToggle').checked = true;
           document.getElementById('guestSection').style.display = 'block';
@@ -330,7 +357,6 @@
         badge.className = 'badge bg-gray';
         btnReg.innerText = '参加登録する';
         btnCancel.style.display = 'none';
-        // デフォルト選択なし
         document.querySelectorAll('input[name="payMethod"]').forEach(el => el.checked = false);
       }
       togglePayMethod();
@@ -339,8 +365,7 @@
 
     window.togglePayMethod = () => {
       const val = document.querySelector('input[name="payMethod"]:checked')?.value;
-      const detail = document.getElementById('advancePayDetail');
-      detail.style.display = (val === 'advance') ? 'block' : 'none';
+      document.getElementById('advancePayDetail').style.display = (val === 'advance') ? 'block' : 'none';
     };
 
     window.toggleGuests = () => {
@@ -395,7 +420,6 @@
         }
       }
 
-      // 支払いチェック
       const payMethod = document.querySelector('input[name="payMethod"]:checked')?.value;
       let isPaid = false;
       if (payMethod === 'advance') {
@@ -407,7 +431,7 @@
       }
 
       if(!confirm('登録しますか？')) return;
-      
+      setBusy(true);
       try {
         await callApi('register', {
           event_id: state.event.event_id, member_id: state.me.member_id,
@@ -415,11 +439,12 @@
         }, true);
         alert('登録しました');
         location.reload();
-      } catch(e) { alert('エラー: ' + e.message); }
+      } catch(e) { setBusy(false); alert('エラー: ' + e.message); }
     };
 
     window.cancelRegistration = async () => {
       if(!confirm('キャンセルしますか？')) return;
+      setBusy(true);
       await callApi('register', {
         event_id: state.event.event_id, member_id: state.me.member_id,
         status: 'canceled', guests: []
@@ -432,25 +457,122 @@
       const name = document.getElementById('myName').value;
       const cat = document.getElementById('myCat').value;
       if(!name) return;
+      setBusy(true);
       await callApi('upsert_member', { lineUserId: state.me.line_user_id, display_name: name, category: cat }, true);
       alert('保存しました');
+      setBusy(false);
     };
 
-    window.runLottery = async () => {
-      if(!confirm('抽選実行？')) return;
-      const c = document.getElementById('adminCourts').value;
-      await callApi('run_lottery', { event_id: state.event.event_id, courts: c }, true);
-      alert('完了');
+    // --- 当日運営 ---
+    async function loadDayData() {
+      if(!state.event) return;
+      const res = await callApi('get_participants_detail', { event_id: state.event.event_id });
+      state.participants = res.data.participants || [];
+      const result = res.data.lastResult;
+      
+      // 抽選結果表示
+      const box = document.getElementById('dayLotteryResult');
+      if(result && result.courts) {
+        let html = `<p style="font-weight:bold;">第${res.data.currentRound}ラウンド</p>`;
+        Object.keys(result.courts).forEach(k => {
+          const c = result.courts[k];
+          html += `<div style="background:#eee; padding:5px; margin:5px 0; border-radius:4px;">${k}: ${c[0][0]}, ${c[0][1]} vs ${c[1][0]}, ${c[1][1]}</div>`;
+        });
+        if(result.rest && result.rest.length) html += `<div class="small muted">休憩: ${result.rest.join(', ')}</div>`;
+        box.innerHTML = html;
+      }
+
+      // SubAdmin UI
+      if(['admin','sub_admin'].includes(state.me.role)) {
+        renderAdminParticipants();
+        renderCollectionList();
+      }
+    }
+
+    function renderAdminParticipants() {
+      const box = document.getElementById('adminParticipantsList');
+      box.innerHTML = `<table class="admin-table">
+        <tr><th>名前</th><th>状態</th></tr>
+        ${state.participants.map(p => `
+          <tr>
+            <td>${p.name}</td>
+            <td>
+              <select class="status-select" id="status-${p.participant_id}">
+                <option value="participating" ${p.status=='participating'?'selected':''}>参加</option>
+                <option value="late" ${p.status=='late'?'selected':''}>遅刻</option>
+                <option value="leave" ${p.status=='leave'?'selected':''}>早退</option>
+                <option value="rest_request" ${p.status=='rest_request'?'selected':''}>休憩</option>
+              </select>
+            </td>
+          </tr>
+        `).join('')}
+      </table>`;
+    }
+
+    window.executeLottery = async () => {
+      const statuses = {};
+      state.participants.forEach(p => {
+        const val = document.getElementById(`status-${p.participant_id}`).value;
+        if(val !== p.status) statuses[p.participant_id] = val;
+      });
+      if(!confirm('抽選を実行しますか？')) return;
+      setBusy(true);
+      await callApi('run_lottery', { event_id: state.event.event_id, statuses: statuses }, true);
+      alert('抽選完了');
+      loadDayData();
+      setBusy(false);
     };
 
-    // --- Lazy Load Functions ---
+    window.deleteLastRound = async () => {
+      if(!confirm('直前のラウンドを取り消しますか？\n回数カウントも戻ります。')) return;
+      setBusy(true);
+      await callApi('delete_round', { event_id: state.event.event_id });
+      alert('削除しました');
+      loadDayData();
+      setBusy(false);
+    };
+
+    window.manualAddUser = async () => {
+      const name = prompt('追加するメンバー名:');
+      if(!name) return;
+      setBusy(true);
+      await callApi('manual_add_participant', { event_id: state.event.event_id, name: name });
+      loadDayData();
+      setBusy(false);
+    };
+
+    function renderCollectionList() {
+      const box = document.getElementById('collectionList');
+      box.innerHTML = `<table class="admin-table">
+        ${state.participants.map(p => {
+          const isPaid = p.payment_status === 'paid' || p.payment_status === 'paid_advance';
+          return `<tr class="${isPaid?'paid-row':''}">
+            <td><label><input type="checkbox" class="col-chk" value="${p.member_id}" ${isPaid?'disabled checked':''}> ${p.name}</label></td>
+            <td class="small">${isPaid?'済':p.payment_status}</td>
+          </tr>`;
+        }).join('')}
+      </table>`;
+    }
+
+    window.saveCollection = async () => {
+      const ids = [];
+      document.querySelectorAll('.col-chk:checked:not([disabled])').forEach(el => ids.push(el.value));
+      if(!ids.length) { alert('チェックがありません'); return; }
+      if(!confirm(`${ids.length}人の支払いを記録しますか？`)) return;
+      setBusy(true);
+      await callApi('update_collection', { event_id: state.event.event_id, paid_ids: ids }, true);
+      alert('保存しました');
+      loadDayData();
+      setBusy(false);
+    };
+
+    // --- Utils ---
     async function loadFutureAndPast() {
       const [fut, past] = await Promise.all([callApi('get_future_events'), callApi('get_past_events')]);
       const boxF = document.getElementById('futureList');
       const boxP = document.getElementById('pastList');
       if(!fut.events || !fut.events.length) boxF.innerText = '予定なし';
       else boxF.innerHTML = fut.events.map(e => `<div style="border-bottom:1px solid #eee; padding:5px;">${e.date_str} ${e.start_time}-${e.end_time} (${e.status})</div>`).join('');
-      
       if(!past.events || !past.events.length) boxP.innerText = '履歴なし';
       else boxP.innerHTML = past.events.map(e => `<div style="border-bottom:1px solid #eee; padding:5px;">${e.date_str}</div>`).join('');
     }
@@ -466,11 +588,8 @@
 
     window.copyText = (id) => {
       const t = document.getElementById(id).tagName==='INPUT' ? document.getElementById(id).value : document.getElementById(id).innerText;
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(t).then(()=>alert('コピーしました')).catch(()=>prompt('コピーしてください', t));
-      } else {
-        prompt('コピーしてください', t);
-      }
+      if (navigator.clipboard) { navigator.clipboard.writeText(t).then(()=>alert('コピーしました')).catch(()=>prompt('コピー', t)); }
+      else { prompt('コピー', t); }
     };
   </script>
 </body>
