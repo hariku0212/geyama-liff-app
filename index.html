@@ -8,22 +8,27 @@
     :root { --primary: #06c755; --bg: #f2f4f8; --card: #ffffff; --text: #333; --danger: #e53935; --gray: #888; --accent: #ff9800; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 90px; }
     .container { max-width: 600px; margin: 0 auto; padding: 15px; }
+    
     .view-section { display: none; }
     .view-active { display: block; animation: fadeIn 0.2s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
     .card { background: var(--card); padding: 16px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); margin-bottom: 16px; }
     h2 { font-size: 1.1rem; margin: 0 0 10px; border-bottom: 2px solid var(--primary); padding-bottom: 5px; display: inline-block; }
     h3 { font-size: 1rem; margin: 15px 0 8px; font-weight: bold; color: #444; }
     .muted { color: var(--gray); font-size: 0.85rem; line-height: 1.4; }
     .small { font-size: 0.8rem; }
+    
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(255,255,255,0.98); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     .shuttle-img { width: 80px; height: auto; animation: bounce 1s infinite alternate ease-in-out; }
     @keyframes bounce { 0% { transform: translateY(0); } 100% { transform: translateY(-30px); } }
+    
     .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid #ddd; padding-bottom: env(safe-area-inset-bottom); z-index: 1000; box-shadow: 0 -2px 5px rgba(0,0,0,0.05); }
     .nav-item { flex: 1; text-align: center; padding: 8px 0; font-size: 0.65rem; color: var(--gray); cursor: pointer; }
     .nav-item.active { color: var(--primary); font-weight: bold; }
     .nav-icon { font-size: 1.4rem; display: block; margin-bottom: 2px; }
-    input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; margin-bottom: 10px; font-size: 1rem; background: #fff; }
+    
+    input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; margin-bottom: 10px; font-size: 1rem; background: #fff; }
     button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 8px; }
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-danger { background: var(--danger); color: #fff; }
@@ -31,6 +36,7 @@
     .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; font-size: 0.9rem; }
     .btn-copy { padding: 6px 10px; font-size: 0.8rem; width: auto; margin: 0 0 0 8px; display: inline-block; }
     .btn-sm { width: auto; padding: 6px 12px; font-size: 0.8rem; margin: 0; border-radius: 4px; }
+    
     .admin-list-item { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; padding: 12px 0; }
     .admin-item-left { flex: 1; display: flex; align-items: center; overflow: hidden; margin-right: 10px; }
     .admin-item-left label { display: flex; align-items: center; width: 100%; cursor: pointer; }
@@ -41,11 +47,13 @@
     .pay-icon.pp { background: #ffeb3b; color: #333; }
     .pay-icon.cash { background: #e0e0e0; color: #555; }
     .pay-status { font-size: 0.8rem; color: #666; white-space: nowrap; width: 40px; text-align: right; }
+    
     .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
     .admin-menu-btn { background: #fff; border: 1px solid #eee; padding: 20px; text-align: center; border-radius: 12px; cursor: pointer; user-select: none; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: background 0.1s; }
     .admin-menu-btn:active { background: #f0f0f0; transform: scale(0.98); }
     .admin-icon { font-size: 2rem; display: block; margin-bottom: 8px; }
     .admin-label { font-weight: bold; color: #555; }
+    
     .guest-row { display: flex; gap: 5px; margin-bottom: 5px; }
     .guest-row input { flex: 2; }
     .guest-row select { flex: 1; font-size: 0.85rem; padding: 8px 4px; }
@@ -58,11 +66,12 @@
     .paid-row { opacity: 0.5; }
     input[type="checkbox"], input[type="radio"] { width: 22px; height: 22px; margin: 0 8px 0 0; vertical-align: middle; }
     .inline-label { display: flex; align-items: center; width: 100%; cursor: pointer; margin-bottom: 12px; padding: 5px 0; }
+    
     table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     th, td { padding: 10px 8px; border-bottom: 1px solid #eee; text-align: left; }
     .rank-1 { color: #d4af37; font-weight: bold; }
     
-    /* 当日結果用: 文字大きく中央揃え */
+    /* 当日結果用 */
     .court-box { background: #e8f5e9; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #c8e6c9; text-align: center; }
     .court-name { font-weight: bold; color: var(--primary); font-size: 1.1rem; margin-bottom: 8px; display: block; }
     .match-pair { font-size: 1.2rem; font-weight: bold; color: #333; margin: 5px 0; }
@@ -97,7 +106,6 @@
               <span class="muted">現在の参加者:</span> <span id="currentParticipantsCount">0</span>名<br>
               <div id="regMembersList" style="margin-top:5px; font-size:0.8rem;"></div>
             </div>
-            
             <form id="regForm">
               <label class="inline-label"><input type="checkbox" id="friendToggle" onchange="toggleGuests()"><span>友達を連れていく</span></label>
               <div id="guestSection" style="display:none; background:#f9f9f9; padding:10px; border-radius:8px; margin-bottom:10px;">
@@ -105,7 +113,6 @@
                 <div id="guestInputs"></div>
               </div>
               <div id="feeDisplay" style="text-align:center; font-weight:bold; color:var(--primary); margin:15px 0;">支払予定: - 円</div>
-
               <div style="background:#f9f9f9; padding:15px; border-radius:8px; margin-bottom:15px;">
                 <h3 style="margin-top:0;">お支払い方法</h3>
                 <label class="inline-label"><input type="radio" name="payMethod" value="advance" onchange="togglePayMethod()"><span>事前PayPay決済</span></label>
@@ -129,7 +136,7 @@
           </div>
         </div>
         <div class="card"><h2>今後の予定</h2><div id="futureList" class="small">読み込み中...</div></div>
-        <div class="card"><h2>過去の履歴</h2><div id="pastList" class="small">読み込み中...</div></div>
+        <div class="card"><h2>過去の練習</h2><div id="pastList" class="small">読み込み中...</div></div>
       </div>
 
       <div id="view-day" class="view-section">
@@ -214,7 +221,7 @@
           </div>
           <div id="accEntryArea" style="display:none;">
             <h3>収支入力</h3>
-            <select id="accType"><option value="expense">支出 (支払)</option><option value="income">収入 (受取)</option></select>
+            <select id="accType"><option value="expense">支出</option><option value="income">収入</option></select>
             <select id="accWallet"><option value="cash">現金</option><option value="paypay">PayPay</option><option value="bank">口座</option></select>
             <input type="number" id="accAmount" placeholder="金額"><input type="text" id="accDesc" placeholder="内容 (例: シャトル代)">
             <button class="btn-primary" onclick="saveAccounting()">保存</button>
@@ -234,9 +241,9 @@
         <button class="btn-outline btn-sm" onclick="navigateTo('admin-menu')">← 戻る</button>
         <div class="card" style="margin-top:10px;">
           <h2>日程登録</h2>
-          <p class="muted">今後の日曜日一覧。開催する日にチェックを入れて保存。</p>
+          <p class="muted">今後の日曜日一覧。開催する日にチェックを入れて保存。<br>※チェックを外すと削除されます。</p>
           <div id="schedList" style="max-height:400px; overflow-y:auto; border:1px solid #eee; padding:10px; margin-bottom:10px;"></div>
-          <button class="btn-primary" onclick="saveSchedule()">選択した日程を登録/削除</button>
+          <button class="btn-primary" onclick="saveSchedule()">登録・削除を実行</button>
         </div>
       </div>
 
@@ -244,18 +251,10 @@
         <button class="btn-outline btn-sm" onclick="navigateTo('admin-menu')">← 戻る</button>
         <div class="card" style="margin-top:10px;">
           <h2>設定変更</h2>
-          <div style="margin-bottom:10px;">
-            <label>社会人 会費</label><input type="number" id="cfgAdult">
-          </div>
-          <div style="margin-bottom:10px;">
-            <label>大学生 会費</label><input type="number" id="cfgCollege">
-          </div>
-          <div style="margin-bottom:10px;">
-            <label>高校生以下 会費</label><input type="number" id="cfgStudent">
-          </div>
-          <div style="margin-bottom:10px;">
-            <label>デフォルト定員 (人)</label><input type="number" id="cfgCapacity">
-          </div>
+          <div style="margin-bottom:10px;"><label>社会人 会費</label><input type="number" id="cfgAdult"></div>
+          <div style="margin-bottom:10px;"><label>大学生 会費</label><input type="number" id="cfgCollege"></div>
+          <div style="margin-bottom:10px;"><label>高校生以下 会費</label><input type="number" id="cfgStudent"></div>
+          <div style="margin-bottom:10px;"><label>デフォルト定員 (人)</label><input type="number" id="cfgCapacity"></div>
           <button class="btn-primary" onclick="saveFees()">設定を保存</button>
         </div>
       </div>
@@ -268,7 +267,6 @@
           <div id="adminMemberList" style="max-height:400px; overflow-y:auto;"></div>
         </div>
       </div>
-
     </div>
 
     <div class="bottom-nav">
@@ -375,11 +373,11 @@
     }
     window.saveSchedule = async function() {
       const dates = []; document.querySelectorAll('.sch-chk:checked').forEach(c => dates.push(c.value));
-      if(!dates.length) return alert('選択してください');
       if(confirm('登録・削除を実行しますか？')) { setBusy(true); await callApi('save_schedule', { dates:dates }, true); alert('更新しました'); await loadAdminData(); setBusy(false); }
     }
     window.updateRole = async function(mid, role) { await callApi('update_role', { member_id: mid, role: role }, true); }
     window.cancelEvent = async function() { if(confirm('本当に中止にしますか？')) { setBusy(true); await callApi('cancel_event', { event_id: state.event.event_id }, true); alert('中止しました'); location.reload(); } }
+    
     window.filterAccounting = function() {
       const m = document.getElementById('filterAccMonth').value;
       const t = document.getElementById('filterAccType').value;
@@ -412,7 +410,7 @@
     window.manualAddUser = async function() { const n = prompt('名前:'); if(n) { setBusy(true); await callApi('manual_add_participant', { event_id: state.event.event_id, name: n }); loadDayData(); setBusy(false); } }
     window.genDebugData = async function() { if(confirm('生成しますか？')) { setBusy(true); await callApi('generate_debug', {}, true); alert('完了'); location.reload(); } }
 
-    // Register Actions
+    // Register Logic
     window.togglePayMethod = function() {
       const val = document.querySelector('input[name="payMethod"]:checked')?.value;
       document.getElementById('payDetail-advance').style.display = (val === 'advance') ? 'block' : 'none';
@@ -445,7 +443,7 @@
       const res = await callApi('get_past_event_detail', { event_id: eid }); 
       setBusy(false); 
       const html = res.participants.length 
-        ? res.participants.map(p => `<div style="border-bottom:1px solid #eee; padding:5px; display:flex; justify-content:space-between;"><span>${p.name}${p.guests>0 ? ' +'+p.guests : ''}</span><span class="small muted">${p.pay_status}</span></div>`).join('') 
+        ? res.participants.map(p => `<div style="border-bottom:1px solid #eee; padding:5px; display:flex; justify-content:space-between;"><span>${p.name}${p.guests}</span></div>`).join('') 
         : '参加者なし';
       document.getElementById('modalContent').innerHTML = html;
       document.getElementById('infoModal').style.display = 'flex'; 
@@ -467,10 +465,12 @@
             document.getElementById('chkPaidAdvance').checked = true; document.getElementById('chkPaidAdvance').disabled = true;
           }
         }
-      } else { badge.innerText = '未登録'; badge.className = 'badge bg-gray'; btnReg.innerText = '参加登録'; btnCancel.style.display = 'none'; }
+      } else {
+        badge.innerText = '未登録'; badge.className = 'badge bg-gray'; btnReg.innerText = '参加登録'; btnCancel.style.display = 'none';
+      }
       togglePayMethod(); calcTotal();
     }
-    
+
     function checkDayAccess() {
       if(!state.event) return;
       const now = new Date(); const hh = now.getHours(); const mm = now.getMinutes(); const t = hh * 60 + mm;
@@ -526,7 +526,6 @@
       const mSel = document.getElementById('filterAccMonth'); mSel.innerHTML = '<option value="all">全期間</option>';
       Array.from(monthSet).sort().reverse().forEach(m => mSel.innerHTML += `<option value="${m}">${m}</option>`);
       filterAccounting();
-      
       registeredDates = res.registeredDates || [];
       renderScheduleGen();
     }
@@ -539,19 +538,22 @@
         list.innerHTML += `<label class="inline-label" style="border-bottom:1px solid #eee; padding:8px;"><input type="checkbox" class="sch-chk" value="${dStr}" ${isReg?'checked':''}> ${dStr} (日)</label>`;
       }
     }
-    
+
     async function loadFutureAndPast() {
       // Lazy load handled by navigateTo setBusy
       const [fut, past] = await Promise.all([callApi('get_future_events'), callApi('get_past_events')]);
       const boxF = document.getElementById('futureList'); const boxP = document.getElementById('pastList');
       if(!fut.events || !fut.events.length) boxF.innerText = '予定なし'; else boxF.innerHTML = fut.events.map(e => `<div style="border-bottom:1px solid #eee; padding:8px 0;">${e.date_str} ${e.start_time}-${e.end_time}</div>`).join('');
-      if(!past.events || !past.events.length) boxP.innerText = '履歴なし'; else boxP.innerHTML = past.events.map(e => `<div style="border-bottom:1px solid #eee; padding:8px 0; cursor:pointer;" onclick="showPastDetail('${e.event_id}')">${e.date_str} (詳細)</div>`).join('');
+      if(!past.events || !past.events.length) boxP.innerText = '履歴なし'; else boxP.innerHTML = past.events.map(e => `<div style="border-bottom:1px solid #eee; padding:8px 0; cursor:pointer;" onclick="showPastDetail('${e.event_id}')">${e.date_str} （参加者）</div>`).join('');
     }
     
     async function loadRankings() { 
       // Lazy load handled by navigateTo setBusy
       const res = await callApi('get_rankings');
-      const now = new Date(); document.getElementById('periodMonth').innerText = `(${now.getMonth()+1}/1〜)`; document.getElementById('periodYear').innerText = `(1/1〜)`;
+      const now = new Date(); 
+      const y = now.getFullYear(); const m = (now.getMonth()+1).toString().padStart(2,'0');
+      document.getElementById('periodMonth').innerText = `(${y}/${m}/01〜)`; 
+      document.getElementById('periodYear').innerText = `(${y}/01/01〜)`;
       renderTable('rankMonth', res.data.month); renderTable('rankYear', res.data.year);
     }
     function renderTable(id, list) { const el = document.getElementById(id); if(!list.length) { el.innerHTML = '<tr><td>データなし</td></tr>'; return; } el.innerHTML = list.map((r,i) => `<tr><td style="width:30px;">${i+1}</td><td class="${i==0?'rank-1':''}">${r.name}</td><td style="text-align:right;">${i==0?r.month||r.year:r.month||r.year}回</td></tr>`).join(''); }
@@ -581,6 +583,8 @@
           const myReg = await callApi('get_my_registration', { event_id: state.event.event_id, member_id: state.me.member_id });
           state.reg = myReg.registration; renderRegStatus();
         }
+        // Lazy Load Register View if needed
+        if(INIT_PAGE==='register') { loadedData.future=true; loadFutureAndPast(); }
       } catch (err) { alert('起動エラー: ' + err.message); }
     };
   </script>
