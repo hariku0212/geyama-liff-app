@@ -5,36 +5,25 @@
   <title>ゲヤマクラブ</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <style>
+    /* ... (CSSは前回と同じなので省略可ですが、一応フルセットで) ... */
     :root { --primary: #06c755; --bg: #f2f4f8; --card: #ffffff; --text: #333; --danger: #e53935; --gray: #888; --accent: #ff9800; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 110px; /* タブバー分確保 */ }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 90px; }
     .container { max-width: 600px; margin: 0 auto; padding: 15px; }
-    
     .view-section { display: none; }
     .view-active { display: block; animation: fadeIn 0.2s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
     .card { background: var(--card); padding: 16px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); margin-bottom: 16px; }
     h2 { font-size: 1.1rem; margin: 0 0 10px; border-bottom: 2px solid var(--primary); padding-bottom: 5px; display: inline-block; }
     h3 { font-size: 1rem; margin: 15px 0 8px; font-weight: bold; color: #444; }
     .muted { color: var(--gray); font-size: 0.85rem; line-height: 1.4; }
     .small { font-size: 0.8rem; }
-    
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(255,255,255,0.98); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     .shuttle-img { width: 80px; height: auto; animation: bounce 1s infinite alternate ease-in-out; }
     @keyframes bounce { 0% { transform: translateY(0); } 100% { transform: translateY(-30px); } }
-    
-    /* Nav: 位置調整 */
-    .bottom-nav { 
-      position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; 
-      border-top: 1px solid #ddd; 
-      padding-bottom: calc(env(safe-area-inset-bottom) + 15px); /* 少し上に */
-      padding-top: 10px;
-      z-index: 1000; box-shadow: 0 -2px 5px rgba(0,0,0,0.05); 
-    }
-    .nav-item { flex: 1; text-align: center; font-size: 0.65rem; color: var(--gray); cursor: pointer; }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid #ddd; padding-bottom: env(safe-area-inset-bottom); z-index: 1000; box-shadow: 0 -2px 5px rgba(0,0,0,0.05); }
+    .nav-item { flex: 1; text-align: center; padding: 8px 0; font-size: 0.65rem; color: var(--gray); cursor: pointer; }
     .nav-item.active { color: var(--primary); font-weight: bold; }
     .nav-icon { font-size: 1.4rem; display: block; margin-bottom: 2px; }
-    
     input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; margin-bottom: 10px; font-size: 1rem; background: #fff; }
     button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 8px; }
     .btn-primary { background: var(--primary); color: #fff; }
@@ -43,33 +32,21 @@
     .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; font-size: 0.9rem; }
     .btn-copy { padding: 6px 10px; font-size: 0.8rem; width: auto; margin: 0 0 0 8px; display: inline-block; }
     .btn-sm { width: auto; padding: 6px 12px; font-size: 0.8rem; margin: 0; border-radius: 4px; }
-    
-    /* 過去リスト用ボタンデザイン */
-    .past-item {
-      background: #f9f9f9; padding: 12px; margin-bottom: 8px; border-radius: 8px;
-      border: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;
-      cursor: pointer; transition: background 0.1s;
-    }
-    .past-item:active { background: #e0e0e0; transform: scale(0.98); }
-    .past-arrow { font-weight: bold; color: #ccc; }
-
     .admin-list-item { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; padding: 12px 0; }
     .admin-item-left { flex: 1; display: flex; align-items: center; overflow: hidden; margin-right: 10px; }
     .admin-item-left label { display: flex; align-items: center; width: 100%; cursor: pointer; }
     .admin-item-left input { width: 22px; height: 22px; margin-right: 10px; }
     .admin-item-right { flex: 0 0 auto; display: flex; align-items: center; justify-content: flex-end; }
     .status-select { padding: 4px 8px; margin: 0; font-size: 0.85rem; width: auto; height: 32px; background: #fff; }
-    .pay-icon { font-size: 0.65rem; padding: 2px 5px; border-radius: 3px; margin-right: 4px; font-weight: bold; }
+    .pay-icon { font-size: 0.65rem; padding: 2px 5px; border-radius: 3px; margin-right: 4px; font-weight: bold; cursor: pointer; user-select: none; }
     .pay-icon.pp { background: #ffeb3b; color: #333; }
     .pay-icon.cash { background: #e0e0e0; color: #555; }
     .pay-status { font-size: 0.8rem; color: #666; white-space: nowrap; width: 40px; text-align: right; }
-    
     .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
     .admin-menu-btn { background: #fff; border: 1px solid #eee; padding: 20px; text-align: center; border-radius: 12px; cursor: pointer; user-select: none; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: background 0.1s; }
     .admin-menu-btn:active { background: #f0f0f0; transform: scale(0.98); }
     .admin-icon { font-size: 2rem; display: block; margin-bottom: 8px; }
     .admin-label { font-weight: bold; color: #555; }
-    
     .guest-row { display: flex; gap: 5px; margin-bottom: 5px; }
     .guest-row input { flex: 2; }
     .guest-row select { flex: 1; font-size: 0.85rem; padding: 8px 4px; }
@@ -82,15 +59,12 @@
     .paid-row { opacity: 0.5; }
     input[type="checkbox"], input[type="radio"] { width: 22px; height: 22px; margin: 0 8px 0 0; vertical-align: middle; }
     .inline-label { display: flex; align-items: center; width: 100%; cursor: pointer; margin-bottom: 12px; padding: 5px 0; }
-    
     table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     th, td { padding: 10px 8px; border-bottom: 1px solid #eee; text-align: left; }
     .rank-1 { color: #d4af37; font-weight: bold; }
-    
     .court-box { background: #e8f5e9; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #c8e6c9; text-align: center; }
     .court-name { font-weight: bold; color: var(--primary); font-size: 1.1rem; margin-bottom: 8px; display: block; }
     .match-pair { font-size: 1.2rem; font-weight: bold; color: #333; margin: 5px 0; }
-    
     #restrictedMsg { text-align: center; padding: 40px 0; color: #888; }
     #debugLog { background: #333; color: #0f0; padding: 10px; font-family: monospace; font-size: 0.8rem; margin-bottom: 20px; border-radius: 8px; display: none; }
     .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1500; display:none; justify-content:center; align-items:center; }
@@ -152,10 +126,8 @@
             <button class="btn-outline btn-sm" style="color:var(--danger); border-color:var(--danger);" onclick="cancelEvent()">練習を中止にする</button>
           </div>
         </div>
-        <div id="lazyRegister" style="display:none;">
-          <div class="card"><h2>今後の予定</h2><div id="futureList" class="small">読み込み中...</div></div>
-          <div class="card"><h2>過去の練習</h2><div id="pastList" class="small">読み込み中...</div></div>
-        </div>
+        <div class="card"><h2>今後の予定</h2><div id="futureList" class="small">読み込み中...</div></div>
+        <div class="card"><h2>過去の練習</h2><div id="pastList" class="small">読み込み中...</div></div>
       </div>
 
       <div id="view-day" class="view-section">
@@ -177,7 +149,7 @@
           <div id="subAdminCollection" style="display:none;">
             <div class="card" style="border-left: 5px solid var(--accent);">
               <h3 style="color:var(--accent);">運営: 集金</h3>
-              <p class="small muted">受取済みにチェックして保存。</p>
+              <p class="small muted">P/現アイコンをタップして支払方法変更。</p>
               <div id="adminCollectionList"></div>
               <button class="btn-accent" onclick="saveCollection()">集金状況を保存</button>
             </div>
@@ -317,7 +289,7 @@
     let rawAccountingList = [];
     let registeredDates = [];
 
-    // --- 2. FUNCTIONS ---
+    // --- 2. FUNCTION DECLARATIONS (Hoisted) ---
     function setBusy(isBusy) { document.getElementById('loading').style.display = isBusy ? 'flex' : 'none'; }
 
     async function callApi(action, data, isPost=false) {
@@ -430,10 +402,35 @@
       setBusy(true); await callApi('run_lottery', { event_id: state.event.event_id, statuses: stats }, true); alert('完了'); loadDayData(); setBusy(false);
     }
     window.saveCollection = async function() {
-      const ids = []; document.querySelectorAll('.col-chk:checked:not([disabled])').forEach(e => ids.push(e.value));
+      const ids = []; 
+      const methods = {};
+      
+      document.querySelectorAll('.col-chk:checked:not([disabled])').forEach(e => {
+        const pid = e.value; // participant_id
+        ids.push(pid);
+        const icon = document.getElementById(`pay-icon-${pid}`);
+        if(icon) methods[pid] = icon.dataset.method;
+      });
+      
       if(!ids.length) return alert('チェックなし');
-      if(confirm('保存しますか？')) { setBusy(true); await callApi('update_collection', { event_id: state.event.event_id, paid_ids: ids }, true); alert('保存しました'); loadDayData(); setBusy(false); }
+      if(confirm('保存しますか？')) { 
+        setBusy(true); 
+        await callApi('update_collection', { event_id: state.event.event_id, paid_ids: ids, methods: methods }, true); 
+        alert('保存しました'); loadDayData(); setBusy(false); 
+      }
     }
+    
+    // Toggle Pay Method for Admin (Day)
+    window.togglePayIcon = function(pid) {
+      const el = document.getElementById(`pay-icon-${pid}`);
+      const current = el.dataset.method;
+      const next = (current === 'day_cash') ? 'day_paypay' : 'day_cash';
+      
+      el.dataset.method = next;
+      el.className = next === 'day_paypay' ? 'pay-icon pp' : 'pay-icon cash';
+      el.innerText = next === 'day_paypay' ? 'P' : '現';
+    }
+
     window.deleteLastRound = async function() { if(confirm('取消しますか？')) { setBusy(true); await callApi('delete_round', { event_id: state.event.event_id }); loadDayData(); setBusy(false); } }
     window.manualAddUser = async function() { const n = prompt('名前:'); if(n) { setBusy(true); await callApi('manual_add_participant', { event_id: state.event.event_id, name: n }); loadDayData(); setBusy(false); } }
     window.genDebugData = async function() { if(confirm('生成しますか？')) { setBusy(true); await callApi('generate_debug', {}, true); alert('完了'); location.reload(); } }
@@ -448,7 +445,6 @@
       if(!method) return alert('支払い方法を選択してください');
       let isPaid = false;
       if(method === 'advance') { if(!document.getElementById('chkPaidAdvance').checked) return alert('送金完了チェックを入れてください'); isPaid = true; }
-      
       const guests = [];
       if(document.getElementById('friendToggle').checked) {
         const names = document.querySelectorAll('.g-name');
@@ -472,16 +468,13 @@
       const res = await callApi('get_past_event_detail', { event_id: eid }); 
       setBusy(false); 
       const html = res.participants.length 
-        ? res.participants.map(p => `
-            <div style="border-bottom:1px solid #eee; padding:8px; display:flex; justify-content:space-between; align-items:center;">
-               <span>${p.name}${p.guests>0 ? ' <span class="badge bg-gray">+'+p.guests+'</span>' : ''}</span>
-            </div>`).join('') 
+        ? res.participants.map(p => `<div style="border-bottom:1px solid #eee; padding:5px; display:flex; justify-content:space-between;"><span>${p.name}${p.guests}</span></div>`).join('') 
         : '参加者なし';
       document.getElementById('modalContent').innerHTML = html;
       document.getElementById('infoModal').style.display = 'flex'; 
     }
 
-    // --- Loading & Helpers ---
+    // --- Loading & Render ---
     function renderRegStatus() {
       const badge = document.getElementById('regStatusBadge');
       const btnReg = document.getElementById('btnRegister');
@@ -516,7 +509,6 @@
       setBusy(false);
       state.participants = res.data.participants || [];
       const rounds = res.data.allRounds || []; 
-      
       const box = document.getElementById('dayLotteryResult');
       if(rounds.length > 0) {
         let html = '';
@@ -531,7 +523,6 @@
         });
         box.innerHTML = html;
       } else { box.innerHTML = '<p>抽選結果はまだありません。</p>'; }
-      
       const myP = state.participants.find(p => p.member_id === state.me.member_id);
       document.getElementById('dayPayInfo').style.display = (myP && myP.payment_method === 'day_paypay' && myP.payment_status !== 'paid') ? 'block' : 'none';
       if(['admin','sub_admin'].includes(state.me.role)) renderAdminLists();
@@ -540,10 +531,29 @@
     function renderAdminLists() {
       document.getElementById('adminLotteryList').innerHTML = state.participants.map(p => `
         <div class="admin-list-item"><div class="admin-item-left"><span class="admin-name">${p.name}</span><span class="small muted" style="margin-left:5px;">(${p.play_count})</span></div><div class="admin-item-right"><select id="stat-${p.participant_id}" class="status-select"><option value="participating" ${p.status=='participating'?'selected':''}>参加</option><option value="late" ${p.status=='late'?'selected':''}>遅刻</option><option value="leave" ${p.status=='leave'?'selected':''}>早退</option><option value="rest_request" ${p.status=='rest_request'?'selected':''}>休憩</option></select></div></div>`).join('');
+      
+      // Collection List (With Method Toggle)
       document.getElementById('adminCollectionList').innerHTML = state.participants.map(p => {
         const isPaid = p.payment_status === 'paid' || p.payment_status === 'paid_advance';
-        const method = p.payment_method; const icon = (method === 'advance' || method === 'day_paypay') ? '<span class="pay-icon pp">P</span>' : '<span class="pay-icon cash">現</span>'; const stTxt = isPaid ? '済' : '未払';
-        return `<div class="admin-list-item ${isPaid?'paid-row':''}"><div class="admin-item-left"><label><input type="checkbox" class="col-chk" value="${p.member_id}" ${isPaid?'disabled checked':''}> <span class="admin-name">${p.name}</span></label></div><div class="admin-item-right">${icon} <span class="pay-status">${stTxt}</span></div></div>`;
+        
+        // メソッド修正: ゲストも個別に判定、なければ day_cash
+        let method = p.payment_method || 'day_cash';
+        // アイコン判定 (advance/day_paypay -> P, day_cash -> 現)
+        const isPP = (method === 'advance' || method === 'day_paypay');
+        const iconClass = isPP ? 'pay-icon pp' : 'pay-icon cash';
+        const iconText = isPP ? 'P' : '現';
+        
+        const stTxt = isPaid ? '済' : '未払';
+        // 支払い済ならクリック不可、未払いならトグル可能
+        const onClick = isPaid ? '' : `onclick="togglePayIcon('${p.participant_id}')"`;
+        
+        return `<div class="admin-list-item ${isPaid?'paid-row':''}">
+          <div class="admin-item-left"><label><input type="checkbox" class="col-chk" value="${p.participant_id}" ${isPaid?'disabled checked':''}> <span class="admin-name">${p.name}</span></label></div>
+          <div class="admin-item-right">
+            <span id="pay-icon-${p.participant_id}" class="${iconClass}" data-method="${method}" ${onClick}>${iconText}</span>
+            <span class="pay-status">${stTxt}</span>
+          </div>
+        </div>`;
       }).join('');
     }
 
@@ -577,12 +587,15 @@
       const [fut, past] = await Promise.all([callApi('get_future_events'), callApi('get_past_events')]);
       const boxF = document.getElementById('futureList'); const boxP = document.getElementById('pastList');
       if(!fut.events || !fut.events.length) boxF.innerText = '予定なし'; else boxF.innerHTML = fut.events.map(e => `<div style="border-bottom:1px solid #eee; padding:8px 0;">${e.date_str} ${e.start_time}-${e.end_time}</div>`).join('');
-      if(!past.events || !past.events.length) boxP.innerText = '履歴なし'; else boxP.innerHTML = past.events.map(e => `<div class="past-item" onclick="showPastDetail('${e.event_id}')"><span>${e.date_str}</span><span class="past-arrow">></span></div>`).join('');
+      if(!past.events || !past.events.length) boxP.innerText = '履歴なし'; else boxP.innerHTML = past.events.map(e => `<div style="border-bottom:1px solid #eee; padding:8px 0; cursor:pointer;" onclick="showPastDetail('${e.event_id}')">${e.date_str} (参加者)</div>`).join('');
     }
     
     async function loadRankings() { 
       setBusy(true); const res = await callApi('get_rankings'); setBusy(false);
-      const now = new Date(); document.getElementById('periodMonth').innerText = `(${now.getMonth()+1}/1〜)`; document.getElementById('periodYear').innerText = `(1/1〜)`;
+      const now = new Date(); 
+      const y = now.getFullYear(); const m = (now.getMonth()+1).toString().padStart(2,'0');
+      document.getElementById('periodMonth').innerText = `(${y}/${m}/01〜)`; 
+      document.getElementById('periodYear').innerText = `(${y}/01/01〜)`;
       renderTable('rankMonth', res.data.month); renderTable('rankYear', res.data.year);
     }
     function renderTable(id, list) { const el = document.getElementById(id); if(!list.length) { el.innerHTML = '<tr><td>データなし</td></tr>'; return; } el.innerHTML = list.map((r,i) => `<tr><td style="width:30px;">${i+1}</td><td class="${i==0?'rank-1':''}">${r.name}</td><td style="text-align:right;">${i==0?r.month||r.year:r.month||r.year}回</td></tr>`).join(''); }
@@ -616,6 +629,8 @@
           const myReg = await callApi('get_my_registration', { event_id: state.event.event_id, member_id: state.me.member_id });
           state.reg = myReg.registration; renderRegStatus();
         }
+        // Lazy Load Register View if needed
+        if(INIT_PAGE==='register') { loadedData.future=true; loadFutureAndPast(); }
       } catch (err) { alert('起動エラー: ' + err.message); }
     };
   </script>
