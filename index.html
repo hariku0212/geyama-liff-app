@@ -8,21 +8,26 @@
     :root { --primary: #06c755; --bg: #f2f4f8; --card: #ffffff; --text: #333; --danger: #e53935; --gray: #888; --accent: #ff9800; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 90px; }
     .container { max-width: 600px; margin: 0 auto; padding: 15px; }
+    
     .view-section { display: none; }
     .view-active { display: block; animation: fadeIn 0.2s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
     .card { background: var(--card); padding: 16px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); margin-bottom: 16px; }
     h2 { font-size: 1.1rem; margin: 0 0 10px; border-bottom: 2px solid var(--primary); padding-bottom: 5px; display: inline-block; }
     h3 { font-size: 1rem; margin: 15px 0 8px; font-weight: bold; color: #444; }
     .muted { color: var(--gray); font-size: 0.85rem; line-height: 1.4; }
     .small { font-size: 0.8rem; }
+    
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(255,255,255,0.98); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     .shuttle-img { width: 80px; height: auto; animation: bounce 1s infinite alternate ease-in-out; }
     @keyframes bounce { 0% { transform: translateY(0); } 100% { transform: translateY(-30px); } }
+    
     .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid #ddd; padding-bottom: env(safe-area-inset-bottom); z-index: 1000; box-shadow: 0 -2px 5px rgba(0,0,0,0.05); }
     .nav-item { flex: 1; text-align: center; padding: 8px 0; font-size: 0.65rem; color: var(--gray); cursor: pointer; }
     .nav-item.active { color: var(--primary); font-weight: bold; }
     .nav-icon { font-size: 1.4rem; display: block; margin-bottom: 2px; }
+    
     input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; margin-bottom: 10px; font-size: 1rem; background: #fff; }
     button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 8px; }
     .btn-primary { background: var(--primary); color: #fff; }
@@ -31,21 +36,33 @@
     .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; font-size: 0.9rem; }
     .btn-copy { padding: 6px 10px; font-size: 0.8rem; width: auto; margin: 0 0 0 8px; display: inline-block; }
     .btn-sm { width: auto; padding: 6px 12px; font-size: 0.8rem; margin: 0; border-radius: 4px; }
+    
+    /* Admin UI */
     .admin-list-item { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; padding: 12px 0; }
-    .admin-item-left { flex: 1; display: flex; align-items: center; overflow: hidden; margin-right: 10px; }
+    /* 名前部分: はみ出し防止 */
+    .admin-item-left { 
+      flex: 1; display: flex; align-items: center; overflow: hidden; margin-right: 10px; 
+      min-width: 0; /* Flexbox内での縮小許可 */
+    }
     .admin-item-left label { display: flex; align-items: center; width: 100%; cursor: pointer; }
-    .admin-item-left input { width: 22px; height: 22px; margin-right: 10px; }
+    .admin-item-left input { width: 22px; height: 22px; margin-right: 10px; flex-shrink: 0; }
+    .admin-name { font-weight: bold; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    
+    /* 右側: ステータス */
     .admin-item-right { flex: 0 0 auto; display: flex; align-items: center; justify-content: flex-end; }
     .status-select { padding: 4px 8px; margin: 0; font-size: 0.85rem; width: auto; height: 32px; background: #fff; }
+    
     .pay-icon { font-size: 0.65rem; padding: 2px 5px; border-radius: 3px; margin-right: 4px; font-weight: bold; cursor: pointer; user-select: none; }
     .pay-icon.pp { background: #ffeb3b; color: #333; }
     .pay-icon.cash { background: #e0e0e0; color: #555; }
     .pay-status { font-size: 0.8rem; color: #666; white-space: nowrap; width: 40px; text-align: right; }
+    
     .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
     .admin-menu-btn { background: #fff; border: 1px solid #eee; padding: 20px; text-align: center; border-radius: 12px; cursor: pointer; user-select: none; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: background 0.1s; }
     .admin-menu-btn:active { background: #f0f0f0; transform: scale(0.98); }
     .admin-icon { font-size: 2rem; display: block; margin-bottom: 8px; }
     .admin-label { font-weight: bold; color: #555; }
+    
     .guest-row { display: flex; gap: 5px; margin-bottom: 5px; }
     .guest-row input { flex: 2; }
     .guest-row select { flex: 1; font-size: 0.85rem; padding: 8px 4px; }
@@ -58,12 +75,15 @@
     .paid-row { opacity: 0.5; }
     input[type="checkbox"], input[type="radio"] { width: 22px; height: 22px; margin: 0 8px 0 0; vertical-align: middle; }
     .inline-label { display: flex; align-items: center; width: 100%; cursor: pointer; margin-bottom: 12px; padding: 5px 0; }
+    
     table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     th, td { padding: 10px 8px; border-bottom: 1px solid #eee; text-align: left; }
     .rank-1 { color: #d4af37; font-weight: bold; }
+    
     .court-box { background: #e8f5e9; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #c8e6c9; text-align: center; }
     .court-name { font-weight: bold; color: var(--primary); font-size: 1.1rem; margin-bottom: 8px; display: block; }
     .match-pair { font-size: 1.2rem; font-weight: bold; color: #333; margin: 5px 0; }
+    
     #restrictedMsg { text-align: center; padding: 40px 0; color: #888; }
     #debugLog { background: #333; color: #0f0; padding: 10px; font-family: monospace; font-size: 0.8rem; margin-bottom: 20px; border-radius: 8px; display: none; }
     .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1500; display:none; justify-content:center; align-items:center; }
@@ -128,7 +148,6 @@
             <button class="btn-outline btn-sm" style="color:var(--danger); border-color:var(--danger);" onclick="cancelEvent()">練習を中止にする</button>
           </div>
         </div>
-        
         <div id="lazyRegister" style="display:none;">
           <div class="card"><h2>今後の予定</h2><div id="futureList" class="small">読み込み中...</div></div>
           <div class="card"><h2>過去の練習</h2><div id="pastList" class="small">読み込み中...</div></div>
@@ -157,8 +176,8 @@
               <p class="small muted">受取済みにチェックして保存。<br>アイコン(P/現)タップで方法変更。</p>
               <div id="adminCollectionList"></div>
               <div style="border-top:1px solid #eee; margin-top:10px; padding-top:10px; font-weight:bold; font-size:0.9rem;">
-                 回収済み計(円): <span style="color:#e0e0e0; background:#555; padding:2px 5px; border-radius:4px;">現</span> <span id="sumCash">0</span> / 
-                 <span style="color:#333; background:#ffeb3b; padding:2px 5px; border-radius:4px;">P</span> <span id="sumPayPay">0</span>
+                 回収済み計: <span style="color:#e0e0e0; background:#555; padding:2px 5px; border-radius:4px;">現</span> <span id="sumCash">0</span>円 / 
+                 <span style="color:#333; background:#ffeb3b; padding:2px 5px; border-radius:4px;">P</span> <span id="sumPayPay">0</span>円
               </div>
               <button class="btn-accent" style="margin-top:10px;" onclick="saveCollection()">集金状況を保存</button>
             </div>
@@ -184,8 +203,10 @@
             <button class="btn-primary" onclick="saveProfile()">保存する</button>
           </div>
         </div>
+        
         <div class="card"><h2>今月の参加数 <span id="periodMonth" class="small muted" style="font-weight:normal;"></span></h2><table id="rankMonth"><tr><td>Loading...</td></tr></table></div>
         <div class="card"><h2>今年の参加数 <span id="periodYear" class="small muted" style="font-weight:normal;"></span></h2><table id="rankYear"><tr><td>Loading...</td></tr></table></div>
+        
         <div id="debugAdminArea" class="card" style="display:none; border:2px dashed red;">
           <h2 style="color:red;">デバッグ</h2>
           <button class="btn-danger" onclick="genDebugData()">ダミーデータ生成</button>
@@ -225,33 +246,46 @@
             <button class="btn-primary" onclick="saveAccounting()">保存</button>
             <h3 style="margin-top:30px;">資金移動</h3>
             <div style="display:flex; align-items:center; gap:5px; margin-bottom:10px;">
-              <select id="trFrom" style="flex:1;"><option value="paypay">PayPay</option><option value="bank">口座</option><option value="cash">現金</option></select><span>→</span><select id="trTo" style="flex:1;"><option value="bank">口座</option><option value="cash">現金</option><option value="paypay">PayPay</option></select>
+              <select id="trFrom" style="flex:1;"><option value="paypay">PayPay</option><option value="bank">口座</option><option value="cash">現金</option></select>
+              <span>→</span>
+              <select id="trTo" style="flex:1;"><option value="bank">口座</option><option value="cash">現金</option><option value="paypay">PayPay</option></select>
             </div>
             <input type="number" id="trAmount" placeholder="移動金額">
             <button class="btn-accent" onclick="saveTransfer()">移動を記録</button>
           </div>
         </div>
       </div>
+
       <div id="view-admin-sched" class="view-section">
         <button class="btn-outline btn-sm" onclick="navigateTo('admin-menu')">← 戻る</button>
         <div class="card" style="margin-top:10px;">
           <h2>日程登録</h2>
           <p class="muted">今後の日曜日一覧。開催する日にチェックを入れて保存。<br>※チェックを外すと削除されます。</p>
           <div id="schedList" style="max-height:400px; overflow-y:auto; border:1px solid #eee; padding:10px; margin-bottom:10px;"></div>
-          <button class="btn-primary" onclick="saveSchedule()">登録・削除を実行</button>
+          <button class="btn-primary" onclick="saveSchedule()">選択した日程を登録/削除</button>
         </div>
       </div>
+
       <div id="view-admin-fees" class="view-section">
         <button class="btn-outline btn-sm" onclick="navigateTo('admin-menu')">← 戻る</button>
         <div class="card" style="margin-top:10px;">
           <h2>設定変更</h2>
-          <div style="margin-bottom:10px;"><label>社会人 会費</label><input type="number" id="cfgAdult"></div>
-          <div style="margin-bottom:10px;"><label>大学生 会費</label><input type="number" id="cfgCollege"></div>
-          <div style="margin-bottom:10px;"><label>高校生以下 会費</label><input type="number" id="cfgStudent"></div>
-          <div style="margin-bottom:10px;"><label>デフォルト定員 (人)</label><input type="number" id="cfgCapacity"></div>
+          <div style="margin-bottom:10px;">
+            <label>社会人 会費</label><input type="number" id="cfgAdult">
+          </div>
+          <div style="margin-bottom:10px;">
+            <label>大学生 会費</label><input type="number" id="cfgCollege">
+          </div>
+          <div style="margin-bottom:10px;">
+            <label>高校生以下 会費</label><input type="number" id="cfgStudent">
+          </div>
+          <div style="margin-bottom:10px;">
+            <label>デフォルト定員 (人)</label><input type="number" id="cfgCapacity">
+          </div>
           <button class="btn-primary" onclick="saveFees()">設定を保存</button>
         </div>
       </div>
+
       <div id="view-admin-roles" class="view-section">
         <button class="btn-outline btn-sm" onclick="navigateTo('admin-menu')">← 戻る</button>
         <div class="card" style="margin-top:10px;">
@@ -260,6 +294,7 @@
           <div id="adminMemberList" style="max-height:400px; overflow-y:auto;"></div>
         </div>
       </div>
+
     </div>
 
     <div class="bottom-nav">
@@ -284,6 +319,7 @@
 
     // --- 2. FUNCTION DECLARATIONS ---
     function setBusy(isBusy) { document.getElementById('loading').style.display = isBusy ? 'flex' : 'none'; }
+
     async function callApi(action, data, isPost=false) {
       let url = `${API_URL}?action=${action}`;
       let opts = { method: isPost?'POST':'GET' };
@@ -292,8 +328,7 @@
       const r = await fetch(url, opts);
       return await r.json();
     }
-    
-    // --- Router ---
+
     function navigateTo(viewId) {
       document.querySelectorAll('.view-section').forEach(el => el.classList.remove('view-active'));
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -302,6 +337,7 @@
       else if(viewId === 'day') navId = 'nav-day';
       else if(viewId === 'mypage') navId = 'nav-mypage';
       else if(viewId.startsWith('admin')) navId = 'nav-admin';
+      
       if(navId) document.getElementById(navId).classList.add('active');
       document.getElementById('view-' + viewId).classList.add('view-active');
 
@@ -310,6 +346,7 @@
       if(viewId.startsWith('admin') && !loadedData.admin) { setBusy(true); loadedData.admin = true; loadAdminData().then(()=>setBusy(false)); }
       if(viewId === 'day') checkDayAccess();
     }
+
     function initUI(isFirst) {
       if(state.me) {
         document.getElementById('myName').value = state.me.display_name;
@@ -320,8 +357,9 @@
           document.getElementById('subAdminArea').style.display = 'block';
           document.getElementById('subAdminCollection').style.display = 'block';
           document.getElementById('nav-admin').style.display = 'block';
-          if(r==='admin') document.getElementById('cancelEventArea').style.display = 'block';
-          else {
+          if(r==='admin') {
+             document.getElementById('cancelEventArea').style.display = 'block';
+          } else {
              document.querySelector('.admin-menu-btn[onclick*="fees"]').style.display = 'none';
              document.querySelector('.admin-menu-btn[onclick*="roles"]').style.display = 'none';
           }
@@ -340,26 +378,72 @@
       navigateTo(isFirst ? 'mypage' : INIT_PAGE);
     }
 
-    // --- Admin Actions ---
-    window.saveAccounting = async function() { /* ... unchanged ... */ const amt=document.getElementById('accAmount').value; if(!amt)return alert('金額入力'); setBusy(true); await callApi('save_accounting',{type:document.getElementById('accType').value,wallet:document.getElementById('accWallet').value,amount:amt,desc:document.getElementById('accDesc').value},true); alert('保存'); loadAdminData(); setBusy(false); }
-    window.saveTransfer = async function() { /* ... unchanged ... */ const amt=document.getElementById('trAmount').value; if(!amt)return alert('金額入力'); setBusy(true); await callApi('save_transfer',{amount:amt,from_wallet:document.getElementById('trFrom').value,to_wallet:document.getElementById('trTo').value},true); alert('移動'); loadAdminData(); setBusy(false); }
-    window.saveFees = async function() { /* ... unchanged ... */ if(!confirm('保存?'))return; setBusy(true); await callApi('save_fee_config',{adult:document.getElementById('cfgAdult').value,college:document.getElementById('cfgCollege').value,student:document.getElementById('cfgStudent').value,capacity:document.getElementById('cfgCapacity').value},true); alert('保存'); setBusy(false); }
-    window.saveSchedule = async function() { /* ... unchanged ... */ const dates=[]; document.querySelectorAll('.sch-chk:checked').forEach(c=>dates.push(c.value)); if(confirm('更新しますか?')) { setBusy(true); await callApi('save_schedule',{dates:dates},true); alert('更新'); await loadAdminData(); setBusy(false); } }
+    // --- BUTTON ACTIONS ---
+    window.saveAccounting = async function() {
+      const amt = document.getElementById('accAmount').value;
+      if(!amt) return alert('金額を入力してください');
+      setBusy(true);
+      await callApi('save_accounting', { type:document.getElementById('accType').value, wallet:document.getElementById('accWallet').value, amount:amt, desc:document.getElementById('accDesc').value }, true);
+      alert('保存しました'); loadAdminData(); setBusy(false);
+    }
+    window.saveTransfer = async function() {
+      const amt = document.getElementById('trAmount').value;
+      if(!amt) return alert('金額を入力してください');
+      setBusy(true);
+      await callApi('save_transfer', { amount:amt, from_wallet:document.getElementById('trFrom').value, to_wallet:document.getElementById('trTo').value }, true);
+      alert('移動しました'); loadAdminData(); setBusy(false);
+    }
+    window.saveFees = async function() {
+      if(!confirm('設定を保存しますか？')) return;
+      setBusy(true);
+      await callApi('save_fee_config', { adult:document.getElementById('cfgAdult').value, college:document.getElementById('cfgCollege').value, student:document.getElementById('cfgStudent').value, capacity:document.getElementById('cfgCapacity').value }, true);
+      alert('保存しました'); setBusy(false);
+    }
+    window.saveSchedule = async function() {
+      const dates = []; document.querySelectorAll('.sch-chk:checked').forEach(c => dates.push(c.value));
+      if(confirm('登録・削除を実行しますか？')) { setBusy(true); await callApi('save_schedule', { dates:dates }, true); alert('更新しました'); await loadAdminData(); setBusy(false); }
+    }
     window.updateRole = async function(mid, role) { await callApi('update_role', { member_id: mid, role: role }, true); }
-    window.cancelEvent = async function() { if(confirm('中止しますか?')) { setBusy(true); await callApi('cancel_event', { event_id: state.event.event_id }, true); alert('中止'); location.reload(); } }
-    window.filterAccounting = function() { /* ... unchanged ... */ const m=document.getElementById('filterAccMonth').value; const t=document.getElementById('filterAccType').value; const filtered=rawAccountingList.filter(a=>{ const d=new Date(a.raw_date); const yyyymm=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; return(m==='all'||m===yyyymm)&&(t==='all'||a.type===t); }); renderAccountingList(filtered); }
+    window.cancelEvent = async function() { if(confirm('本当に中止にしますか？')) { setBusy(true); await callApi('cancel_event', { event_id: state.event.event_id }, true); alert('中止しました'); location.reload(); } }
+    
+    window.filterAccounting = function() {
+      const m = document.getElementById('filterAccMonth').value;
+      const t = document.getElementById('filterAccType').value;
+      const filtered = rawAccountingList.filter(a => {
+        const d = new Date(a.raw_date);
+        const yyyymm = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+        return (m === 'all' || m === yyyymm) && (t === 'all' || a.type === t);
+      });
+      renderAccountingList(filtered);
+    }
     function renderAccountingList(list) {
       const wName = {cash:'現金', paypay:'PayPay', bank:'口座'};
-      document.getElementById('adminAccList').innerHTML = list.map(a => `<div style="border-bottom:1px solid #eee; padding:6px; font-size:0.85rem;">${a.date} <span class="badge ${a.type=='income'?'bg-green':'bg-gray'}">${a.type=='income'?'収':'支'}</span> ${a.amount}円 (${wName[a.wallet]||a.wallet}) ${a.desc}</div>`).join('');
+      document.getElementById('adminAccList').innerHTML = list.map(a => 
+        `<div style="border-bottom:1px solid #eee; padding:6px; font-size:0.85rem;">${a.date} <span class="badge ${a.type=='income'?'bg-green':'bg-gray'}">${a.type=='income'?'収':'支'}</span> ${a.amount}円 (${wName[a.wallet]||a.wallet}) ${a.desc}</div>`
+      ).join('');
     }
 
-    // --- Day Actions ---
-    window.executeLottery = async function() { if(!confirm('抽選実行?'))return; const stats={}; state.participants.forEach(p=>{const v=document.getElementById(`stat-${p.participant_id}`).value;if(v!==p.status)stats[p.participant_id]=v;}); setBusy(true); await callApi('run_lottery',{event_id:state.event.event_id,statuses:stats},true); alert('完了'); loadDayData(); setBusy(false); }
+    // Day Actions
+    window.executeLottery = async function() {
+      if(!confirm('抽選を実行しますか？')) return;
+      const stats = {}; state.participants.forEach(p => { const v=document.getElementById(`stat-${p.participant_id}`).value; if(v!==p.status) stats[p.participant_id]=v; });
+      setBusy(true); await callApi('run_lottery', { event_id: state.event.event_id, statuses: stats }, true); alert('完了'); loadDayData(); setBusy(false);
+    }
     window.saveCollection = async function() {
-      const ids=[]; const methods={};
-      document.querySelectorAll('.col-chk:checked:not([disabled])').forEach(e=>{ ids.push(e.value); const icon=document.getElementById(`pay-icon-${e.value}`); if(icon) methods[e.value]=icon.dataset.method; });
+      const ids = []; 
+      const methods = {};
+      document.querySelectorAll('.col-chk:checked:not([disabled])').forEach(e => {
+        const pid = e.value; 
+        ids.push(pid);
+        const icon = document.getElementById(`pay-icon-${pid}`);
+        if(icon) methods[pid] = icon.dataset.method;
+      });
       if(!ids.length) return alert('チェックなし');
-      if(confirm('保存しますか?')) { setBusy(true); await callApi('update_collection',{event_id:state.event.event_id,paid_ids:ids,methods:methods},true); alert('保存'); loadDayData(); setBusy(false); }
+      if(confirm('保存しますか？')) { 
+        setBusy(true); 
+        await callApi('update_collection', { event_id: state.event.event_id, paid_ids: ids, methods: methods }, true); 
+        alert('保存しました'); loadDayData(); setBusy(false); 
+      }
     }
     window.togglePayIcon = function(pid) {
       const el = document.getElementById(`pay-icon-${pid}`);
@@ -368,39 +452,71 @@
       el.dataset.method = next;
       el.className = next === 'day_paypay' ? 'pay-icon pp' : 'pay-icon cash';
       el.innerText = next === 'day_paypay' ? 'P' : '現';
-      updateCollectionSum(); // Recalculate
+      updateCollectionSum(); 
     }
-    window.deleteLastRound = async function() { if(confirm('取消?')) { setBusy(true); await callApi('delete_round',{event_id:state.event.event_id}); loadDayData(); setBusy(false); } }
-    window.manualAddUser = async function() { const n=prompt('名前:'); if(n){setBusy(true); await callApi('manual_add_participant',{event_id:state.event.event_id,name:n}); loadDayData(); setBusy(false);} }
-    window.genDebugData = async function() { if(confirm('生成?')) { setBusy(true); await callApi('generate_debug',{},true); alert('完了'); location.reload(); } }
+    window.deleteLastRound = async function() { if(confirm('取消しますか？')) { setBusy(true); await callApi('delete_round', { event_id: state.event.event_id }); loadDayData(); setBusy(false); } }
+    window.manualAddUser = async function() { const n = prompt('名前:'); if(n) { setBusy(true); await callApi('manual_add_participant', { event_id: state.event.event_id, name: n }); loadDayData(); setBusy(false); } }
+    window.genDebugData = async function() { if(confirm('生成しますか？')) { setBusy(true); await callApi('generate_debug', {}, true); alert('完了'); location.reload(); } }
 
-    // --- Register Logic ---
-    window.togglePayMethod = function() { const val=document.querySelector('input[name="payMethod"]:checked')?.value; document.getElementById('payDetail-advance').style.display=(val==='advance')?'block':'none'; }
-    window.toggleGuests = function() { const on=document.getElementById('friendToggle').checked; document.getElementById('guestSection').style.display=on?'block':'none'; if(on&&document.getElementById('guestCount').value==0){document.getElementById('guestCount').value=1; renderGuestInputs();} calcTotal(); }
-    window.renderGuestInputs = function() { const cnt=document.getElementById('guestCount').value; const box=document.getElementById('guestInputs'); box.innerHTML=''; for(let i=0;i<cnt;i++) box.innerHTML+=`<div class="guest-row"><input type="text" class="g-name" placeholder="名前" required><select class="g-cat" onchange="calcTotal()"><option value="adult">社会人</option><option value="college">大学生</option><option value="student">高校生</option></select></div>`; calcTotal(); }
-    
-    // ★修正: 本人分のみ表示
+    // Register Logic
+    window.togglePayMethod = function() {
+      const val = document.querySelector('input[name="payMethod"]:checked')?.value;
+      document.getElementById('payDetail-advance').style.display = (val === 'advance') ? 'block' : 'none';
+    }
+    window.toggleGuests = function() {
+      const on = document.getElementById('friendToggle').checked;
+      document.getElementById('guestSection').style.display = on?'block':'none';
+      if(on && document.getElementById('guestCount').value==0) { document.getElementById('guestCount').value=1; renderGuestInputs(); }
+      calcTotal();
+    }
+    window.renderGuestInputs = function() { 
+        const cnt = document.getElementById('guestCount').value; const box = document.getElementById('guestInputs'); box.innerHTML = '';
+        for(let i=0; i<cnt; i++) box.innerHTML += `<div class="guest-row"><input type="text" class="g-name" placeholder="名前" required><select class="g-cat" onchange="calcTotal()"><option value="adult">社会人</option><option value="college">大学生</option><option value="student">高校生</option></select></div>`; calcTotal(); 
+    }
     window.calcTotal = function() { 
       if(!state.me) return; 
       let sum = getFee(state.me.category); 
+      // Only show member fee
       document.getElementById('feeDisplay').innerText = `支払金額: ${sum} 円`; 
     }
     function getFee(c){ return state.feeConfig[c] || 800; }
 
     window.submitRegistration = async function() {
       const method = document.querySelector('input[name="payMethod"]:checked')?.value;
-      if(!method) return alert('支払い方法を選択');
+      if(!method) return alert('支払い方法を選択してください');
       let isPaid = false;
-      if(method === 'advance') { if(!document.getElementById('chkPaidAdvance').checked) return alert('チェックを入れてください'); isPaid = true; }
+      if(method === 'advance') { if(!document.getElementById('chkPaidAdvance').checked) return alert('送金完了チェックを入れてください'); isPaid = true; }
+      
       const guests = [];
       if(document.getElementById('friendToggle').checked) {
-        const names = document.querySelectorAll('.g-name'); const cats = document.querySelectorAll('.g-cat');
-        for(let i=0; i<names.length; i++) { if(!names[i].value) return alert('ゲスト名を入力'); guests.push({name:names[i].value, category:cats[i].value}); }
+        const names = document.querySelectorAll('.g-name');
+        const cats = document.querySelectorAll('.g-cat');
+        for(let i=0; i<names.length; i++) {
+          if(!names[i].value) return alert('ゲスト名を入力してください');
+          guests.push({name:names[i].value, category:cats[i].value});
+        }
       }
       if(confirm('登録しますか？')) { setBusy(true); try { await callApi('register', { event_id: state.event.event_id, member_id: state.me.member_id, status: 'reserved', guests: guests, is_paid: isPaid, pay_method: method }, true); alert('登録しました'); location.reload(); } catch(e) { setBusy(false); alert(e.message); } }
     }
     window.cancelRegistration = async function() { if(confirm('キャンセルしますか？')) { setBusy(true); await callApi('register', { event_id: state.event.event_id, member_id: state.me.member_id, status: 'canceled', guests: [] }, true); alert('キャンセルしました'); location.reload(); } }
-    window.saveProfile = async function() { const n=document.getElementById('myName').value; const c=document.getElementById('myCat').value; if(!n) return; setBusy(true); await callApi('upsert_member', { lineUserId: state.me.line_user_id, display_name: n, category: c }, true); alert('保存しました'); setBusy(false); }
+    window.saveProfile = async function() {
+      const name = document.getElementById('myName').value; const cat = document.getElementById('myCat').value; if(!name) return; setBusy(true); await callApi('upsert_member', { lineUserId: state.me.line_user_id, display_name: name, category: cat }, true); alert('保存しました'); setBusy(false);
+    }
+    window.copyText = function(id) { const el = document.querySelector('.'+id) || document.getElementById(id); const t = el.tagName==='INPUT' ? el.value : el.innerText; if (navigator.clipboard) { navigator.clipboard.writeText(t).then(()=>alert('コピーしました')).catch(()=>prompt('コピー', t)); } else { prompt('コピー', t); } }
+    window.closeModal = function() { document.getElementById('infoModal').style.display = 'none'; }
+    window.showPastDetail = async function(eid) { 
+      setBusy(true); 
+      const res = await callApi('get_past_event_detail', { event_id: eid }); 
+      setBusy(false); 
+      const html = res.participants.length 
+        ? res.participants.map(p => `
+            <div style="border-bottom:1px solid #eee; padding:5px; display:flex; justify-content:space-between;">
+               <span>${p.name}${p.guests ? p.guests : ''}</span>
+            </div>`).join('') 
+        : '参加者なし';
+      document.getElementById('modalContent').innerHTML = html;
+      document.getElementById('infoModal').style.display = 'flex'; 
+    }
 
     // --- Loading & Helpers ---
     function renderRegStatus() {
@@ -408,7 +524,8 @@
       const btnReg = document.getElementById('btnRegister');
       const btnCancel = document.getElementById('btnCancel');
       if(state.reg && state.reg.status === 'reserved') {
-        badge.innerText = '参加登録済'; badge.className = 'badge bg-green'; btnReg.innerText = '登録更新'; btnCancel.style.display = 'inline-block';
+        badge.innerText = '参加登録済'; badge.className = 'badge bg-green';
+        btnReg.innerText = '登録更新'; btnCancel.style.display = 'inline-block';
         const method = state.reg.payment_method;
         if(method) {
           const radio = document.querySelector(`input[name="payMethod"][value="${method}"]`);
@@ -417,21 +534,26 @@
             document.getElementById('chkPaidAdvance').checked = true; document.getElementById('chkPaidAdvance').disabled = true;
           }
         }
-      } else { badge.innerText = '未登録'; badge.className = 'badge bg-gray'; btnReg.innerText = '参加登録'; btnCancel.style.display = 'none'; }
+      } else {
+        badge.innerText = '未登録'; badge.className = 'badge bg-gray'; btnReg.innerText = '参加登録'; btnCancel.style.display = 'none';
+      }
       togglePayMethod(); calcTotal();
     }
+
     function checkDayAccess() {
       if(!state.event) return;
       const now = new Date(); const hh = now.getHours(); const mm = now.getMinutes(); const t = hh * 60 + mm;
       if(state.isDebug || (t >= 1050 && t <= 1320)) { document.getElementById('dayContent').style.display = 'block'; document.getElementById('restrictedMsg').style.display = 'none'; loadDayData(); }
       else { document.getElementById('dayContent').style.display = 'none'; document.getElementById('restrictedMsg').style.display = 'block'; }
     }
+
     async function loadDayData() {
       setBusy(true);
       const res = await callApi('get_participants_detail', { event_id: state.event.event_id });
       setBusy(false);
       state.participants = res.data.participants || [];
       const rounds = res.data.allRounds || []; 
+      
       const box = document.getElementById('dayLotteryResult');
       if(rounds.length > 0) {
         let html = '';
@@ -446,32 +568,34 @@
         });
         box.innerHTML = html;
       } else { box.innerHTML = '<p>抽選結果はまだありません。</p>'; }
+      
       const myP = state.participants.find(p => p.member_id === state.me.member_id);
       document.getElementById('dayPayInfo').style.display = (myP && myP.payment_method === 'day_paypay' && myP.payment_status !== 'paid') ? 'block' : 'none';
       if(['admin','sub_admin'].includes(state.me.role)) renderAdminLists();
     }
+
     function renderAdminLists() {
       document.getElementById('adminLotteryList').innerHTML = state.participants.map(p => `
         <div class="admin-list-item"><div class="admin-item-left"><span class="admin-name">${p.name}</span><span class="small muted" style="margin-left:5px;">(${p.play_count})</span></div><div class="admin-item-right"><select id="stat-${p.participant_id}" class="status-select"><option value="participating" ${p.status=='participating'?'selected':''}>参加</option><option value="late" ${p.status=='late'?'selected':''}>遅刻</option><option value="leave" ${p.status=='leave'?'selected':''}>早退</option><option value="rest_request" ${p.status=='rest_request'?'selected':''}>休憩</option></select></div></div>`).join('');
       document.getElementById('adminCollectionList').innerHTML = state.participants.map(p => {
         const isPaid = p.payment_status === 'paid' || p.payment_status === 'paid_advance';
         const method = p.payment_method; const icon = (method === 'advance' || method === 'day_paypay') ? '<span class="pay-icon pp">P</span>' : '<span class="pay-icon cash">現</span>'; const stTxt = isPaid ? '済' : '未払';
-        // Add onchange handler to checkbox
         return `<div class="admin-list-item ${isPaid?'paid-row':''}"><div class="admin-item-left"><label><input type="checkbox" class="col-chk" value="${p.participant_id}" data-category="${p.category}" ${isPaid?'disabled checked':''} onchange="updateCollectionSum()"> <span class="admin-name">${p.name}</span></label></div><div class="admin-item-right"><span id="pay-icon-${p.participant_id}" class="${iconClass}" data-method="${method}" ${isPaid?'':`onclick="togglePayIcon('${p.participant_id}')"`}>${iconText}</span> <span class="pay-status">${stTxt}</span></div></div>`;
       }).join('');
       updateCollectionSum();
     }
-    // ★追加: 集金合計計算
+
+    // ★追加: リアルタイム集金計算
     window.updateCollectionSum = function() {
       let cash = 0, pp = 0;
       document.querySelectorAll('.col-chk:checked').forEach(e => {
         const pid = e.value;
         const cat = e.dataset.category || 'adult';
-        // Paid rows are disabled but checked. Unpaid become checked.
         const icon = document.getElementById(`pay-icon-${pid}`);
         const method = icon ? icon.dataset.method : 'day_cash';
-        const fee = getFee(cat); // Approx calculation client side
+        const fee = getFee(cat);
         
+        // P=PayPay(advance/day_paypay), 現=Cash(day_cash)
         if (method === 'day_cash') cash += fee;
         else pp += fee;
       });
@@ -479,21 +603,60 @@
       document.getElementById('sumPayPay').innerText = pp;
     }
 
-    async function loadAdminData() { /* ... unchanged ... */ setBusy(true); const res = await callApi('get_admin_init'); setBusy(false); const s=res.summary; document.getElementById('accSummary').innerText=`合計: ${s.total}円 (現:${s.cash}/P:${s.paypay}/口:${s.bank})`; document.getElementById('cfgAdult').value=res.fees.adult; document.getElementById('cfgCollege').value=res.fees.college; document.getElementById('cfgStudent').value=res.fees.student; document.getElementById('cfgCapacity').value=res.fees.capacity||16; state.feeConfig=res.fees; document.getElementById('adminMemberList').innerHTML=res.members.map(m=>`<div class="admin-list-item"><div class="admin-item-left"><span class="admin-name">${m.display_name}</span></div><div class="admin-item-right"><select onchange="updateRole('${m.member_id}', this.value)" class="status-select"><option value="admin" ${m.role=='admin'?'selected':''}>管理者</option><option value="sub_admin" ${m.role=='sub_admin'?'selected':''}>準管理者</option><option value="member" ${m.role=='member'?'selected':''}>メンバー</option></select></div></div>`).join(''); if(state.me.role==='sub_admin')document.getElementById('btnAccEntry').style.display='none'; const accRes=await callApi('get_accounting_list'); rawAccountingList=accRes.list; const monthSet=new Set(); rawAccountingList.forEach(a=>{const d=new Date(a.raw_date); monthSet.add(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);}); const mSel=document.getElementById('filterAccMonth'); mSel.innerHTML='<option value="all">全期間</option>'; Array.from(monthSet).sort().reverse().forEach(m=>mSel.innerHTML+=`<option value="${m}">${m}</option>`); filterAccounting(); registeredDates=res.registeredDates||[]; renderScheduleGen(); }
-    function renderScheduleGen() { /* ... unchanged ... */ const list=document.getElementById('schedList'); list.innerHTML=''; const today=new Date(); for(let i=0;i<55;i++){ const d=new Date(); d.setDate(today.getDate()+(7-today.getDay())+(i*7)); const dStr=`${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`; const isReg=registeredDates.includes(dStr); list.innerHTML+=`<label class="inline-label" style="border-bottom:1px solid #eee; padding:8px;"><input type="checkbox" class="sch-chk" value="${dStr}" ${isReg?'checked':''}> ${dStr} (日)</label>`; } }
-    async function loadFutureAndPast() { /* ... updated to display lazyRegister ... */ 
+    async function loadAdminData() {
+      setBusy(true); const res = await callApi('get_admin_init'); setBusy(false);
+      const s = res.summary; document.getElementById('accSummary').innerText = `合計: ${s.total}円 (現:${s.cash}/P:${s.paypay}/口:${s.bank})`;
+      document.getElementById('cfgAdult').value = res.fees.adult; document.getElementById('cfgCollege').value = res.fees.college; document.getElementById('cfgStudent').value = res.fees.student; document.getElementById('cfgCapacity').value = res.fees.capacity || 16;
+      document.getElementById('adminMemberList').innerHTML = res.members.map(m => `
+        <div class="admin-list-item"><div class="admin-item-left"><span class="admin-name">${m.display_name}</span></div><div class="admin-item-right"><select onchange="updateRole('${m.member_id}', this.value)" class="status-select"><option value="admin" ${m.role=='admin'?'selected':''}>管理者</option><option value="sub_admin" ${m.role=='sub_admin'?'selected':''}>準管理者</option><option value="member" ${m.role=='member'?'selected':''}>メンバー</option></select></div></div>`).join('');
+      if(state.me.role === 'sub_admin') document.getElementById('btnAccEntry').style.display = 'none';
+      const accRes = await callApi('get_accounting_list'); 
+      rawAccountingList = accRes.list;
+      const monthSet = new Set(); rawAccountingList.forEach(a => { const d=new Date(a.raw_date); monthSet.add(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`); });
+      const mSel = document.getElementById('filterAccMonth'); mSel.innerHTML = '<option value="all">全期間</option>';
+      Array.from(monthSet).sort().reverse().forEach(m => mSel.innerHTML += `<option value="${m}">${m}</option>`);
+      filterAccounting();
+      registeredDates = res.registeredDates || [];
+      renderScheduleGen();
+    }
+    
+    function renderScheduleGen() {
+      const list = document.getElementById('schedList'); list.innerHTML = ''; const today = new Date();
+      for(let i=0; i<55; i++) {
+        const d = new Date(); d.setDate(today.getDate() + (7 - today.getDay()) + (i*7)); const dStr = `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
+        const isReg = registeredDates.includes(dStr);
+        list.innerHTML += `<label class="inline-label" style="border-bottom:1px solid #eee; padding:8px;"><input type="checkbox" class="sch-chk" value="${dStr}" ${isReg?'checked':''}> ${dStr} (日)</label>`;
+      }
+    }
+
+    async function loadFutureAndPast() {
       document.getElementById('lazyRegister').style.display='block';
       const [fut, past] = await Promise.all([callApi('get_future_events'), callApi('get_past_events')]);
       const boxF = document.getElementById('futureList'); const boxP = document.getElementById('pastList');
       if(!fut.events || !fut.events.length) boxF.innerText = '予定なし'; else boxF.innerHTML = fut.events.map(e => `<div style="border-bottom:1px solid #eee; padding:8px 0;">${e.date_str} ${e.start_time}-${e.end_time}</div>`).join('');
-      // ★修正: ボタン風に
       if(!past.events || !past.events.length) boxP.innerText = '履歴なし'; else boxP.innerHTML = past.events.map(e => `<button class="btn-outline btn-sm" style="display:block; width:100%; margin-bottom:5px; text-align:left;" onclick="showPastDetail('${e.event_id}')">${e.date_str} (参加者)</button>`).join('');
     }
-    async function showPastDetail(eid) { setBusy(true); const res=await callApi('get_past_event_detail',{event_id:eid}); setBusy(false); const html=res.participants.length?res.participants.map(p=>`<div style="border-bottom:1px solid #eee; padding:5px; display:flex; justify-content:space-between;"><span>${p.name}${p.guests}</span></div>`).join(''):'参加者なし'; document.getElementById('modalContent').innerHTML=html; document.getElementById('infoModal').style.display='flex'; }
-    window.closeModal=function(){document.getElementById('infoModal').style.display='none';}
-    async function loadRankings() { setBusy(true); const res=await callApi('get_rankings'); setBusy(false); const now=new Date(); const y=now.getFullYear(); const m=(now.getMonth()+1).toString().padStart(2,'0'); document.getElementById('periodMonth').innerText=`(${y}/${m}/01〜)`; document.getElementById('periodYear').innerText=`(${y}/01/01〜)`; renderTable('rankMonth',res.data.month); renderTable('rankYear',res.data.year); }
-    function renderTable(id,list){ const el=document.getElementById(id); if(!list.length){el.innerHTML='<tr><td>データなし</td></tr>';return;} el.innerHTML=list.map((r,i)=>`<tr><td style="width:30px;">${i+1}</td><td class="${i==0?'rank-1':''}">${r.name}</td><td style="text-align:right;">${i==0?r.month||r.year:r.month||r.year}回</td></tr>`).join(''); }
-    window.copyText=function(id){ const el=document.querySelector('.'+id)||document.getElementById(id); const t=el.tagName==='INPUT'?el.value:el.innerText; if(navigator.clipboard){navigator.clipboard.writeText(t).then(()=>alert('コピーしました')).catch(()=>prompt('コピー',t));}else{prompt('コピー',t);} }
+    
+    async function showPastDetail(eid) { 
+      setBusy(true); 
+      const res = await callApi('get_past_event_detail', { event_id: eid }); 
+      setBusy(false); 
+      const html = res.participants.length 
+        ? res.participants.map(p => `<div style="border-bottom:1px solid #eee; padding:5px; display:flex; justify-content:space-between;"><span>${p.name}${p.guests}</span></div>`).join('') 
+        : '参加者なし';
+      document.getElementById('modalContent').innerHTML = html;
+      document.getElementById('infoModal').style.display = 'flex'; 
+    }
+
+    async function loadRankings() { 
+      setBusy(true); const res = await callApi('get_rankings'); setBusy(false);
+      const now = new Date(); const y=now.getFullYear(); const m=(now.getMonth()+1).toString().padStart(2,'0'); document.getElementById('periodMonth').innerText = `(${y}/${m}/01〜)`; document.getElementById('periodYear').innerText = `(${y}/01/01〜)`;
+      renderTable('rankMonth', res.data.month); renderTable('rankYear', res.data.year);
+    }
+    function renderTable(id, list) { const el = document.getElementById(id); if(!list.length) { el.innerHTML = '<tr><td>データなし</td></tr>'; return; } el.innerHTML = list.map((r,i) => `<tr><td style="width:30px;">${i+1}</td><td class="${i==0?'rank-1':''}">${r.name}</td><td style="text-align:right;">${i==0?r.month||r.year:r.month||r.year}回</td></tr>`).join(''); }
+
+    window.copyText = function(id) { const el = document.querySelector('.'+id) || document.getElementById(id); const t = el.tagName==='INPUT' ? el.value : el.innerText; if (navigator.clipboard) { navigator.clipboard.writeText(t).then(()=>alert('コピーしました')).catch(()=>prompt('コピー', t)); } else { prompt('コピー', t); } }
+    window.closeModal = function() { document.getElementById('infoModal').style.display = 'none'; }
 
     // --- Main ---
     window.onload = async function() {
