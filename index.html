@@ -117,12 +117,12 @@
               <div style="background:#f9f9f9; padding:15px; border-radius:8px; margin-bottom:15px;">
                 <h3 style="margin-top:0;">お支払い方法 (本人分)</h3>
                 <p class="small muted" style="margin-top:0; color:#06c755; font-weight:bold;">
-                  ※運営の負担軽減（小銭管理）のため、PayPay事前決済にご協力いただけると助かります🙇‍♂️
+                  ※運営の負担軽減（小銭削減）のため、PayPay事前決済にご協力いただけると助かります🙇‍♂️
                 </p>
                 <label class="inline-label"><input type="radio" name="payMethod" value="advance" onchange="togglePayMethod()"><span>事前PayPay決済</span></label>
                 <div id="payDetail-advance" style="display:none; margin-left:10px; margin-bottom:15px;">
                    <div class="paypay-box">
-                     <strong>&lt;手順&gt;</strong><ol class="step-list"><li>下記 <strong>ID</strong> をコピー</li><li>PayPayアプリ > 送る > IDで送る</li><li>ID貼り付け > 検索</li><li>名義 <strong class="ppNameTarget">-</strong> を確認</li><li>金額入力 (<strong>メモもコピペ</strong>)</li><li>送金後、チェックを入れる</li></ol>
+                     <strong>&lt;手順&gt;</strong><ol class="step-list"><li>下記 <strong>ID</strong> をコピー</li><li>PayPayアプリ > 送る > IDで送る</li><li>ID貼り付け > 検索</li><li>名義 <strong class="ppNameTarget">-</strong> を確認</li><li>金額入力</li><li>下記のメモ(日程と名前)をコピーしてメッセージに貼り付けて送金<li><li>下記「送金しました」にチェックを入れる</li></ol>
                      <div>ID: <span class="ppId" style="font-weight:bold;">-</span> <button type="button" class="btn-outline btn-copy" onclick="copyText('ppId')">コピー</button></div>
                      <div style="margin-top:8px; display:flex;"><input type="text" id="ppMsg" readonly style="margin:0; font-size:0.8rem; background:#fff; flex:1;"><button type="button" class="btn-outline btn-copy" onclick="copyText('ppMsg')">メモコピー</button></div>
                    </div>
