@@ -528,7 +528,7 @@
           const retry = await callApi('get_me', { lineUserId: profile.userId });
           state.me = retry.member; state.paypay = userRes.paypay_config; initUI(true);
         } else {
-          state.me = userRes.member; state.paypay = userRes.paypay_config; state.isDebug = userRes.is_debug; initUI(false);
+          state.me = userRes.member; state.paypay = userRes.paypay_config; state.isDebug = userRes.is_demo; initUI(false);
         }
         if(weekRes.event) {
           state.event = weekRes.event;
