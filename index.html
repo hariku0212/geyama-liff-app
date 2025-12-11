@@ -8,6 +8,7 @@
   <meta property="og:description" content="練習の参加登録、PayPay支払い、コート抽選などができるアプリです。">
   <meta property="og:type" content="website">
   <style>
+    /* ... (CSS変更なし) ... */
     :root { --primary: #06c755; --bg: #f2f4f8; --card: #ffffff; --text: #333; --danger: #e53935; --gray: #888; --accent: #ff9800; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 90px; }
     .container { max-width: 600px; margin: 0 auto; padding: 15px; }
@@ -44,7 +45,7 @@
     .pay-icon { font-size: 0.65rem; padding: 3px 6px; border-radius: 4px; margin-right: 6px; font-weight: bold; cursor: pointer; user-select: none; border: 1px solid rgba(0,0,0,0.1); }
     .pay-icon.pp { background: #ffeb3b; color: #333; }
     .pay-icon.cash { background: #e0e0e0; color: #555; }
-    .pay-status { font-size: 0.8rem; color: #666; white-space: nowrap; width: 30px; text-align: right; }
+    .pay-status { font-size: 0.8rem; color: #666; white-space: nowrap; width: 40px; text-align: right; }
     .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
     .admin-menu-btn { background: #fff; border: 1px solid #eee; padding: 20px; text-align: center; border-radius: 12px; cursor: pointer; user-select: none; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: background 0.1s; }
     .admin-menu-btn:active { background: #f0f0f0; transform: scale(0.98); }
@@ -117,12 +118,12 @@
               <div style="background:#f9f9f9; padding:15px; border-radius:8px; margin-bottom:15px;">
                 <h3 style="margin-top:0;">お支払い方法 (本人分)</h3>
                 <p class="small muted" style="margin-top:0; color:#06c755; font-weight:bold;">
-                  ※運営の負担軽減（小銭削減）のため、PayPay事前決済にご協力いただけると助かります🙇‍♂️
+                  ※運営の負担軽減（小銭管理）のため、PayPay事前決済にご協力いただけると助かります🙇‍♂️
                 </p>
                 <label class="inline-label"><input type="radio" name="payMethod" value="advance" onchange="togglePayMethod()"><span>事前PayPay決済</span></label>
                 <div id="payDetail-advance" style="display:none; margin-left:10px; margin-bottom:15px;">
                    <div class="paypay-box">
-                     <strong>&lt;手順&gt;</strong><ol class="step-list"><li>下記 <strong>ID</strong> をコピー</li><li>PayPayアプリ > 送る > IDで送る</li><li>ID貼り付け > 検索</li><li>名義 <strong class="ppNameTarget">-</strong> を確認</li><li>金額入力</li><li>下記のメモ(日程と名前)をコピーしてメッセージに貼り付けて送金<li><li>下記「送金しました」にチェックを入れる</li></ol>
+                     <strong>&lt;手順&gt;</strong><ol class="step-list"><li>下記 <strong>ID</strong> をコピー</li><li>PayPayアプリ > 送る > IDで送る</li><li>ID貼り付け > 検索</li><li>名義 <strong class="ppNameTarget">-</strong> を確認</li><li>金額入力 (<strong>メモもコピペ</strong>)</li><li>送金後、チェックを入れる</li></ol>
                      <div>ID: <span class="ppId" style="font-weight:bold;">-</span> <button type="button" class="btn-outline btn-copy" onclick="copyText('ppId')">コピー</button></div>
                      <div style="margin-top:8px; display:flex;"><input type="text" id="ppMsg" readonly style="margin:0; font-size:0.8rem; background:#fff; flex:1;"><button type="button" class="btn-outline btn-copy" onclick="copyText('ppMsg')">メモコピー</button></div>
                    </div>
@@ -166,7 +167,11 @@
               <h3 style="color:var(--accent);">運営: 集金</h3>
               <p class="small muted">受取済みにチェックして保存。<br>アイコン(P/現)タップで方法変更。</p>
               <div id="adminCollectionList"></div>
-              <button class="btn-accent" style="margin-top:15px;" onclick="saveCollection()">集金状況を保存</button>
+              <div style="border-top:1px solid #eee; margin-top:10px; padding-top:10px; font-weight:bold; font-size:0.9rem;">
+                 回収済み計(円): <span style="color:#e0e0e0; background:#555; padding:2px 5px; border-radius:4px;">現</span> <span id="sumCash">0</span> / 
+                 <span style="color:#333; background:#ffeb3b; padding:2px 5px; border-radius:4px;">P</span> <span id="sumPayPay">0</span>
+              </div>
+              <button class="btn-accent" style="margin-top:10px;" onclick="saveCollection()">集金状況を保存</button>
             </div>
           </div>
           
@@ -276,6 +281,7 @@
           <div id="adminMemberList" style="max-height:400px; overflow-y:auto;"></div>
         </div>
       </div>
+
     </div>
 
     <div class="bottom-nav">
@@ -287,6 +293,7 @@
   </div>
 
   <script>
+    // --- 1. GLOBALS & CONFIG ---
     const API_URL = 'https://script.google.com/macros/s/AKfycbx3QQMnnjQl-3bb77-HO9SVztNzaBpl8sXTHNBm7ydsLZMK50dlNqau-qHXU16HufrEBQ/exec';
     const LIFF_ID = '2008652596-Gew4K44V';
     const params = new URLSearchParams(window.location.search);
@@ -297,7 +304,7 @@
     let rawAccountingList = [];
     let registeredDates = [];
 
-    // --- Core Functions ---
+    // --- 2. FUNCTION DECLARATIONS ---
     function setBusy(isBusy) { document.getElementById('loading').style.display = isBusy ? 'flex' : 'none'; }
     async function callApi(action, data, isPost=false) {
       let url = `${API_URL}?action=${action}`;
@@ -309,7 +316,6 @@
       if(json.is_demo_mock) { alert('【デモモード】\nサーバーへの書き込みはスキップされました。\n(成功したように見せかけます)'); return { ok: true, data: {}, is_demo_mock: true }; }
       return json;
     }
-
     function navigateTo(viewId) {
       document.querySelectorAll('.view-section').forEach(el => el.classList.remove('view-active'));
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -318,16 +324,13 @@
       else if(viewId === 'day') navId = 'nav-day';
       else if(viewId === 'mypage') navId = 'nav-mypage';
       else if(viewId.startsWith('admin')) navId = 'nav-admin';
-      
       if(navId) document.getElementById(navId).classList.add('active');
       document.getElementById('view-' + viewId).classList.add('view-active');
-
       if(viewId === 'register' && !loadedData.future) { setBusy(true); loadedData.future = true; loadFutureAndPast().then(()=>setBusy(false)); }
       if(viewId === 'mypage' && !loadedData.ranking) { setBusy(true); loadedData.ranking = true; loadRankings().then(()=>setBusy(false)); }
       if(viewId.startsWith('admin') && !loadedData.admin) { setBusy(true); loadedData.admin = true; loadAdminData().then(()=>setBusy(false)); }
       if(viewId === 'day') checkDayAccess();
     }
-
     function initUI(isFirst) {
       if(state.me) {
         document.getElementById('myName').value = state.me.display_name;
@@ -385,6 +388,19 @@
     window.togglePayIcon = function(pid) {
       const el = document.getElementById(`pay-icon-${pid}`); const next = (el.dataset.method === 'day_cash') ? 'day_paypay' : 'day_cash';
       el.dataset.method = next; el.className = next === 'day_paypay' ? 'pay-icon pp' : 'pay-icon cash'; el.innerText = next === 'day_paypay' ? 'P' : '現';
+      updateCollectionSum();
+    }
+    window.updateCollectionSum = function() {
+      let cash = 0, pp = 0;
+      document.querySelectorAll('.col-chk:checked').forEach(e => {
+        const pid = e.value;
+        const cat = e.dataset.category || 'adult';
+        const icon = document.getElementById(`pay-icon-${pid}`);
+        const method = icon ? icon.dataset.method : 'day_cash';
+        const fee = getFee(cat);
+        if (method === 'day_cash') cash += fee; else pp += fee;
+      });
+      document.getElementById('sumCash').innerText = cash; document.getElementById('sumPayPay').innerText = pp;
     }
     window.deleteLastRound = async function() { if(confirm('取消?')) { setBusy(true); await callApi('delete_round', { event_id: state.event.event_id }); loadDayData(); setBusy(false); } }
     window.manualAddUser = async function() { const n=prompt('名前:'); if(n) { setBusy(true); await callApi('manual_add_participant', { event_id: state.event.event_id, name: n }); loadDayData(); setBusy(false); } }
@@ -453,6 +469,7 @@
         const method = p.payment_method || 'day_cash'; const icon = (method === 'advance' || method === 'day_paypay') ? '<span class="pay-icon pp">P</span>' : '<span class="pay-icon cash">現</span>'; const stTxt = isPaid ? '済' : '未払';
         return `<div class="admin-list-item ${isPaid?'paid-row':''}"><div class="admin-item-left"><label><input type="checkbox" class="col-chk" value="${p.participant_id}" data-category="${p.category}" ${isPaid?'disabled checked':''}> <span class="admin-name">${p.name}</span></label></div><div class="admin-item-right"><span id="pay-icon-${p.participant_id}" class="${(method === 'advance' || method === 'day_paypay') ? 'pay-icon pp' : 'pay-icon cash'}" data-method="${method}" ${isPaid?'':`onclick="togglePayIcon('${p.participant_id}')"`}>${(method === 'advance' || method === 'day_paypay') ? 'P' : '現'}</span> <span class="pay-status">${stTxt}</span></div></div>`;
       }).join('');
+      updateCollectionSum();
     }
     async function loadAdminData() {
       setBusy(true); const res = await callApi('get_admin_init'); setBusy(false);
@@ -474,19 +491,28 @@
     }
     async function loadRankings() { setBusy(true); const res = await callApi('get_rankings'); setBusy(false); const now = new Date(); const y=now.getFullYear(); const m=(now.getMonth()+1).toString().padStart(2,'0'); document.getElementById('periodMonth').innerText = `(${y}/${m}/01〜)`; document.getElementById('periodYear').innerText = `(${y}/01/01〜)`; renderTable('rankMonth', res.data.month); renderTable('rankYear', res.data.year); }
     function renderTable(id, list) { const el = document.getElementById(id); if(!list.length) { el.innerHTML = '<tr><td>データなし</td></tr>'; return; } el.innerHTML = list.map((r,i) => `<tr><td style="width:30px;">${i+1}</td><td class="${i==0?'rank-1':''}">${r.name}</td><td style="text-align:right;">${i==0?r.month||r.year:r.month||r.year}回</td></tr>`).join(''); }
+    
+    // --- MAIN ---
     window.onload = async function() {
       try {
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) { liff.login(); return; }
         const profile = await liff.getProfile();
+        // ★修正: 初回時、まだメンバー未登録でもデモモードフラグを取得するためにAPI呼び出し結果を使う
         const [userRes, weekRes] = await Promise.all([callApi('get_me', { lineUserId: profile.userId }), callApi('get_this_week')]);
+        
+        // デモモードフラグのセット（初回でもuserResには入ってくる）
+        state.isDemo = userRes.is_demo;
+
         if (!userRes.exists) {
           await callApi('upsert_member', { lineUserId: profile.userId, display_name: profile.displayName }, true);
           const retry = await callApi('get_me', { lineUserId: profile.userId });
-          state.me = retry.member; state.paypay = userRes.paypay_config; initUI(true);
+          state.me = retry.member; state.paypay = userRes.paypay_config;
+          initUI(true);
         } else {
-          state.me = userRes.member; state.paypay = userRes.paypay_config; state.isDemo = userRes.is_demo; initUI(false);
+          state.me = userRes.member; state.paypay = userRes.paypay_config; initUI(false);
         }
+
         if(weekRes.event) {
           state.event = weekRes.event;
           document.getElementById('thisWeekInfo').innerHTML = `<div>${state.event.date_str} ${state.event.start_time}-${state.event.end_time}</div>`;
