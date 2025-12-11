@@ -34,16 +34,21 @@
     .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; font-size: 0.9rem; }
     .btn-copy { padding: 6px 10px; font-size: 0.8rem; width: auto; margin: 0 0 0 8px; display: inline-block; }
     .btn-sm { width: auto; padding: 6px 12px; font-size: 0.8rem; margin: 0; border-radius: 4px; }
+    
+    /* Admin UI Fixed */
     .admin-list-item { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; padding: 12px 0; }
-    .admin-item-left { flex: 1; display: flex; align-items: center; overflow: hidden; margin-right: 10px; }
+    .admin-item-left { flex: 1; display: flex; align-items: center; overflow: hidden; margin-right: 10px; min-width: 0; }
+    /* 集金画面の名前表示修正 */
     .admin-item-left label { display: flex; align-items: center; width: 100%; cursor: pointer; }
-    .admin-item-left input { width: 22px; height: 22px; margin-right: 10px; }
+    .admin-item-left input { width: 24px; height: 24px; margin: 0 10px 0 0; flex-shrink: 0; }
+    .admin-name { font-weight: bold; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; flex: 1; }
+    
     .admin-item-right { flex: 0 0 auto; display: flex; align-items: center; justify-content: flex-end; }
     .status-select { padding: 4px 8px; margin: 0; font-size: 0.85rem; width: auto; height: 32px; background: #fff; }
-    .pay-icon { font-size: 0.65rem; padding: 2px 5px; border-radius: 3px; margin-right: 4px; font-weight: bold; cursor: pointer; user-select: none; }
+    .pay-icon { font-size: 0.65rem; padding: 3px 6px; border-radius: 3px; margin-right: 6px; font-weight: bold; cursor: pointer; user-select: none; border: 1px solid rgba(0,0,0,0.1); }
     .pay-icon.pp { background: #ffeb3b; color: #333; }
     .pay-icon.cash { background: #e0e0e0; color: #555; }
-    .pay-status { font-size: 0.8rem; color: #666; white-space: nowrap; width: 40px; text-align: right; }
+    .pay-status { font-size: 0.8rem; color: #666; white-space: nowrap; width: 30px; text-align: right; }
     .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
     .admin-menu-btn { background: #fff; border: 1px solid #eee; padding: 20px; text-align: center; border-radius: 12px; cursor: pointer; user-select: none; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: background 0.1s; }
     .admin-menu-btn:active { background: #f0f0f0; transform: scale(0.98); }
@@ -115,6 +120,9 @@
 
               <div style="background:#f9f9f9; padding:15px; border-radius:8px; margin-bottom:15px;">
                 <h3 style="margin-top:0;">お支払い方法 (本人分)</h3>
+                <p class="small muted" style="margin-top:0; color:#06c755; font-weight:bold;">
+                  ※運営の負担軽減（小銭管理）のため、PayPay事前決済にご協力いただけると助かります🙇‍♂️
+                </p>
                 <label class="inline-label"><input type="radio" name="payMethod" value="advance" onchange="togglePayMethod()"><span>事前PayPay決済</span></label>
                 <div id="payDetail-advance" style="display:none; margin-left:10px; margin-bottom:15px;">
                    <div class="paypay-box">
@@ -162,11 +170,7 @@
               <h3 style="color:var(--accent);">運営: 集金</h3>
               <p class="small muted">受取済みにチェックして保存。<br>アイコン(P/現)タップで方法変更。</p>
               <div id="adminCollectionList"></div>
-              <div style="border-top:1px solid #eee; margin-top:10px; padding-top:10px; font-weight:bold; font-size:0.9rem;">
-                 回収済み計(円): <span style="color:#e0e0e0; background:#555; padding:2px 5px; border-radius:4px;">現</span> <span id="sumCash">0</span> / 
-                 <span style="color:#333; background:#ffeb3b; padding:2px 5px; border-radius:4px;">P</span> <span id="sumPayPay">0</span>
-              </div>
-              <button class="btn-accent" style="margin-top:10px;" onclick="saveCollection()">集金状況を保存</button>
+              <button class="btn-accent" style="margin-top:15px;" onclick="saveCollection()">集金状況を保存</button>
             </div>
           </div>
           
@@ -189,20 +193,13 @@
             <label>区分</label><select id="myCat"><option value="adult">社会人</option><option value="college">大学生</option><option value="student">高校生以下</option></select>
             <button class="btn-primary" onclick="saveProfile()">保存する</button>
           </div>
-          <div id="demoRoleSwitcher" style="display:none; margin-top:15px; border-top:1px dashed #ccc; padding-top:10px;">
-            <p class="small" style="font-weight:bold; color:#f0ad4e;">【デモ】権限切り替え</p>
-            <div style="display:flex; gap:5px;">
-              <button class="btn-outline btn-sm" onclick="setDemoRole('member')">一般</button>
-              <button class="btn-outline btn-sm" onclick="setDemoRole('sub_admin')">準管理</button>
-              <button class="btn-outline btn-sm" onclick="setDemoRole('admin')">管理</button>
-            </div>
-          </div>
-          <div id="demoDataGen" style="display:none; margin-top:10px;">
-             <button class="btn-danger btn-sm" onclick="genDebugData()">[Demo] ダミーデータ生成</button>
-          </div>
         </div>
         <div class="card"><h2>今月の参加数 <span id="periodMonth" class="small muted" style="font-weight:normal;"></span></h2><table id="rankMonth"><tr><td>Loading...</td></tr></table></div>
         <div class="card"><h2>今年の参加数 <span id="periodYear" class="small muted" style="font-weight:normal;"></span></h2><table id="rankYear"><tr><td>Loading...</td></tr></table></div>
+        <div id="debugAdminArea" class="card" style="display:none; border:2px dashed red;">
+          <h2 style="color:red;">デバッグ</h2>
+          <button class="btn-danger" onclick="genDebugData()">ダミーデータ生成</button>
+        </div>
       </div>
 
       <div id="view-admin-menu" class="view-section">
@@ -274,7 +271,6 @@
         </div>
       </div>
     </div>
-
     <div class="bottom-nav">
       <div class="nav-item active" onclick="navigateTo('register')" id="nav-register"><span class="nav-icon">📅</span>登録</div>
       <div class="nav-item" onclick="navigateTo('day')" id="nav-day"><span class="nav-icon">🏸</span>当日</div>
@@ -284,18 +280,15 @@
   </div>
 
   <script>
-    // --- 1. GLOBALS & CONFIG ---
     const API_URL = 'https://script.google.com/macros/s/AKfycbx3QQMnnjQl-3bb77-HO9SVztNzaBpl8sXTHNBm7ydsLZMK50dlNqau-qHXU16HufrEBQ/exec';
     const LIFF_ID = '2008652596-Gew4K44V';
     const params = new URLSearchParams(window.location.search);
     const INIT_PAGE = params.get('page') || 'register';
-
     let state = { me: null, paypay: null, event: null, reg: null, participants: [], isDebug: false, feeConfig: {adult:800, college:600, student:500} };
     let loadedData = { future: false, ranking: false, admin: false };
     let rawAccountingList = [];
     let registeredDates = [];
 
-    // --- 2. FUNCTION DECLARATIONS ---
     function setBusy(isBusy) { document.getElementById('loading').style.display = isBusy ? 'flex' : 'none'; }
     async function callApi(action, data, isPost=false) {
       let url = `${API_URL}?action=${action}`;
@@ -303,11 +296,8 @@
       if(isPost) { opts.body = JSON.stringify(data); opts.headers = {'Content-Type':'text/plain'}; }
       else if(data) { Object.keys(data).forEach(k => url += `&${k}=${encodeURIComponent(data[k])}`); }
       const r = await fetch(url, opts);
-      const json = await r.json();
-      if(json.is_demo_mock) { alert('【デモモード】\nサーバーへの書き込みはスキップされました。\n(成功したように見せかけます)'); return { ok: true, data: {}, is_demo_mock: true }; }
-      return json;
+      return await r.json();
     }
-
     function navigateTo(viewId) {
       document.querySelectorAll('.view-section').forEach(el => el.classList.remove('view-active'));
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -323,7 +313,6 @@
       if(viewId.startsWith('admin') && !loadedData.admin) { setBusy(true); loadedData.admin = true; loadAdminData().then(()=>setBusy(false)); }
       if(viewId === 'day') checkDayAccess();
     }
-
     function initUI(isFirst) {
       if(state.me) {
         document.getElementById('myName').value = state.me.display_name;
@@ -357,7 +346,6 @@
     }
     window.setDemoRole = function(role) { state.me.role = role; alert(`権限を ${role} に変更しました。\n画面を更新します。`); ['subAdminArea','subAdminCollection','nav-admin','cancelEventArea'].forEach(id=>document.getElementById(id).style.display='none'); document.querySelector('.admin-menu-btn[onclick*="fees"]').style.display = ''; document.querySelector('.admin-menu-btn[onclick*="roles"]').style.display = ''; initUI(false); }
 
-    // --- ACTIONS ---
     window.saveAccounting = async function() { const amt=document.getElementById('accAmount').value; if(!amt)return alert('金額入力'); setBusy(true); await callApi('save_accounting',{type:document.getElementById('accType').value,wallet:document.getElementById('accWallet').value,amount:amt,desc:document.getElementById('accDesc').value},true); alert('保存'); loadAdminData(); setBusy(false); }
     window.saveTransfer = async function() { const amt=document.getElementById('trAmount').value; if(!amt)return alert('金額入力'); setBusy(true); await callApi('save_transfer',{amount:amt,from_wallet:document.getElementById('trFrom').value,to_wallet:document.getElementById('trTo').value},true); alert('移動'); loadAdminData(); setBusy(false); }
     window.saveFees = async function() { if(!confirm('保存?'))return; setBusy(true); await callApi('save_fee_config',{adult:document.getElementById('cfgAdult').value,college:document.getElementById('cfgCollege').value,student:document.getElementById('cfgStudent').value,capacity:document.getElementById('cfgCapacity').value},true); alert('保存'); setBusy(false); }
@@ -382,19 +370,6 @@
     window.togglePayIcon = function(pid) {
       const el = document.getElementById(`pay-icon-${pid}`); const next = (el.dataset.method === 'day_cash') ? 'day_paypay' : 'day_cash';
       el.dataset.method = next; el.className = next === 'day_paypay' ? 'pay-icon pp' : 'pay-icon cash'; el.innerText = next === 'day_paypay' ? 'P' : '現';
-      updateCollectionSum();
-    }
-    window.updateCollectionSum = function() {
-      let cash = 0, pp = 0;
-      document.querySelectorAll('.col-chk:checked').forEach(e => {
-        const pid = e.value;
-        const cat = e.dataset.category || 'adult';
-        const icon = document.getElementById(`pay-icon-${pid}`);
-        const method = icon ? icon.dataset.method : 'day_cash';
-        const fee = getFee(cat);
-        if (method === 'day_cash') cash += fee; else pp += fee;
-      });
-      document.getElementById('sumCash').innerText = cash; document.getElementById('sumPayPay').innerText = pp;
     }
     window.deleteLastRound = async function() { if(confirm('取消?')) { setBusy(true); await callApi('delete_round', { event_id: state.event.event_id }); loadDayData(); setBusy(false); } }
     window.manualAddUser = async function() { const n=prompt('名前:'); if(n) { setBusy(true); await callApi('manual_add_participant', { event_id: state.event.event_id, name: n }); loadDayData(); setBusy(false); } }
@@ -461,9 +436,8 @@
       document.getElementById('adminCollectionList').innerHTML = state.participants.map(p => {
         const isPaid = p.payment_status === 'paid' || p.payment_status === 'paid_advance';
         const method = p.payment_method || 'day_cash'; const icon = (method === 'advance' || method === 'day_paypay') ? '<span class="pay-icon pp">P</span>' : '<span class="pay-icon cash">現</span>'; const stTxt = isPaid ? '済' : '未払';
-        return `<div class="admin-list-item ${isPaid?'paid-row':''}"><div class="admin-item-left"><label><input type="checkbox" class="col-chk" value="${p.participant_id}" data-category="${p.category}" ${isPaid?'disabled checked':''} onchange="updateCollectionSum()"> <span class="admin-name">${p.name}</span></label></div><div class="admin-item-right"><span id="pay-icon-${p.participant_id}" class="${(method === 'advance' || method === 'day_paypay') ? 'pay-icon pp' : 'pay-icon cash'}" data-method="${method}" ${isPaid?'':`onclick="togglePayIcon('${p.participant_id}')"`}>${(method === 'advance' || method === 'day_paypay') ? 'P' : '現'}</span> <span class="pay-status">${stTxt}</span></div></div>`;
+        return `<div class="admin-list-item ${isPaid?'paid-row':''}"><div class="admin-item-left"><label><input type="checkbox" class="col-chk" value="${p.participant_id}" data-category="${p.category}" ${isPaid?'disabled checked':''}> <span class="admin-name">${p.name}</span></label></div><div class="admin-item-right"><span id="pay-icon-${p.participant_id}" class="${(method === 'advance' || method === 'day_paypay') ? 'pay-icon pp' : 'pay-icon cash'}" data-method="${method}" ${isPaid?'':`onclick="togglePayIcon('${p.participant_id}')"`}>${(method === 'advance' || method === 'day_paypay') ? 'P' : '現'}</span> <span class="pay-status">${stTxt}</span></div></div>`;
       }).join('');
-      updateCollectionSum();
     }
     async function loadAdminData() {
       setBusy(true); const res = await callApi('get_admin_init'); setBusy(false);
