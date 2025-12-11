@@ -8,6 +8,7 @@
   <meta property="og:description" content="練習の参加登録、PayPay支払い、コート抽選などができるアプリです。">
   <meta property="og:type" content="website">
   <style>
+    /* ... (CSSは前回と同じ。変更なし) ... */
     :root { --primary: #06c755; --bg: #f2f4f8; --card: #ffffff; --text: #333; --danger: #e53935; --gray: #888; --accent: #ff9800; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 90px; }
     .container { max-width: 600px; margin: 0 auto; padding: 15px; }
@@ -34,18 +35,14 @@
     .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; font-size: 0.9rem; }
     .btn-copy { padding: 6px 10px; font-size: 0.8rem; width: auto; margin: 0 0 0 8px; display: inline-block; }
     .btn-sm { width: auto; padding: 6px 12px; font-size: 0.8rem; margin: 0; border-radius: 4px; }
-    
-    /* Admin UI Fixed */
     .admin-list-item { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; padding: 12px 0; }
     .admin-item-left { flex: 1; display: flex; align-items: center; overflow: hidden; margin-right: 10px; min-width: 0; }
-    /* 集金画面の名前表示修正 */
     .admin-item-left label { display: flex; align-items: center; width: 100%; cursor: pointer; }
     .admin-item-left input { width: 24px; height: 24px; margin: 0 10px 0 0; flex-shrink: 0; }
     .admin-name { font-weight: bold; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; flex: 1; }
-    
     .admin-item-right { flex: 0 0 auto; display: flex; align-items: center; justify-content: flex-end; }
     .status-select { padding: 4px 8px; margin: 0; font-size: 0.85rem; width: auto; height: 32px; background: #fff; }
-    .pay-icon { font-size: 0.65rem; padding: 3px 6px; border-radius: 3px; margin-right: 6px; font-weight: bold; cursor: pointer; user-select: none; border: 1px solid rgba(0,0,0,0.1); }
+    .pay-icon { font-size: 0.65rem; padding: 3px 6px; border-radius: 4px; margin-right: 6px; font-weight: bold; cursor: pointer; user-select: none; border: 1px solid rgba(0,0,0,0.1); }
     .pay-icon.pp { background: #ffeb3b; color: #333; }
     .pay-icon.cash { background: #e0e0e0; color: #555; }
     .pay-status { font-size: 0.8rem; color: #666; white-space: nowrap; width: 30px; text-align: right; }
@@ -126,7 +123,7 @@
                 <label class="inline-label"><input type="radio" name="payMethod" value="advance" onchange="togglePayMethod()"><span>事前PayPay決済</span></label>
                 <div id="payDetail-advance" style="display:none; margin-left:10px; margin-bottom:15px;">
                    <div class="paypay-box">
-                     <strong>&lt;手順&gt;</strong><ol class="step-list"><li>下記 <strong>ID</strong> をコピー</li><li>PayPayアプリ > 送る > IDで送る</li><li>ID貼り付け > 検索</li><li>名義 <strong class="ppNameTarget">-</strong> を確認</li><li>金額入力 (<strong>メモもコピペ</strong>)</li><li>送金後、チェックを入れる</li></ol>
+                     <strong>&lt;手順&gt;</strong><ol class="step-list"><li>下記 <strong>ID</strong> をコピー</li><li>PayPayアプリ > 送る > IDで送る</li><li>ID貼り付け > 検索</li><li>名義 <strong class="ppNameTarget">-</strong> を確認</li><li>金額入力 (<strong>下記のメモはコピーしてメッセージに貼り付け</strong>)</li><li>送金後、下記「送金しました」にチェックを入れる</li></ol>
                      <div>ID: <span class="ppId" style="font-weight:bold;">-</span> <button type="button" class="btn-outline btn-copy" onclick="copyText('ppId')">コピー</button></div>
                      <div style="margin-top:8px; display:flex;"><input type="text" id="ppMsg" readonly style="margin:0; font-size:0.8rem; background:#fff; flex:1;"><button type="button" class="btn-outline btn-copy" onclick="copyText('ppMsg')">メモコピー</button></div>
                    </div>
@@ -170,7 +167,7 @@
               <h3 style="color:var(--accent);">運営: 集金</h3>
               <p class="small muted">受取済みにチェックして保存。<br>アイコン(P/現)タップで方法変更。</p>
               <div id="adminCollectionList"></div>
-              <button class="btn-accent" style="margin-top:15px;" onclick="saveCollection()">集金状況を保存</button>
+              <button class="btn-accent" style="margin-top:10px;" onclick="saveCollection()">集金状況を保存</button>
             </div>
           </div>
           
@@ -193,13 +190,20 @@
             <label>区分</label><select id="myCat"><option value="adult">社会人</option><option value="college">大学生</option><option value="student">高校生以下</option></select>
             <button class="btn-primary" onclick="saveProfile()">保存する</button>
           </div>
+          <div id="demoRoleSwitcher" style="display:none; margin-top:15px; border-top:1px dashed #ccc; padding-top:10px;">
+            <p class="small" style="font-weight:bold; color:#f0ad4e;">【デモ】権限切り替え</p>
+            <div style="display:flex; gap:5px;">
+              <button class="btn-outline btn-sm" onclick="setDemoRole('member')">一般</button>
+              <button class="btn-outline btn-sm" onclick="setDemoRole('sub_admin')">準管理</button>
+              <button class="btn-outline btn-sm" onclick="setDemoRole('admin')">管理</button>
+            </div>
+          </div>
+          <div id="demoDataGen" style="display:none; margin-top:10px;">
+             <button class="btn-danger btn-sm" onclick="genDebugData()">[Demo] ダミーデータ生成</button>
+          </div>
         </div>
         <div class="card"><h2>今月の参加数 <span id="periodMonth" class="small muted" style="font-weight:normal;"></span></h2><table id="rankMonth"><tr><td>Loading...</td></tr></table></div>
         <div class="card"><h2>今年の参加数 <span id="periodYear" class="small muted" style="font-weight:normal;"></span></h2><table id="rankYear"><tr><td>Loading...</td></tr></table></div>
-        <div id="debugAdminArea" class="card" style="display:none; border:2px dashed red;">
-          <h2 style="color:red;">デバッグ</h2>
-          <button class="btn-danger" onclick="genDebugData()">ダミーデータ生成</button>
-        </div>
       </div>
 
       <div id="view-admin-menu" class="view-section">
@@ -242,6 +246,7 @@
           </div>
         </div>
       </div>
+
       <div id="view-admin-sched" class="view-section">
         <button class="btn-outline btn-sm" onclick="navigateTo('admin-menu')">← 戻る</button>
         <div class="card" style="margin-top:10px;">
@@ -251,6 +256,7 @@
           <button class="btn-primary" onclick="saveSchedule()">選択した日程を登録/削除</button>
         </div>
       </div>
+
       <div id="view-admin-fees" class="view-section">
         <button class="btn-outline btn-sm" onclick="navigateTo('admin-menu')">← 戻る</button>
         <div class="card" style="margin-top:10px;">
@@ -262,6 +268,7 @@
           <button class="btn-primary" onclick="saveFees()">設定を保存</button>
         </div>
       </div>
+
       <div id="view-admin-roles" class="view-section">
         <button class="btn-outline btn-sm" onclick="navigateTo('admin-menu')">← 戻る</button>
         <div class="card" style="margin-top:10px;">
@@ -271,6 +278,7 @@
         </div>
       </div>
     </div>
+
     <div class="bottom-nav">
       <div class="nav-item active" onclick="navigateTo('register')" id="nav-register"><span class="nav-icon">📅</span>登録</div>
       <div class="nav-item" onclick="navigateTo('day')" id="nav-day"><span class="nav-icon">🏸</span>当日</div>
@@ -280,15 +288,18 @@
   </div>
 
   <script>
+    // --- 1. GLOBALS & CONFIG ---
     const API_URL = 'https://script.google.com/macros/s/AKfycbx3QQMnnjQl-3bb77-HO9SVztNzaBpl8sXTHNBm7ydsLZMK50dlNqau-qHXU16HufrEBQ/exec';
     const LIFF_ID = '2008652596-Gew4K44V';
     const params = new URLSearchParams(window.location.search);
     const INIT_PAGE = params.get('page') || 'register';
+
     let state = { me: null, paypay: null, event: null, reg: null, participants: [], isDebug: false, feeConfig: {adult:800, college:600, student:500} };
     let loadedData = { future: false, ranking: false, admin: false };
     let rawAccountingList = [];
     let registeredDates = [];
 
+    // --- 2. FUNCTION DECLARATIONS ---
     function setBusy(isBusy) { document.getElementById('loading').style.display = isBusy ? 'flex' : 'none'; }
     async function callApi(action, data, isPost=false) {
       let url = `${API_URL}?action=${action}`;
@@ -296,7 +307,9 @@
       if(isPost) { opts.body = JSON.stringify(data); opts.headers = {'Content-Type':'text/plain'}; }
       else if(data) { Object.keys(data).forEach(k => url += `&${k}=${encodeURIComponent(data[k])}`); }
       const r = await fetch(url, opts);
-      return await r.json();
+      const json = await r.json();
+      if(json.is_demo_mock) { alert('【デモモード】\nサーバーへの書き込みはスキップされました。\n(成功したように見せかけます)'); return { ok: true, data: {}, is_demo_mock: true }; }
+      return json;
     }
     function navigateTo(viewId) {
       document.querySelectorAll('.view-section').forEach(el => el.classList.remove('view-active'));
@@ -438,6 +451,7 @@
         const method = p.payment_method || 'day_cash'; const icon = (method === 'advance' || method === 'day_paypay') ? '<span class="pay-icon pp">P</span>' : '<span class="pay-icon cash">現</span>'; const stTxt = isPaid ? '済' : '未払';
         return `<div class="admin-list-item ${isPaid?'paid-row':''}"><div class="admin-item-left"><label><input type="checkbox" class="col-chk" value="${p.participant_id}" data-category="${p.category}" ${isPaid?'disabled checked':''}> <span class="admin-name">${p.name}</span></label></div><div class="admin-item-right"><span id="pay-icon-${p.participant_id}" class="${(method === 'advance' || method === 'day_paypay') ? 'pay-icon pp' : 'pay-icon cash'}" data-method="${method}" ${isPaid?'':`onclick="togglePayIcon('${p.participant_id}')"`}>${(method === 'advance' || method === 'day_paypay') ? 'P' : '現'}</span> <span class="pay-status">${stTxt}</span></div></div>`;
       }).join('');
+      // No sum calculation here anymore
     }
     async function loadAdminData() {
       setBusy(true); const res = await callApi('get_admin_init'); setBusy(false);
