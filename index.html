@@ -162,10 +162,7 @@
                  回収済み計(円): <span style="color:#e0e0e0; background:#555; padding:2px 5px; border-radius:4px;">現</span> <span id="sumCash">0</span> / 
                  <span style="color:#333; background:#ffeb3b; padding:2px 5px; border-radius:4px;">P</span> <span id="sumPayPay">0</span>
               </div>
-              <div style="display:flex; gap:10px; margin-top:15px;">
-                <button class="btn-outline btn-sm" onclick="manualAddUser()">+ 追加</button>
-                <button class="btn-accent" style="flex:1; margin:0;" onclick="saveCollection()">集金状況を保存</button>
-              </div>
+              <button class="btn-accent" style="margin-top:10px;" onclick="saveCollection()">集金状況を保存</button>
             </div>
           </div>
           <div class="card" id="dayPayInfo" style="display:none;">
@@ -286,7 +283,7 @@
     const params = new URLSearchParams(window.location.search);
     const INIT_PAGE = params.get('page') || 'register';
 
-    let state = { me: null, paypay: null, event: null, reg: null, participants: [], isDemo: false, feeConfig: {adult:800, college:600, student:500} };
+    let state = { me: null, paypay: null, event: null, reg: null, participants: [], isDemo: false, feeConfig: {adult:800, college:600, student:500}, realRole: null };
     let loadedData = { future: false, ranking: false, admin: false };
     let rawAccountingList = [];
     let registeredDates = [];
@@ -349,7 +346,7 @@
       if(state.isDemo) {
         document.getElementById('demoRibbon').style.display='block';
         document.getElementById('demoRoleSwitcher').style.display='block';
-        if(['admin','sub_admin'].includes(state.me.role)) document.getElementById('demoDataGen').style.display='block';
+        if(state.realRole === 'admin') document.getElementById('demoDataGen').style.display='block';
       }
       setBusy(false);
       document.getElementById('app').style.display = 'block';
@@ -432,38 +429,7 @@
       document.getElementById('sumCash').innerText = cash; document.getElementById('sumPayPay').innerText = pp;
     }
     window.deleteLastRound = async function() { if(confirm('取消?')) { setBusy(true); await callApi('delete_round', { event_id: state.event.event_id }); loadDayData(); setBusy(false); } }
-    // ★変更: モーダルで名前と区分を入力させる
-    window.manualAddUser = function() {
-      const html = `
-        <div style="text-align:left;">
-          <label style="font-weight:bold; display:block; margin-bottom:5px;">名前</label>
-          <input type="text" id="manualName" placeholder="ゲスト名" style="width:100%; margin-bottom:15px;">
-          <label style="font-weight:bold; display:block; margin-bottom:5px;">区分</label>
-          <select id="manualCat" style="width:100%; margin-bottom:20px;">
-            <option value="adult">社会人</option>
-            <option value="college">大学生</option>
-            <option value="student">高校生</option>
-          </select>
-          <button class="btn-primary" onclick="submitManualAdd()">追加する</button>
-        </div>
-      `;
-      document.getElementById('modalTitle').innerText = '手動追加';
-      document.getElementById('modalContent').innerHTML = html;
-      document.getElementById('infoModal').style.display = 'flex';
-    }
-
-    // ★追加: 手動追加実行関数
-    window.submitManualAdd = async function() {
-      const name = document.getElementById('manualName').value;
-      const cat = document.getElementById('manualCat').value;
-      if(!name) return alert('名前を入力してください');
-      
-      setBusy(true);
-      await callApi('manual_add_participant', { event_id: state.event.event_id, name: name, category: cat });
-      document.getElementById('infoModal').style.display = 'none';
-      loadDayData();
-      setBusy(false);
-    }
+    window.manualAddUser = async function() { const n=prompt('名前:'); if(n) { setBusy(true); await callApi('manual_add_participant', { event_id: state.event.event_id, name: n }); loadDayData(); setBusy(false); } }
     window.genDebugData = async function() { if(confirm('生成?')) { setBusy(true); await callApi('generate_debug', {}, true); alert('完了'); location.reload(); } }
     window.togglePayMethod = function() { const val=document.querySelector('input[name="payMethod"]:checked')?.value; document.getElementById('payDetail-advance').style.display=(val==='advance')?'block':'none'; }
     window.submitRegistration = async function() {
@@ -563,10 +529,10 @@
         if (!userRes.exists) {
           await callApi('upsert_member', { lineUserId: profile.userId, display_name: profile.displayName }, true);
           const retry = await callApi('get_me', { lineUserId: profile.userId });
-          state.me = retry.member; state.paypay = userRes.paypay_config;
+          state.me = retry.member; state.realRole = retry.member.role; state.paypay = userRes.paypay_config;
           initUI(true);
         } else {
-          state.me = userRes.member; state.paypay = userRes.paypay_config; initUI(false);
+          state.me = userRes.member; state.realRole = userRes.member.role; state.paypay = userRes.paypay_config; initUI(false);
         }
         if(weekRes.event) {
           state.event = weekRes.event;
