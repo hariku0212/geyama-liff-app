@@ -116,7 +116,7 @@
                 <label class="inline-label"><input type="radio" name="payMethod" value="advance" onchange="togglePayMethod()"><span>事前PayPay決済</span></label>
                 <div id="payDetail-advance" style="display:none; margin-left:10px; margin-bottom:15px;">
                    <div class="paypay-box">
-                     <strong>&lt;手順&gt;</strong><ol class="step-list"><li>下記 <strong>ID</strong> をコピー</li><li>PayPayアプリ > 送る > IDで送る</li><li>ID貼り付け > 検索</li><li>名義 <strong class="ppNameTarget">-</strong> を確認</li><li>金額入力 (<strong>メモもコピペ</strong>)</li><li>送金後、チェックを入れる</li></ol>
+                     <strong>&lt;手順&gt;</strong><ol class="step-list"><li>下記 <strong>ID</strong> をコピー</li><li>PayPayアプリ > 送る > IDで送る</li><li>ID貼り付け > 検索</li><li>名義が <strong class="ppNameTarget">-</strong> であることを確認</li><li>金額入力</li><li>下記のメモ(練習日程と名前)をコピーしてメッセージに貼り付けて送金</li><li>送金後、下の「送金しました」にチェックを入れる</li></ol>
                      <div>ID: <span class="ppId" style="font-weight:bold;">-</span> <button type="button" class="btn-outline btn-copy" onclick="copyText('ppId')">コピー</button></div>
                      <div style="margin-top:8px; display:flex;"><input type="text" id="ppMsg" readonly style="margin:0; font-size:0.8rem; background:#fff; flex:1;"><button type="button" class="btn-outline btn-copy" onclick="copyText('ppMsg')">メモコピー</button></div>
                    </div>
@@ -162,7 +162,10 @@
                  回収済み計(円): <span style="color:#e0e0e0; background:#555; padding:2px 5px; border-radius:4px;">現</span> <span id="sumCash">0</span> / 
                  <span style="color:#333; background:#ffeb3b; padding:2px 5px; border-radius:4px;">P</span> <span id="sumPayPay">0</span>
               </div>
-              <button class="btn-accent" style="margin-top:10px;" onclick="saveCollection()">集金状況を保存</button>
+              <div style="display:flex; gap:10px; margin-top:15px;">
+                <button class="btn-outline btn-sm" onclick="manualAddUser()">+ 追加</button>
+                <button class="btn-accent" style="flex:1; margin:0;" onclick="saveCollection()">集金状況を保存</button>
+              </div>
             </div>
           </div>
           <div class="card" id="dayPayInfo" style="display:none;">
@@ -429,7 +432,38 @@
       document.getElementById('sumCash').innerText = cash; document.getElementById('sumPayPay').innerText = pp;
     }
     window.deleteLastRound = async function() { if(confirm('取消?')) { setBusy(true); await callApi('delete_round', { event_id: state.event.event_id }); loadDayData(); setBusy(false); } }
-    window.manualAddUser = async function() { const n=prompt('名前:'); if(n) { setBusy(true); await callApi('manual_add_participant', { event_id: state.event.event_id, name: n }); loadDayData(); setBusy(false); } }
+    // ★変更: モーダルで名前と区分を入力させる
+    window.manualAddUser = function() {
+      const html = `
+        <div style="text-align:left;">
+          <label style="font-weight:bold; display:block; margin-bottom:5px;">名前</label>
+          <input type="text" id="manualName" placeholder="ゲスト名" style="width:100%; margin-bottom:15px;">
+          <label style="font-weight:bold; display:block; margin-bottom:5px;">区分</label>
+          <select id="manualCat" style="width:100%; margin-bottom:20px;">
+            <option value="adult">社会人</option>
+            <option value="college">大学生</option>
+            <option value="student">高校生</option>
+          </select>
+          <button class="btn-primary" onclick="submitManualAdd()">追加する</button>
+        </div>
+      `;
+      document.getElementById('modalTitle').innerText = '手動追加';
+      document.getElementById('modalContent').innerHTML = html;
+      document.getElementById('infoModal').style.display = 'flex';
+    }
+
+    // ★追加: 手動追加実行関数
+    window.submitManualAdd = async function() {
+      const name = document.getElementById('manualName').value;
+      const cat = document.getElementById('manualCat').value;
+      if(!name) return alert('名前を入力してください');
+      
+      setBusy(true);
+      await callApi('manual_add_participant', { event_id: state.event.event_id, name: name, category: cat });
+      document.getElementById('infoModal').style.display = 'none';
+      loadDayData();
+      setBusy(false);
+    }
     window.genDebugData = async function() { if(confirm('生成?')) { setBusy(true); await callApi('generate_debug', {}, true); alert('完了'); location.reload(); } }
     window.togglePayMethod = function() { const val=document.querySelector('input[name="payMethod"]:checked')?.value; document.getElementById('payDetail-advance').style.display=(val==='advance')?'block':'none'; }
     window.submitRegistration = async function() {
