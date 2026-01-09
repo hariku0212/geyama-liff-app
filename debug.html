@@ -2,11 +2,8 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <title>ゲヤマクラブ</title>
+  <title>ゲヤマクラブ(DEBUG)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-  <meta property="og:title" content="ゲヤマクラブアプリ">
-  <meta property="og:description" content="練習の参加登録、PayPay支払い、コート抽選などができるアプリです。">
-  <meta property="og:type" content="website">
   <style>
     /* --- CSS (index.htmlと完全に同一) --- */
     :root { --primary: #06c755; --bg: #f2f4f8; --card: #ffffff; --text: #333; --danger: #e53935; --gray: #888; --accent: #ff9800; }
@@ -73,8 +70,7 @@
     .past-item:active { background: #e0e0e0; transform: scale(0.98); }
     .past-arrow { font-weight: bold; color: #ccc; }
     #restrictedMsg { text-align: center; padding: 40px 0; color: #888; }
-    #debugLog { background: #333; color: #0f0; padding: 10px; font-family: monospace; font-size: 0.8rem; margin-bottom: 20px; border-radius: 8px; display: none; }
-    #demoRibbon { position:fixed; top:0; right:0; background:#f0ad4e; color:white; font-size:0.7rem; padding:3px 15px; z-index:10000; display:none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    #demoRibbon { position:fixed; top:0; left:0; right:0; background:#d9534f; color:white; font-size:0.75rem; text-align:center; padding:4px; z-index:10000; font-weight:bold; }
     .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1500; display:none; justify-content:center; align-items:center; }
     .modal { background:#fff; padding:20px; border-radius:12px; width:90%; max-width:400px; max-height:85%; overflow-y:auto; }
   </style>
@@ -83,10 +79,9 @@
 <body>
   <div id="loading">
     <img src="fig/shuttle.png" class="shuttle-img" onerror="this.style.display='none';">
-    <div style="margin-top:15px; font-weight:bold; color:#06c755;">Loading...</div>
+    <div style="margin-top:15px; font-weight:bold; color:#06c755;">Debug Loading...</div>
   </div>
-  <div id="debugLog"></div>
-  <div id="demoRibbon" style="display:block; background:#d9534f;">DEBUG MODE (NO SAVE)</div>
+  <div id="demoRibbon">DEBUG MODE (DATA NOT SAVED)</div>
 
   <div id="infoModal" class="modal-overlay" onclick="closeModal()"><div class="modal" onclick="event.stopPropagation()"><h3 id="modalTitle">詳細</h3><div id="modalContent"></div><button class="btn-outline" onclick="closeModal()" style="margin-top:15px; width:100%;">閉じる</button></div></div>
 
@@ -95,28 +90,32 @@
       <div id="view-register" class="view-section">
         <div class="card">
           <h2>今週の練習</h2>
-          <div id="thisWeekInfo"><p class="muted">募集中の練習はありません。</p></div>
+          <div id="thisWeekInfo"></div>
           <div id="regFormArea" style="display:none; margin-top:15px;">
             <div id="regStatusBadge" class="badge bg-gray" style="display:inline-block; margin-bottom:10px;">未登録</div>
             <div style="margin-bottom:15px; font-size:0.9rem;">
-              <span class="muted">現在の参加者:</span> <span id="currentParticipantsCount">0</span>名<br>
-              <div id="regMembersList" style="margin-top:5px; font-size:0.8rem;"></div>
+              <span class="muted">現在の参加者:</span> <span id="currentParticipantsCount">2</span>名<br>
+              <div id="regMembersList" style="margin-top:5px; font-size:0.8rem;">
+                <span class="member-list-chip">はりく</span><span class="member-list-chip">メンバーA</span>
+              </div>
             </div>
             <form id="regForm">
               <label class="inline-label"><input type="checkbox" id="friendToggle" onchange="toggleGuests()"><span>友達を連れていく</span></label>
+              
               <div id="guestSection" style="display:none; background:#f9f9f9; padding:10px; border-radius:8px; margin-bottom:10px;">
                 <label>人数: <input type="number" id="guestCount" min="0" max="5" value="0" onchange="renderGuestInputs()"></label>
-                <div id="guestInputs"></div>
-                <div class="small muted" style="margin-top:10px; color:#c62828;"><strong>【友達分の支払い】</strong> 友達の分は「当日 現金」または「当日 PayPay」でお願いします。</div>
+                <div id="guestInputs"></div> <div class="small muted" style="margin-top:10px; color:#c62828;"><strong>【友達分の支払い】</strong> 友達の分は「当日 現金」または「当日 PayPay」でお願いします。</div>
               </div>
+
               <div id="feeDisplay" style="text-align:center; font-weight:bold; color:var(--primary); margin:15px 0;">支払金額: - 円</div>
+              
               <div style="background:#f9f9f9; padding:15px; border-radius:8px; margin-bottom:15px;">
                 <h3 style="margin-top:0;">お支払い方法 (本人分)</h3>
                 <p class="small muted" style="margin-top:0; color:#06c755; font-weight:bold;">※運営の負担軽減のため、PayPay事前決済にご協力ください🙇‍♂️</p>
                 <label class="inline-label"><input type="radio" name="payMethod" value="advance" onchange="togglePayMethod()"><span>事前PayPay決済</span></label>
                 <div id="payDetail-advance" style="display:none; margin-left:10px; margin-bottom:15px;">
                    <div class="paypay-box">
-                     <strong>&lt;手順&gt;</strong><ol class="step-list"><li>下記 <strong>ID</strong> をコピー</li><li>PayPayアプリ > 送る > IDで送る</li><li>ID貼り付け > 検索</li><li>名義が <strong class="ppNameTarget">-</strong> であることを確認</li><li>金額入力</li><li>下記のメモ(練習日程と名前)をコピーしてメッセージに貼り付けて送金</li><li>送金後、下の「送金しました」にチェックを入れる</li></ol>
+                     <strong>&lt;手順&gt;</strong><ol class="step-list"><li>下記 <strong>ID</strong> をコピー</li><li>PayPayアプリ > 送る > IDで送る</li><li>ID貼り付け > 検索</li><li>名義が <strong class="ppNameTarget">-</strong> であることを確認</li><li>金額入力</li><li>下記のメモをコピーしてメッセージに貼り付けて送金</li><li>送金後、下の「送金しました」にチェックを入れる</li></ol>
                      <div>ID: <span class="ppId" style="font-weight:bold;">-</span> <button type="button" class="btn-outline btn-copy" onclick="copyText('ppId')">コピー</button></div>
                      <div style="margin-top:8px; display:flex;"><input type="text" id="ppMsg" readonly style="margin:0; font-size:0.8rem; background:#fff; flex:1;"><button type="button" class="btn-outline btn-copy" onclick="copyText('ppMsg')">メモコピー</button></div>
                    </div>
@@ -129,275 +128,180 @@
               <button type="button" id="btnCancel" class="btn-danger" style="display:none;" onclick="cancelRegistration()">キャンセル</button>
             </form>
           </div>
-          <div id="cancelEventArea" style="display:none; margin-top:20px; text-align:right;">
-            <button class="btn-outline btn-sm" style="color:var(--danger); border-color:var(--danger);" onclick="cancelEvent()">練習を中止にする</button>
-          </div>
-        </div>
-        <div id="lazyRegister" style="display:none;">
-          <div class="card"><h2>今後の予定</h2><div id="futureList" class="small">読み込み中...</div></div>
-          <div class="card"><h2>過去の練習</h2><div id="pastList" class="small">読み込み中...</div></div>
         </div>
       </div>
 
       <div id="view-day" class="view-section">
-        <div id="dayContent" style="display:none;">
-          <div id="subAdminArea" style="display:none;">
+        <div id="dayContent" style="display:block;">
+          <div id="subAdminArea" style="display:block;">
             <div class="card" style="border-left: 5px solid var(--danger);">
               <h3 style="color:var(--danger); margin:0 0 10px;">運営: 抽選</h3>
               <div id="adminLotteryList"></div>
               <div style="margin-top:15px; display:flex; gap:10px;">
-                <button class="btn-outline btn-sm" onclick="manualAddUser()">+ 追加</button>
+                <button class="btn-outline btn-sm" onclick="alert('デバッグ：ユーザー追加')">+ 追加</button>
                 <button class="btn-danger" style="flex:1; margin:0;" onclick="executeLottery()">抽選実行</button>
               </div>
-              <div style="text-align:right; margin-top:10px;"><button class="btn-outline btn-sm" style="color:#888; border-color:#ccc;" onclick="deleteLastRound()">直前取消</button></div>
             </div>
           </div>
           <div class="card"><h2>本日の練習</h2><div id="dayLotteryResult"><p>抽選結果はまだありません。</p></div></div>
-          <div id="subAdminCollection" style="display:none;">
-            <div class="card" style="border-left: 5px solid var(--accent);">
-              <h3 style="color:var(--accent);">運営: 集金</h3>
-              <p class="small muted">受取済みにチェックして保存。<br>アイコン(P/現)タップで方法変更。</p>
-              <div id="adminCollectionList"></div>
-              <div style="border-top:1px solid #eee; margin-top:10px; padding-top:10px; font-weight:bold; font-size:0.9rem;">
-                  回収済み計(円): <span style="color:#e0e0e0; background:#555; padding:2px 5px; border-radius:4px;">現</span> <span id="sumCash">0</span> / 
-                  <span style="color:#333; background:#ffeb3b; padding:2px 5px; border-radius:4px;">P</span> <span id="sumPayPay">0</span>
-              </div>
-              <button class="btn-accent" style="margin-top:10px;" onclick="saveCollection()">集金状況を保存</button>
-            </div>
-          </div>
-          <div class="card" id="dayPayInfo" style="display:none;">
-            <h2>当日PayPay支払い</h2>
-            <div class="paypay-box">
-              <strong>&lt;手順&gt;</strong><ol class="step-list"><li>ID <strong class="ppId">-</strong> コピー</li><li>PayPayで送金</li><li>名義 <strong class="ppNameTarget">-</strong> 確認</li><li>金額入力 (<strong>メモに名前</strong>)</li><li><span style="color:red;font-weight:bold;">完了画面を担当者に見せる</span></li></ol>
-              <div>ID: <span class="ppId" style="font-weight:bold;">-</span> <button class="btn-outline btn-copy" onclick="copyText('ppId')">コピー</button></div>
-            </div>
-          </div>
         </div>
-        <div id="restrictedMsg" style="text-align:center; padding:50px 0;"><h3>時間外です</h3><p class="muted">当日メニューは練習日の<br>17:30〜22:00のみ利用可能です。</p></div>
       </div>
 
       <div id="view-mypage" class="view-section">
         <div class="card">
           <h2>設定</h2>
-          <div style="margin-bottom:15px;">
-            <label>表示名</label><input type="text" id="myName">
-            <label>区分</label><select id="myCat"><option value="adult">社会人</option><option value="college">大学生</option><option value="student">高校生以下</option></select>
-            <button class="btn-primary" onclick="saveProfile()">保存する</button>
-          </div>
-          <div id="demoRoleSwitcher" style="display:none; margin-top:15px; border-top:1px dashed #ccc; padding-top:10px;">
-            <p class="small" style="font-weight:bold; color:#f0ad4e;">【デモ】権限切り替え</p>
-            <div style="display:flex; gap:5px;">
-              <button class="btn-outline btn-sm" onclick="setDemoRole('member')">一般</button>
-              <button class="btn-outline btn-sm" onclick="setDemoRole('sub_admin')">準管理</button>
-              <button class="btn-outline btn-sm" onclick="setDemoRole('admin')">管理</button>
-            </div>
-          </div>
-          <div id="demoDataGen" style="display:none; margin-top:10px;">
-             <button class="btn-danger btn-sm" onclick="genDebugData()">[Demo] ダミーデータ生成</button>
-          </div>
-        </div>
-        <div class="card"><h2>今月の参加数 <span id="periodMonth" class="small muted" style="font-weight:normal;"></span></h2><table id="rankMonth"><tr><td>Loading...</td></tr></table></div>
-        <div class="card"><h2>今年の参加数 <span id="periodYear" class="small muted" style="font-weight:normal;"></span></h2><table id="rankYear"><tr><td>Loading...</td></tr></table></div>
-      </div>
-
-      <div id="view-admin-menu" class="view-section">
-        <div class="admin-grid">
-          <div class="admin-menu-btn" onclick="navigateTo('admin-acc')"><span class="admin-icon">💰</span><br><span class="admin-label">帳簿</span></div>
-          <div class="admin-menu-btn" onclick="navigateTo('admin-sched')"><span class="admin-icon">📅</span><br><span class="admin-label">日程登録</span></div>
-          <div class="admin-menu-btn" onclick="navigateTo('admin-fees')"><span class="admin-icon">🏷️</span><br><span class="admin-label">会費・定員</span></div>
-          <div class="admin-menu-btn" onclick="navigateTo('admin-roles')"><span class="admin-icon">🔑</span><br><span class="admin-label">権限設定</span></div>
+          <label>表示名</label><input type="text" id="myName" value="はりく">
+          <label>区分</label><select id="myCat"><option value="adult" selected>社会人</option><option value="college">大学生</option></select>
+          <button class="btn-primary" onclick="alert('デバッグ：保存完了')">保存する</button>
         </div>
       </div>
-      <div id="view-admin-acc" class="view-section">
-        <button class="btn-outline btn-sm" onclick="navigateTo('admin-menu')">← 戻る</button>
-        <div class="card" style="margin-top:10px;">
-          <h2>帳簿</h2>
-          <div id="accSummary" style="margin-bottom:15px; font-weight:bold; background:#e3f2fd; padding:10px; border-radius:8px;">Loading...</div>
-          <div style="display:flex; gap:10px; margin-bottom:15px;">
-            <button class="btn-outline" style="flex:1;" onclick="document.getElementById('accListArea').style.display='block';document.getElementById('accEntryArea').style.display='none';">履歴確認</button>
-            <button class="btn-outline" style="flex:1;" id="btnAccEntry" onclick="document.getElementById('accListArea').style.display='none';document.getElementById('accEntryArea').style.display='block';">記帳・移動</button>
-          </div>
-          <div id="accListArea"><div id="adminAccList" class="small"></div></div>
-          <div id="accEntryArea" style="display:none;">
-            <h3>収支入力</h3>
-            <select id="accType"><option value="expense">支出</option><option value="income">収入</option></select>
-            <input type="number" id="accAmount" placeholder="金額">
-            <button class="btn-primary" onclick="saveAccounting()">保存(モック)</button>
-          </div>
-        </div>
-      </div>
-      </div>
+    </div>
 
     <div class="bottom-nav">
       <div class="nav-item active" onclick="navigateTo('register')" id="nav-register"><span class="nav-icon">📅</span>登録</div>
       <div class="nav-item" onclick="navigateTo('day')" id="nav-day"><span class="nav-icon">🏸</span>当日</div>
       <div class="nav-item" onclick="navigateTo('mypage')" id="nav-mypage"><span class="nav-icon">👤</span>マイページ</div>
-      <div class="nav-item" onclick="navigateTo('admin-menu')" id="nav-admin" style="display:none;"><span class="nav-icon">⚙️</span>管理</div>
     </div>
   </div>
 
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbx3QQMnnjQl-3bb77-HO9SVztNzaBpl8sXTHNBm7ydsLZMK50dlNqau-qHXU16HufrEBQ/exec';
     const LIFF_ID = '2008652596-Gew4K44V';
-    const params = new URLSearchParams(window.location.search);
-    const INIT_PAGE = params.get('page') || 'register';
-
-    // stateもindex.htmlと同じ構造を維持。初期値をダミー撮影用にセット。
-    let state = { me: null, paypay: null, event: null, reg: null, participants: [], isDemo: true, feeConfig: {adult:800, college:600, student:500}, realRole: 'admin' };
-    let loadedData = { future: false, ranking: false, admin: false };
-    let rawAccountingList = [];
-    let registeredDates = [];
-
-    function setBusy(isBusy) { document.getElementById('loading').style.display = isBusy ? 'flex' : 'none'; }
-
-    // ★修正ポイント: callApiでPOSTを遮断し、ダミーデータを返す
-    async function callApi(action, data, isPost=false) {
-      console.log(`[Debug API] ${action}`, data);
-      
-      // 書き込み系はすべて擬似成功
-      if(isPost) {
-        return new Promise(res => setTimeout(() => res({ ok: true, is_demo_mock: true }), 500));
-      }
-
-      // 読み込み系：撮影に必要な最低限のダミー情報を返す
-      if(action === 'get_me') {
-        return { exists: true, member: { line_user_id: 'debug_id', display_name: 'はりく', category: 'adult', role: 'admin' }, paypay_config: { id: 'debug_pay_id', receiver: 'ハシモト リク' }, is_demo: true };
-      }
-      if(action === 'get_this_week') {
-        return { event: { event_id: 'e1', date_str: '2026-01-11 (日)', start_time: '18:00', end_time: '21:00' }, registrations: [{name:'橋本', guests:0}, {name:'メンバーA', guests:1}] };
-      }
-      if(action === 'get_participants_detail') {
-        return { data: { participants: [{participant_id:'p1', name:'橋本', status:'participating', play_count:0, category:'adult'}], allRounds: [] } };
-      }
-
-      // その他は空配列を返す（エラー防止）
-      return { ok: true, data: {month:[], year:[]}, list: [], events: [], summary: {total:15000, cash:5000, paypay:10000, bank:0}, fees: {adult:800, college:600, student:500} };
-    }
-
-    // ★修正ポイント: navigateToはそのまま
-    function navigateTo(viewId) {
-      document.querySelectorAll('.view-section').forEach(el => el.classList.remove('view-active'));
-      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-      let navId = '';
-      if(viewId === 'register') navId = 'nav-register';
-      else if(viewId === 'day') navId = 'nav-day';
-      else if(viewId === 'mypage') navId = 'nav-mypage';
-      else if(viewId.startsWith('admin')) navId = 'nav-admin';
-      
-      if(navId && document.getElementById(navId)) document.getElementById(navId).classList.add('active');
-      const targetView = document.getElementById('view-' + viewId);
-      if(targetView) targetView.classList.add('view-active');
-
-      if(viewId === 'day') checkDayAccess();
-    }
-
-    // ★修正ポイント: checkDayAccessは常に許可
-    function checkDayAccess() {
-      document.getElementById('dayContent').style.display = 'block';
-      document.getElementById('restrictedMsg').style.display = 'none';
-      loadDayData();
-    }
-
-    // ★修正ポイント: onloadで撮影用の初期状態を強制的に作る
-    window.onload = async function() {
-      try {
-        await liff.init({ liffId: LIFF_ID });
-        // デバッグ時はログインチェックをスルー（LIFFブラウザ以外でも動くようにするため）
-        
-        // 特権ユーザー（はりく）として初期化
-        const userRes = await callApi('get_me');
-        state.me = userRes.member;
-        state.paypay = userRes.paypay_config;
-        state.isDemo = true;
-
-        // UI初期化 (index.htmlのロジック準拠)
-        initUI(false);
-
-        // ダミー練習をセット
-        const weekRes = await callApi('get_this_week');
-        state.event = weekRes.event;
-        document.getElementById('thisWeekInfo').innerHTML = `<div>${state.event.date_str} ${state.event.start_time}-${state.event.end_time}</div>`;
-        document.getElementById('regFormArea').style.display = 'block';
-        document.getElementById('ppMsg').value = `${state.event.date_str} ${state.me.display_name}`;
-        
-        const mems = weekRes.registrations || [];
-        document.getElementById('currentParticipantsCount').innerText = mems.reduce((a,b)=>a+1+b.guests, 0);
-        document.getElementById('regMembersList').innerHTML = mems.map(m => `<span class="member-list-chip">${m.name}${m.guests>0?'+'+m.guests:''}</span>`).join('');
-        
-        // 登録状況（未登録状態にしておく）
-        state.reg = null;
-        renderRegStatus();
-
-      } catch (err) { console.error(err); }
-      setBusy(false);
+    
+    // デバッグ用ステータス（本番と同じ構造）
+    let state = {
+      me: { member_id: 'm1', display_name: 'はりく', category: 'adult', role: 'admin' },
+      paypay: { id: 'debug_pay_id', receiver: 'ハシモト リク' },
+      event: { event_id: 'e1', date_str: '2026-01-11 (日)', start_time: '18:00', end_time: '21:00' },
+      reg: null,
+      feeConfig: { adult: 800, college: 600, student: 500 }
     };
 
-    // --- 以降、index.htmlのロジックを100%コピペ（内部変数は共通なのでそのまま動きます） ---
-    function initUI(isFirst) {
-      if(state.me) {
-        document.getElementById('myName').value = state.me.display_name;
-        document.getElementById('myCat').value = state.me.category;
-        const r = state.me.role;
-        const isAdmin = (r==='admin'||r==='sub_admin');
-        if(isAdmin) {
-          document.getElementById('subAdminArea').style.display = 'block';
-          document.getElementById('subAdminCollection').style.display = 'block';
-          document.getElementById('nav-admin').style.display = 'block';
-        }
+    // ★「ニョキッ」を再現する関数 
+    window.toggleGuests = function() {
+      const on = document.getElementById('friendToggle').checked;
+      document.getElementById('guestSection').style.display = on ? 'block' : 'none';
+      if (on && document.getElementById('guestCount').value == 0) {
+        document.getElementById('guestCount').value = 1;
+        renderGuestInputs();
       }
-      if(state.paypay) {
-        const setT = (s,t) => document.querySelectorAll(s).forEach(e => e.innerText=t);
-        setT('.ppId', state.paypay.id); setT('.ppNameTarget', state.paypay.receiver);
-      }
-      document.getElementById('app').style.display = 'block';
-      navigateTo(INIT_PAGE);
-    }
+      calcTotal();
+    };
 
-    window.submitRegistration = async function() {
+    window.renderGuestInputs = function() {
+      const cnt = document.getElementById('guestCount').value;
+      const box = document.getElementById('guestInputs');
+      box.innerHTML = '';
+      for (let i = 0; i < cnt; i++) {
+        box.innerHTML += `
+          <div class="guest-row" style="margin-top:10px;">
+            <input type="text" class="g-name" placeholder="友達の名前" required>
+            <select class="g-cat" onchange="calcTotal()">
+              <option value="adult">社会人</option>
+              <option value="college">大学生</option>
+              <option value="student">高校生</option>
+            </select>
+          </div>`;
+      }
+      calcTotal();
+    };
+
+    // 金額計算（本人 + 友達全員分）
+    window.calcTotal = function() {
+      let total = state.feeConfig[state.me.category] || 800;
+      // 友達分の計算
+      if (document.getElementById('friendToggle').checked) {
+        const guestCats = document.querySelectorAll('.g-cat');
+        guestCats.forEach(sel => {
+          total += (state.feeConfig[sel.value] || 800);
+        });
+      }
+      document.getElementById('feeDisplay').innerText = `支払金額(合計): ${total} 円`;
+    };
+
+    // 登録ボタン（シミュレーション）
+    window.submitRegistration = function() {
       const method = document.querySelector('input[name="payMethod"]:checked')?.value;
-      if(!method) return alert('支払い方法を選択してください');
-      if(method === 'advance' && !document.getElementById('chkPaidAdvance').checked) return alert('チェックを入れてください');
+      if (!method) return alert('支払い方法を選択してください');
       
-      if(confirm('登録しますか？（デバッグ送信）')) {
-        setBusy(true);
-        await callApi('register', {}, true);
-        alert('登録しました（撮影用ダミー完了）');
-        // 登録済みの見た目に変える
-        state.reg = { status: 'reserved', payment_method: method };
-        renderRegStatus();
-        setBusy(false);
+      const guests = [];
+      if(document.getElementById('friendToggle').checked) {
+        document.querySelectorAll('.g-name').forEach((el, i) => {
+          guests.push(el.value || `友達${i+1}`);
+        });
       }
-    }
 
+      if (confirm(`【デバッグ】登録しますか？\n本人：はりく\n友達：${guests.join(', ') || 'なし'}\n支払：${method}`)) {
+        document.getElementById('loading').style.display = 'flex';
+        setTimeout(() => {
+          alert('登録が完了しました！(撮影用)');
+          state.reg = { status: 'reserved', payment_method: method };
+          renderRegStatus();
+          document.getElementById('loading').style.display = 'none';
+        }, 800);
+      }
+    };
+
+    // UI状態の更新
     function renderRegStatus() {
       const badge = document.getElementById('regStatusBadge');
       const btnReg = document.getElementById('btnRegister');
       const btnCancel = document.getElementById('btnCancel');
-      if(state.reg && state.reg.status === 'reserved') {
+      if (state.reg && state.reg.status === 'reserved') {
         badge.innerText = '参加登録済'; badge.className = 'badge bg-green';
         btnReg.innerText = '登録更新'; btnCancel.style.display = 'inline-block';
       } else {
         badge.innerText = '未登録'; badge.className = 'badge bg-gray';
         btnReg.innerText = '参加登録'; btnCancel.style.display = 'none';
       }
-      togglePayMethod(); calcTotal();
     }
 
-    // index.htmlの補助関数群（不足しているものを補完）
-    window.togglePayMethod = function() { const val=document.querySelector('input[name="payMethod"]:checked')?.value; document.getElementById('payDetail-advance').style.display=(val==='advance')?'block':'none'; }
-    window.calcTotal = function() { if(!state.me) return; document.getElementById('feeDisplay').innerText = `支払金額(本人分): 800 円`; }
-    window.toggleGuests = function() { const on = document.getElementById('friendToggle').checked; document.getElementById('guestSection').style.display = on?'block':'none'; }
-    window.copyText = function(id) { const el = document.querySelector('.'+id) || document.getElementById(id); const t = el.tagName==='INPUT' ? el.value : el.innerText; alert('コピーしました: ' + t); }
-    window.closeModal = function() { document.getElementById('infoModal').style.display = 'none'; }
-    async function loadDayData() { 
-      const res = await callApi('get_participants_detail');
-      state.participants = res.data.participants;
-      renderAdminLists(); 
+    // 共通ユーティリティ
+    function navigateTo(viewId) {
+      document.querySelectorAll('.view-section').forEach(el => el.classList.remove('view-active'));
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      document.getElementById('view-' + viewId).classList.add('view-active');
+      const navId = 'nav-' + viewId;
+      if(document.getElementById(navId)) document.getElementById(navId).classList.add('active');
     }
-    function renderAdminLists() {
-      document.getElementById('adminLotteryList').innerHTML = state.participants.map(p => `<div class="admin-list-item"><span class="admin-name">${p.name}</span><select class="status-select"><option>参加</option></select></div>`).join('');
-      document.getElementById('adminCollectionList').innerHTML = state.participants.map(p => `<div class="admin-list-item"><span class="admin-name">${p.name}</span><span class="pay-icon cash">現</span></div>`).join('');
-    }
+
+    window.togglePayMethod = function() {
+      const val = document.querySelector('input[name="payMethod"]:checked')?.value;
+      document.getElementById('payDetail-advance').style.display = (val === 'advance') ? 'block' : 'none';
+    };
+
+    window.copyText = function(id) {
+      const el = document.querySelector('.'+id) || document.getElementById(id);
+      const t = el.tagName === 'INPUT' ? el.value : el.innerText;
+      alert('コピーしました: ' + t);
+    };
+
+    window.executeLottery = function() {
+      alert('抽選を実行します...');
+      document.getElementById('dayLotteryResult').innerHTML = `
+        <div class="court-box"><span class="court-name">第1コート</span>
+          <div class="match-pair">はりく / メンバーA</div>
+          <div class="match-pair" style="font-size:0.9rem;">vs</div>
+          <div class="match-pair">友達1 / メンバーB</div>
+        </div>`;
+    };
+
+    // 初期化
+    window.onload = async function() {
+      try { await liff.init({ liffId: LIFF_ID }); } catch(e) {}
+      
+      // PayPay情報反映
+      document.querySelectorAll('.ppId').forEach(e => e.innerText = state.paypay.id);
+      document.querySelectorAll('.ppNameTarget').forEach(e => e.innerText = state.paypay.receiver);
+      document.getElementById('ppMsg').value = `${state.event.date_str} はりく`;
+      
+      // 練習情報反映
+      document.getElementById('thisWeekInfo').innerHTML = `<div>${state.event.date_str} ${state.event.start_time}-${state.event.end_time}</div>`;
+      document.getElementById('regFormArea').style.display = 'block';
+      
+      calcTotal();
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+    };
   </script>
 </body>
 </html>
