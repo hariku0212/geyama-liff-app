@@ -116,7 +116,7 @@
                 <label class="inline-label"><input type="radio" name="payMethod" value="advance" onchange="togglePayMethod()"><span>事前PayPay決済</span></label>
                 <div id="payDetail-advance" style="display:none; margin-left:10px; margin-bottom:15px;">
                    <div class="paypay-box">
-                     <strong>&lt;手順&gt;</strong><ol class="step-list"><li>下記 <strong>ID</strong> をコピー</li><li>PayPayアプリ &gt; 送る &gt; IDで送る</li><li>ID貼り付け &gt; 検索</li><li>名義が <strong class="ppNameTarget">-</strong> であることを確認</li><li>金額入力</li><li>下記のメモ(練習日程と名前)をコピーしてメッセージに貼り付けて送金</li><li>送金後、下の「送金しました」にチェックを入れる</li></ol>
+                     <strong>&lt;手順&gt;</strong><ol class="step-list"><li>下記 <strong>ID</strong> をコピー</li><li>PayPayアプリ > 送る > IDで送る</li><li>ID貼り付け > 検索</li><li>名義が <strong class="ppNameTarget">-</strong> であることを確認</li><li>金額入力</li><li>下記のメモ(練習日程と名前)をコピーしてメッセージに貼り付けて送金</li><li>送金後、下の「送金しました」にチェックを入れる</li></ol>
                      <div>ID: <span class="ppId" style="font-weight:bold;">-</span> <button type="button" class="btn-outline btn-copy" onclick="copyText('ppId')">コピー</button></div>
                      <div style="margin-top:8px; display:flex;"><input type="text" id="ppMsg" readonly style="margin:0; font-size:0.8rem; background:#fff; flex:1;"><button type="button" class="btn-outline btn-copy" onclick="copyText('ppMsg')">メモコピー</button></div>
                    </div>
@@ -272,7 +272,7 @@
 
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbx3QQMnnjQl-3bb77-HO9SVztNzaBpl8sXTHNBm7ydsLZMK50dlNqau-qHXU16HufrEBQ/exec';
-    const LIFF_ID = '<?= liffId ?>';
+    const LIFF_ID = '2008652596-Gew4K44V';
     const params = new URLSearchParams(window.location.search);
     const INIT_PAGE = params.get('page') || 'register';
 
@@ -522,7 +522,7 @@
         }
         if(state.me.role !== 'member') { const adm = await callApi('get_admin_init'); state.feeConfig = adm.fees; }
         if(INIT_PAGE==='register') { loadedData.future=true; loadFutureAndPast(); }
-      } catch (err) { alert('起動エラー: ' + err.message); }
+      } catch (err) { alert('起動エラー: ' + err.message + '\ncode: ' + (err.code || 'なし') + '\nLIFF_ID: ' + LIFF_ID); }
     };
   </script>
 </body>
