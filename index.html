@@ -5,7 +5,7 @@
   <title>ゲヤマクラブ</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <meta property="og:title" content="ゲヤマクラブアプリ">
-  <meta property="og:description" content="練習の参加登録、PayPay支払い、コート抽選などができるアプリです。">
+  <meta property="og:description" content="練習の参加登録、PayPay支払い、参加者管理ができるアプリです。">
   <meta property="og:type" content="website">
   <style>
     /* --- CSS (変更なし) --- */
@@ -116,7 +116,7 @@
                 <label class="inline-label"><input type="radio" name="payMethod" value="advance" onchange="togglePayMethod()"><span>事前PayPay決済</span></label>
                 <div id="payDetail-advance" style="display:none; margin-left:10px; margin-bottom:15px;">
                    <div class="paypay-box">
-                     <strong>&lt;手順&gt;</strong><ol class="step-list"><li>下記 <strong>ID</strong> をコピー</li><li>PayPayアプリ > 送る > IDで送る</li><li>ID貼り付け > 検索</li><li>名義が <strong class="ppNameTarget">-</strong> であることを確認</li><li>金額入力</li><li>下記のメモ(練習日程と名前)をコピーしてメッセージに貼り付けて送金</li><li>送金後、下の「送金しました」にチェックを入れる</li></ol>
+                     <strong>&lt;手順&gt;</strong><ol class="step-list"><li>下記 <strong>ID</strong> をコピー</li><li>PayPayアプリ &gt; 送る &gt; IDで送る</li><li>ID貼り付け &gt; 検索</li><li>名義が <strong class="ppNameTarget">-</strong> であることを確認</li><li>金額入力</li><li>下記のメモ(練習日程と名前)をコピーしてメッセージに貼り付けて送金</li><li>送金後、下の「送金しました」にチェックを入れる</li></ol>
                      <div>ID: <span class="ppId" style="font-weight:bold;">-</span> <button type="button" class="btn-outline btn-copy" onclick="copyText('ppId')">コピー</button></div>
                      <div style="margin-top:8px; display:flex;"><input type="text" id="ppMsg" readonly style="margin:0; font-size:0.8rem; background:#fff; flex:1;"><button type="button" class="btn-outline btn-copy" onclick="copyText('ppMsg')">メモコピー</button></div>
                    </div>
@@ -143,28 +143,21 @@
         <div id="dayContent" style="display:none;">
           <div id="subAdminArea" style="display:none;">
             <div class="card" style="border-left: 5px solid var(--danger);">
-              <h3 style="color:var(--danger); margin:0 0 10px;">運営: 抽選</h3>
-              <div id="adminLotteryList"></div>
-              <div style="margin-top:15px; display:flex; gap:10px;">
-                <button class="btn-outline btn-sm" onclick="manualAddUser()">+ 追加</button>
-                <button class="btn-danger" style="flex:1; margin:0;" onclick="executeLottery()">抽選実行</button>
+              <h3 style="color:var(--danger); margin:0 0 10px;">運営: 参加者管理</h3>
+              <div id="adminParticipantList"></div>
+              <div style="margin-top:10px;">
+                <button class="btn-outline btn-sm" onclick="manualAddUser()">+ 手動追加</button>
               </div>
-              <div style="text-align:right; margin-top:10px;"><button class="btn-outline btn-sm" style="color:#888; border-color:#ccc;" onclick="deleteLastRound()">直前取消</button></div>
             </div>
           </div>
-          <div class="card"><h2>本日の練習</h2><div id="dayLotteryResult"><p>抽選結果はまだありません。</p></div></div>
-          <div id="subAdminCollection" style="display:none;">
+          <div id="subAdminUnpaid" style="display:none;">
             <div class="card" style="border-left: 5px solid var(--accent);">
-              <h3 style="color:var(--accent);">運営: 集金</h3>
-              <p class="small muted">受取済みにチェックして保存。<br>アイコン(P/現)タップで方法変更。</p>
-              <div id="adminCollectionList"></div>
-              <div style="border-top:1px solid #eee; margin-top:10px; padding-top:10px; font-weight:bold; font-size:0.9rem;">
-                 回収済み計(円): <span style="color:#e0e0e0; background:#555; padding:2px 5px; border-radius:4px;">現</span> <span id="sumCash">0</span> / 
-                 <span style="color:#333; background:#ffeb3b; padding:2px 5px; border-radius:4px;">P</span> <span id="sumPayPay">0</span>
-              </div>
-              <button class="btn-accent" style="margin-top:10px;" onclick="saveCollection()">集金状況を保存</button>
+              <h3 style="color:var(--accent);">未払い一覧</h3>
+              <p class="small muted">事前PayPay以外の登録者。当日現金・PayPayで回収してください。</p>
+              <div id="unpaidList"></div>
             </div>
           </div>
+          <div class="card"><h2>本日の練習</h2><div id="dayParticipantInfo"><p class="muted">読み込み中...</p></div></div>
           <div class="card" id="dayPayInfo" style="display:none;">
             <h2>当日PayPay支払い</h2>
             <div class="paypay-box">
@@ -279,7 +272,7 @@
 
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbx3QQMnnjQl-3bb77-HO9SVztNzaBpl8sXTHNBm7ydsLZMK50dlNqau-qHXU16HufrEBQ/exec';
-    const LIFF_ID = '2008652596-Gew4K44V';
+    const LIFF_ID = '<?= liffId ?>';
     const params = new URLSearchParams(window.location.search);
     const INIT_PAGE = params.get('page') || 'register';
 
@@ -326,7 +319,7 @@
         const isAdmin = (r==='admin'||r==='sub_admin');
         if(isAdmin) {
           document.getElementById('subAdminArea').style.display = 'block';
-          document.getElementById('subAdminCollection').style.display = 'block';
+          document.getElementById('subAdminUnpaid').style.display = 'block';
           document.getElementById('nav-admin').style.display = 'block';
           if(r==='admin' && state.event) { // Check event exists
              document.getElementById('cancelEventArea').style.display = 'block';
@@ -356,7 +349,7 @@
     // --- Demo ---
     window.setDemoRole = function(role) {
       state.me.role = role; alert(`権限を ${role} に変更しました。\n画面を更新します。`);
-      ['subAdminArea','subAdminCollection','nav-admin','cancelEventArea'].forEach(id=>document.getElementById(id).style.display='none');
+      ['subAdminArea','subAdminUnpaid','nav-admin','cancelEventArea'].forEach(id=>document.getElementById(id).style.display='none');
       document.querySelector('.admin-menu-btn[onclick*="fees"]').style.display = '';
       document.querySelector('.admin-menu-btn[onclick*="roles"]').style.display = '';
       initUI(false);
@@ -377,59 +370,17 @@
       } 
     }
     
-    // --- Day Logic (Mock for Demo) ---
-    window.executeLottery = async function() { 
-      if(!confirm('抽選実行?'))return; 
-      if(state.isDemo) { 
-        // Mock lottery for Demo
-        alert('(Demo) 完了'); 
-        // Create dummy round result
-        const pNames = state.participants.map(p=>p.name);
-        // Simple shuffle and display
-        const resHtml = `<div class="court-box"><span class="court-name">Demo Court 1</span><div class="match-pair">${pNames[0]||'A'}<br>${pNames[1]||'B'}</div><div class="match-pair" style="font-size:0.9rem;">vs</div><div class="match-pair">${pNames[2]||'C'}<br>${pNames[3]||'D'}</div></div>`;
-        document.getElementById('dayLotteryResult').innerHTML = resHtml;
-        return; 
-      }
-      const s={}; state.participants.forEach(p=>{const v=document.getElementById(`stat-${p.participant_id}`).value;if(v!==p.status)s[p.participant_id]=v;}); setBusy(true); await callApi('run_lottery',{event_id:state.event.event_id,statuses:s},true); alert('完了'); loadDayData(); setBusy(false); 
-    }
-    window.saveCollection = async function() {
-      const ids=[]; const methods={};
-      document.querySelectorAll('.col-chk:checked:not([disabled])').forEach(e=>{ ids.push(e.value); const icon=document.getElementById(`pay-icon-${e.value}`); if(icon) methods[e.value]=icon.dataset.method; });
-      if(!ids.length) return alert('チェックなし');
-      if(state.isDemo) { 
-        alert('(Demo) 保存');
-        ids.forEach(id => {
-          const p = state.participants.find(x => x.participant_id === id);
-          if(p) { p.payment_status = 'paid'; p.payment_method = methods[id] || 'day_cash'; }
-        });
-        renderAdminLists();
-        return; 
-      }
-      if(confirm('保存しますか?')) { setBusy(true); await callApi('update_collection',{event_id:state.event.event_id,paid_ids:ids,methods:methods},true); alert('保存'); loadDayData(); setBusy(false); }
-    }
+    // --- Day Logic ---
 
-    // ... Other actions (unchanged) ...
     window.filterAccounting = function() { const m=document.getElementById('filterAccMonth').value; const t=document.getElementById('filterAccType').value; const f=rawAccountingList.filter(a=>{ const d=new Date(a.raw_date); const y=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; return(m==='all'||m===y)&&(t==='all'||a.type===t); }); renderAccountingList(f); }
     function renderAccountingList(list) { const w={cash:'現金',paypay:'PayPay',bank:'口座'}; document.getElementById('adminAccList').innerHTML=list.map(a=>`<div style="border-bottom:1px solid #eee; padding:6px; font-size:0.85rem;">${a.date} <span class="badge ${a.type=='income'?'bg-green':'bg-gray'}">${a.type=='income'?'収':'支'}</span> ${a.amount}円 (${w[a.wallet]||a.wallet}) ${a.desc}</div>`).join(''); }
-    window.togglePayIcon = function(pid) {
-      const el = document.getElementById(`pay-icon-${pid}`); const next = (el.dataset.method === 'day_cash') ? 'day_paypay' : 'day_cash';
-      el.dataset.method = next; el.className = next === 'day_paypay' ? 'pay-icon pp' : 'pay-icon cash'; el.innerText = next === 'day_paypay' ? 'P' : '現';
-      updateCollectionSum();
+    window.manualAddUser = async function() {
+      const n = prompt('名前:'); if(!n) return;
+      const catLabel = prompt('区分 (1:社会人 / 2:大学生 / 3:高校生以下):', '1');
+      const catMap = {'1':'adult','2':'college','3':'student'};
+      const cat = catMap[catLabel] || 'adult';
+      setBusy(true); await callApi('manual_add_participant', { event_id: state.event.event_id, name: n, category: cat }); loadDayData(); setBusy(false);
     }
-    window.updateCollectionSum = function() {
-      let cash = 0, pp = 0;
-      document.querySelectorAll('.col-chk:checked').forEach(e => {
-        const pid = e.value;
-        const cat = e.dataset.category || 'adult';
-        const icon = document.getElementById(`pay-icon-${pid}`);
-        const method = icon ? icon.dataset.method : 'day_cash';
-        const fee = getFee(cat);
-        if (method === 'day_cash') cash += fee; else pp += fee;
-      });
-      document.getElementById('sumCash').innerText = cash; document.getElementById('sumPayPay').innerText = pp;
-    }
-    window.deleteLastRound = async function() { if(confirm('取消?')) { setBusy(true); await callApi('delete_round', { event_id: state.event.event_id }); loadDayData(); setBusy(false); } }
-    window.manualAddUser = async function() { const n=prompt('名前:'); if(n) { setBusy(true); await callApi('manual_add_participant', { event_id: state.event.event_id, name: n }); loadDayData(); setBusy(false); } }
     window.genDebugData = async function() { if(confirm('生成?')) { setBusy(true); await callApi('generate_debug', {}, true); alert('完了'); location.reload(); } }
     window.togglePayMethod = function() { const val=document.querySelector('input[name="payMethod"]:checked')?.value; document.getElementById('payDetail-advance').style.display=(val==='advance')?'block':'none'; }
     window.submitRegistration = async function() {
@@ -477,24 +428,48 @@
     }
     async function loadDayData() {
       setBusy(true); const res = await callApi('get_participants_detail', { event_id: state.event.event_id }); setBusy(false);
-      state.participants = res.data.participants || []; const rounds = res.data.allRounds || []; 
-      const box = document.getElementById('dayLotteryResult');
-      if(rounds.length > 0) {
-        let html = ''; rounds.forEach(r => { html += `<div style="margin-bottom:15px; border-bottom:1px dashed #ccc; padding-bottom:10px;"><p style="font-weight:bold; margin:0 0 5px;">第${r.round_no}ラウンド</p>`; Object.keys(r.result.courts).forEach(k => { const c = r.result.courts[k]; html += `<div class="court-box"><span class="court-name">${k}</span><div class="match-pair">${c[0][0]}<br>${c[0][1]}</div><div class="match-pair" style="font-size:0.9rem;">vs</div><div class="match-pair">${c[1][0]}<br>${c[1][1]}</div></div>`; }); if(r.result.rest && r.result.rest.length) html += `<div class="small muted">休憩: ${r.result.rest.join(', ')}</div>`; html += `</div>`; }); box.innerHTML = html;
-      } else { box.innerHTML = '<p>抽選結果はまだありません。</p>'; }
+      state.participants = res.data.participants || [];
+      const total = state.participants.length;
+      const box = document.getElementById('dayParticipantInfo');
+      box.innerHTML = state.participants.length
+        ? `<p style="margin:0 0 8px;"><strong>${total}名</strong> 参加予定</p>` +
+          state.participants.map(p => `<span class="member-list-chip">${p.name}</span>`).join('')
+        : '<p class="muted">参加者なし</p>';
       const myP = state.participants.find(p => p.member_id === state.me.member_id);
       document.getElementById('dayPayInfo').style.display = (myP && myP.payment_method === 'day_paypay' && myP.payment_status !== 'paid') ? 'block' : 'none';
       if(['admin','sub_admin'].includes(state.me.role)) renderAdminLists();
     }
     function renderAdminLists() {
-      document.getElementById('adminLotteryList').innerHTML = state.participants.map(p => `
-        <div class="admin-list-item"><div class="admin-item-left"><span class="admin-name">${p.name}</span><span class="small muted" style="margin-left:5px;">(${p.play_count})</span></div><div class="admin-item-right"><select id="stat-${p.participant_id}" class="status-select"><option value="participating" ${p.status=='participating'?'selected':''}>参加</option><option value="late" ${p.status=='late'?'selected':''}>遅刻</option><option value="leave" ${p.status=='leave'?'selected':''}>早退</option><option value="rest_request" ${p.status=='rest_request'?'selected':''}>休憩</option></select></div></div>`).join('');
-      document.getElementById('adminCollectionList').innerHTML = state.participants.map(p => {
-        const isPaid = p.payment_status === 'paid' || p.payment_status === 'paid_advance';
-        const method = p.payment_method || 'day_cash'; const icon = (method === 'advance' || method === 'day_paypay') ? '<span class="pay-icon pp">P</span>' : '<span class="pay-icon cash">現</span>'; const stTxt = isPaid ? '済' : '未払';
-        return `<div class="admin-list-item ${isPaid?'paid-row':''}"><div class="admin-item-left"><label><input type="checkbox" class="col-chk" value="${p.participant_id}" data-category="${p.category}" ${isPaid?'disabled checked':''} onchange="updateCollectionSum()"> <span class="admin-name">${p.name}</span></label></div><div class="admin-item-right"><span id="pay-icon-${p.participant_id}" class="${(method === 'advance' || method === 'day_paypay') ? 'pay-icon pp' : 'pay-icon cash'}" data-method="${method}" ${isPaid?'':`onclick="togglePayIcon('${p.participant_id}')"`}>${(method === 'advance' || method === 'day_paypay') ? 'P' : '現'}</span> <span class="pay-status">${stTxt}</span></div></div>`;
-      }).join('');
-      updateCollectionSum();
+      // 参加者管理リスト（出欠ステータス）
+      document.getElementById('adminParticipantList').innerHTML = state.participants.map(p => `
+        <div class="admin-list-item">
+          <div class="admin-item-left"><span class="admin-name">${p.name}</span></div>
+          <div class="admin-item-right">
+            <select id="stat-${p.participant_id}" class="status-select" onchange="updateParticipantStatus('${p.participant_id}', this.value)">
+              <option value="participating" ${p.status=='participating'?'selected':''}>参加</option>
+              <option value="late" ${p.status=='late'?'selected':''}>遅刻</option>
+              <option value="leave" ${p.status=='leave'?'selected':''}>早退</option>
+              <option value="rest_request" ${p.status=='rest_request'?'selected':''}>休憩</option>
+            </select>
+          </div>
+        </div>`).join('');
+
+      // 未払い一覧（事前PayPay済み以外）
+      const unpaid = state.participants.filter(p => p.payment_status !== 'paid_advance');
+      const unpaidEl = document.getElementById('unpaidList');
+      unpaidEl.innerHTML = unpaid.length
+        ? unpaid.map(p => {
+            const methodLabel = (p.payment_method === 'day_paypay') ? 'PayPay' : '現金';
+            return `<div style="padding:8px 0; border-bottom:1px solid #eee; display:flex; justify-content:space-between;"><span>${p.name}</span><span class="small muted">${methodLabel}</span></div>`;
+          }).join('')
+        : '<p class="muted small">全員支払い済みです</p>';
+    }
+    window.updateParticipantStatus = async function(pid, status) {
+      const statuses = {}; statuses[pid] = status;
+      // ステータスはサーバー側で保存（update_session_statusesを使う場合は追加実装が必要）
+      // 現状はローカルのstate更新のみ
+      const p = state.participants.find(x => x.participant_id === pid);
+      if(p) p.status = status;
     }
     async function loadAdminData() {
       setBusy(true); const res = await callApi('get_admin_init'); setBusy(false);
