@@ -5,10 +5,7 @@
 
 function doGet(e) {
   if (!e.parameter.action) {
-    const template = HtmlService.createTemplateFromFile('index');
-    template.initPage = e.parameter.page || 'home';
-    template.liffId = getLiffId_();
-    return template.evaluate().setTitle('ゲヤマクラブ').addMetaTag('viewport', 'width=device-width, initial-scale=1').setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    return HtmlService.createHtmlOutputFromFile('index').setTitle('ゲヤマクラブ').addMetaTag('viewport', 'width=device-width, initial-scale=1').setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
   }
   return handleApiRequest_(e, 'GET');
 }
@@ -38,6 +35,9 @@ function handleFollow_(event) {
 }
 
 function pushLineMessage_(to, text) {
+  // ★修正: ここでのデモモードブロックを削除（挨拶メッセージを通すため）
+  // 個別の通知ロジック側で isDemoMode_() をチェックします。
+  
   const token = getLineAccessToken_();
   if (!token || !to) return;
   try {
@@ -113,7 +113,9 @@ function triggerGuestConfirmation() {
 }
 
 function triggerCloseEvents() {
+  // デモモード中はスキップ
   if (isDemoMode_()) return;
+
   const sheet = getSheet_(SHEETS.EVENTS);
   const data = sheet.getDataRange().getValues();
   for(let i=1; i<data.length; i++) {
